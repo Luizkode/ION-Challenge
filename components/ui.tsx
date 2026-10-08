@@ -39,16 +39,18 @@ export function Select({
   name,
   children,
   value,
+  required = false,
 }: {
   label: string;
   name: string;
+  required?: boolean;
   children: ReactNode;
   value?: string;
 }) {
   return (
     <label className="field">
       <span>{label}</span>
-      <select name={name} defaultValue={value}>
+      <select name={name} defaultValue={value} required={required}>
         {children}
       </select>
     </label>
