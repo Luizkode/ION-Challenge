@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { configured, supabase } from "@/lib/supabase";
 import { session } from "@/lib/session";
+import { meetingSchema } from "@/lib/meeting-registration";
 function jump(path: string, message: string, kind = "error"): never {
   redirect(path + "?" + kind + "=" + encodeURIComponent(message));
 }
@@ -34,33 +35,24 @@ export async function changePassword(form: FormData) {
   if (error) jump("/history", "Não foi possível atualizar a senha.");
   jump("/history", "Senha atualizada.", "success");
 }
-const meetingSchema = z.object({
-  campaign_id: z.string().uuid(),
-  company: z.string().trim().min(2).max(150),
-  contact: z.string().trim().min(2).max(120),
-  phone: z
-    .string()
-    .transform((s) => s.replace(/\D/g, ""))
-    .pipe(z.string().min(10).max(15)),
-  city: z.string().trim().min(2).max(100),
-  niche: z.string().trim().min(2).max(100),
-  closer_id: z.string().uuid(),
-  scheduled_at: z.string().min(1),
-  notes: z.string().max(2000),
-  opportunity_id: z.string().optional(),
-});
 export async function createMeeting(form: FormData) {
-  const { db } = await session();
+  const { db, profile } = await session();
+  if (profile.role !== "sdr")
+    jump("/meetings", "Apenas SDRs podem cadastrar reuniões.");
   const result = meetingSchema.safeParse(Object.fromEntries(form));
-  if (!result.success) jump("/meetings", "Revise os campos da reunião.");
-  const data = {
-    ...result.data,
-    scheduled_at: new Date(result.data.scheduled_at).toISOString(),
-  };
-  const { error } = await db.rpc("create_meeting", { data });
-  if (error) jump("/meetings", error.message);
+  if (!result.success)
+    jump(
+      "/meetings/new",
+      "Revise os campos: informe os dados da empresa, data e horário válidos e selecione um closer.",
+    );
+  const { error } = await db.rpc("create_meeting", { data: result.data });
+  if (error) jump("/meetings/new", error.message);
   revalidatePath("/", "layout");
-  jump("/meetings", "Reunião cadastrada. Ainda não gera pontos.", "success");
+  jump(
+    "/meetings",
+    "Reunião cadastrada como Agendada. Ainda não gera pontos.",
+    "success",
+  );
 }
 export async function validateMeeting(form: FormData) {
   const { db } = await session();

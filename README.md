@@ -16,6 +16,12 @@ npm run dev
 
 `npm test` executa a migration real em PostgreSQL via PGlite e testa funções SQL com as roles `authenticated`/`anon` e identidades de teste. `npm run build` compila e verifica tipos. `npm run typecheck` verifica os tipos separadamente. Os testes não substituem validação de Supabase Auth, Realtime e entrega de emails em um projeto real.
 
+## Testar o cadastro no navegador
+
+`npm run test:browser` abre Chromium em tamanhos de desktop e celular e testa o botão Nova reunião, formulário, envio à RPC, mensagens de bloqueio/erro, listagem para SDR e closer e restrição de acesso ao cadastro. Instale o navegador com `npx playwright install chromium` se não houver Chromium local; `PLAYWRIGHT_CHROMIUM_EXECUTABLE` permite indicar outro executável. As portas 3100 e 3101 devem estar livres, e outro `next dev` deste checkout não deve estar rodando.
+
+Essa suíte usa um servidor Supabase **exclusivo de testes**, sem acessar o projeto real. `npm test` verifica separadamente a migration e as regras reais de PostgreSQL/RLS em PGlite. O cadastro usa `/meetings/new`; mesmo quando bloqueado, abre os campos e explica a ausência de campanha ativa, time ou closer. Nenhuma migration adicional é necessária para essa correção. Faça o deploy da versão corrigida na Vercel após o merge.
+
 ## O que está implementado
 
 - Login por senha, sessão validada no servidor, renovação de sessão e alteração de senha. Sem cadastro público.

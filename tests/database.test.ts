@@ -82,7 +82,31 @@ test("PostgreSQL: workflow, pontuação, RLS e antifraude", async (t) => {
   let mid = "";
   let oid = "";
   await t.test("1. reunião agendada concede zero pontos", async () => {
-    mid = (await rpc("create_meeting", data)).rows[0].result as string;
+    mid = (
+      await rpc("create_meeting", { ...data, sdr_id: ids.sdr2, points: 7 })
+    ).rows[0].result as string;
+    const record = (
+      await db.query<{
+        status: string;
+        closer_id: string;
+        sdr_id: string;
+        team_id: string;
+      }>(
+        "select m.status,m.closer_id,o.sdr_id,o.team_id from meetings m join opportunities o on o.id=m.opportunity_id where m.id=$1",
+        [mid],
+      )
+    ).rows[0];
+    assert.equal(record.status, "scheduled");
+    assert.equal(record.sdr_id, ids.sdr);
+    assert.equal(record.team_id, team);
+    assert.equal(record.closer_id, ids.closer);
+    await actor(ids.closer);
+    assert.equal(
+      (await db.query("select id from meetings where id=$1", [mid])).rows
+        .length,
+      1,
+    );
+    await actor(ids.sdr);
     oid = (
       await db.query<{ opportunity_id: string }>(
         "select opportunity_id from meetings where id=$1",

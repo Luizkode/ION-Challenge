@@ -69,7 +69,7 @@ export default async function Layout({
           <span className="muted">Performance / Challenge</span>
           <Live />
           {profile.role === "sdr" && (
-            <Link href="/meetings#new" className="button">
+            <Link href="/meetings/new" className="button">
               + Nova reunião <ArrowUpRight size={16} />
             </Link>
           )}

@@ -1,5 +1,5 @@
 import { session, check } from "@/lib/session";
-import { createMeeting, adminOperation } from "@/app/actions";
+import { adminOperation } from "@/app/actions";
 import { Field, Select, Notice, Empty, labels } from "@/components/ui";
 import { Submit } from "@/components/submit";
 export default async function Meetings({
@@ -45,15 +45,6 @@ export default async function Meetings({
     .select("id,name")
     .eq("role", "closer")
     .eq("active", true);
-  const { data: campaign } = await db
-    .from("campaigns")
-    .select("*")
-    .eq("state", "active")
-    .maybeSingle();
-  const { data: opportunities } = await db
-    .from("opportunities")
-    .select("id,company,phone")
-    .order("company");
   return (
     <>
       <div className="page-title">
@@ -66,64 +57,6 @@ export default async function Meetings({
         </div>
       </div>
       <Notice params={params} />
-      {profile.role === "sdr" && (
-        <section className="panel" id="new">
-          <div className="panel-title">
-            <h2>Nova reunião</h2>
-            <span className="badge">0 pontos até validar</span>
-          </div>
-          {campaign ? (
-            <form action={createMeeting} className="form-grid padded">
-              <input type="hidden" name="campaign_id" value={campaign.id} />
-              <Field label="Empresa" name="company" />
-              <Field label="Responsável" name="contact" />
-              <Field
-                label="Telefone / WhatsApp (com DDD)"
-                name="phone"
-                type="tel"
-              />
-              <Field label="Cidade" name="city" />
-              <Field label="Nicho" name="niche" />
-              <Field
-                label="Data e horário (seu horário local)"
-                name="scheduled_at"
-                type="datetime-local"
-              />
-              <Select label="Closer responsável" name="closer_id">
-                <option value="">Selecione</option>
-                {closers?.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
-              <Select
-                label="Oportunidade (revise possíveis duplicidades)"
-                name="opportunity_id"
-              >
-                <option value="">Nova oportunidade</option>
-                {opportunities?.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.company} · {o.phone}
-                  </option>
-                ))}
-              </Select>
-              <Field label="Observações" name="notes" required={false} />
-              <p className="small muted">
-                Reuniões da mesma oportunidade contam uma única vez. Telefone
-                repetido exige reutilizar a oportunidade ou revisão
-                administrativa.
-              </p>
-              <Submit>Cadastrar reunião</Submit>
-            </form>
-          ) : (
-            <Empty>
-              A campanha ainda não está ativa. Aguarde a configuração
-              administrativa.
-            </Empty>
-          )}
-        </section>
-      )}
       <section className="panel">
         <div className="panel-title">
           <h2>Registros</h2>
