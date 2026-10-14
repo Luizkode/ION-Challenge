@@ -58,15 +58,3 @@ Cada etapa precisa de migração incremental, teste de atualização de um banco
 - Testes de login existentes e `scripts/smoke.mjs`: atualizados para o nome e rotas.
 
 As alterações locais de participantes existentes antes desta etapa foram preservadas. Elas não devem ser confundidas com novas migrations do ION OS.
-
-## Preview da Vercel isolado da produção
-
-O envio da branch pode iniciar automaticamente um build Preview pela integração GitHub/Vercel. Por isso, builds com `VERCEL_ENV=preview` exigem `ION_OS_PREVIEW_SUPABASE_PROJECT_REF`, além das variáveis públicas usuais. O identificador deve ser o de um projeto Supabase **separado de homologação** (a parte antes de `.supabase.co` na URL), e a URL precisa corresponder a ele. A verificação bloqueia builds sem correspondência; não altera builds de produção ou desenvolvimento local. O operador deve selecionar explicitamente um projeto que não seja o de produção.
-
-Na Vercel, configure **somente no ambiente Preview**, preferencialmente com escopo para `feat/ion-os-foundation`:
-
-- `ION_OS_PREVIEW_SUPABASE_PROJECT_REF`: identificador do projeto de homologação.
-- `NEXT_PUBLIC_SUPABASE_URL`: URL HTTPS desse projeto.
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: chave pública anon desse projeto.
-
-Não compartilhe chaves no chat. No Supabase de homologação, aplique 001 e 002 uma vez, se for um projeto novo; configure Auth, callback do domínio Preview e contas/dados exclusivos de teste. Não execute migrations ou bootstrap no projeto de produção. Após salvar as variáveis, gere um novo deployment Preview da branch. Nenhum desses passos requer merge na main ou promoção para Production.
