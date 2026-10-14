@@ -81,10 +81,10 @@ As duas primeiras são necessárias para operar. BOOTSTRAP_ADMIN_EMAIL e BOOTSTR
 
 ## Supabase: configuração exata
 
-1. Crie um projeto no plano gratuito do Supabase. Escolha região próxima da equipe e guarde a senha do banco em local seguro.
-2. Abra **SQL Editor**, cole todo o arquivo `supabase/migrations/001_ion.sql` e execute uma vez em um projeto novo. A migration 001 cria tabelas, políticas, funções, gatilhos e a campanha inicial. Em seguida, aplique 002 e 003, em ordem, para habilitar participantes e as categorias/funções do ION OS. Não é idempotente: não reaplique inteira em um banco já migrado. Não deve ser aplicada sobre dados existentes sem revisão/migration separada.
+1. Reutilize o projeto Supabase atual do Challenger como banco central do ION OS. Não crie outro projeto como requisito. Consulte [o plano incremental](docs/DEPLOY_EXISTING_PLATFORM.md).
+2. No banco existente, execute primeiro o inventário somente de leitura e verifique o backup/recuperação. A 001 já é a estrutura original; não a reaplique. Prepare somente 002/003 pendentes com `node scripts/prepare-ion-os-release.mjs --from=001` (ou `--from=002` se confirmado). O script não conecta ao banco. Aplicação do SQL aguarda autorização explícita de produção.
 3. Em **Project Settings → API / API Keys**, obtenha a URL e a chave pública anon legada compatível com o cliente. Preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` no ambiente local e na Vercel.
-4. Em **Authentication → Providers → Email**, mantenha login por email e desabilite novos cadastros públicos. Não há registro público na aplicação.
+4. Preserve a autenticação por email existente. Não há cadastro público na aplicação. O diagnóstico remoto encontrou signup do Auth habilitado; desativá-lo para usar somente convites é uma mudança de produção sujeita a aprovação.
 5. Em **Authentication → URL Configuration**, defina Site URL para o domínio HTTPS final. Cadastre os redirect URLs exatos: `https://SEU_DOMINIO/auth/callback` e o callback local de desenvolvimento quando necessário. Evite wildcards de produção. Configure SMTP próprio se necessário para entrega confiável de convites; o serviço padrão possui limites.
 6. Confirme em **Database → Publications** que `supabase_realtime` contém `campaigns` e `competition_updates`. A migration adiciona essas tabelas se a publicação existe. Não publique oportunidades, reuniões, contratos ou auditoria: contêm informações restritas. O feed público inclui somente ID da campanha e instante de atualização.
 7. Execute o bootstrap abaixo uma única vez em máquina autorizada. Alternativa manual segura: crie o usuário em **Authentication → Users → Add user**, copie o UUID e insira o primeiro perfil pelo SQL Editor administrativo: `insert into public.profiles(id,name,role) values ('UUID_DO_USUARIO','Seu nome','admin');`. Não crie endpoint público de bootstrap.
@@ -105,9 +105,9 @@ O script se recusa a executar se houver admin existente. Cria um usuário confir
 ## Vercel: publicação
 
 1. Use uma branch de trabalho e Pull Request para `Luizkode/ION-Challenge`. Consulte o PR e o status da Vercel para confirmar o commit efetivamente implantado; push não comprova que o Preview está funcional.
-2. Na Vercel, **Add New → Project**, importe o repositório e escolha o preset **Next.js**. Raiz do projeto: raiz do repositório. Use Node.js 24, instalação `npm ci` e build `npm run build`.
-3. No ambiente autorizado, cadastre `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Para os convites da Etapa 2, cadastre também `SUPABASE_SERVICE_ROLE_KEY` como variável privada do servidor e `ION_OS_APP_URL`. Preview exige `ION_OS_PREVIEW_SUPABASE_PROJECT_REF` e deve usar exclusivamente homologação. Não cadastre variáveis de bootstrap nem publique/configure Production sem autorização.
-4. Faça deploy. Configure o domínio final, atualize Site URL e callback do Supabase e confirme acesso por HTTPS.
+2. Reutilize o projeto Vercel atual `ion-challenge` e seu domínio. Mantenha preset Next.js, raiz do repositório, instalação e build existentes; não importe outro aplicativo.
+3. No ambiente autorizado, cadastre `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Para os convites da Etapa 2, cadastre também `SUPABASE_SERVICE_ROLE_KEY` como variável privada do servidor e `ION_OS_APP_URL`. Preview pode reutilizar o mesmo banco e não exige `ION_OS_PREVIEW_SUPABASE_PROJECT_REF`. Ele compartilha os dados e não deve ser usado para testes de escrita sem aprovação. Não cadastre variáveis de bootstrap nem publique/configure Production sem autorização.
+4. Depois de conferir schema, recuperação e obter aprovação, publique no projeto atual. Preserve domínio/Site URL e confira o callback existente. Merge em main pode disparar Production automaticamente e também aguarda autorização.
 5. Valide login, cadastro, validação, contrato, invalidação, rankings e atualização entre sessões no domínio final. Restrinja URLs de preview e redirects de acordo com sua política.
 
 Vercel Hobby tem restrições de uso comercial. Como esta é uma ferramenta interna de uma agência, confirme os termos e elegibilidade antes de escolhê-lo: não é possível prometer hospedagem comercial gratuita na Vercel. O projeto não depende de recursos pagos; outro host compatível com Next.js pode ser utilizado. A publicação depende da configuração e autorização por ambiente; esta etapa não autoriza publicação em produção.
@@ -121,7 +121,7 @@ Vercel Hobby tem restrições de uso comercial. Como esta é uma ferramenta inte
 - As RPCs serializam writes por campanha e operações administrativas; histórico é auditado no banco. Operadores com service role/acesso SQL continuam tendo privilégios administrativos: a auditoria não é inviolável para o dono do banco.
 - Contatos comerciais só são visíveis ao SDR responsável, closer atribuído e admin. Defina retenção, acesso operacional e política de privacidade/LGPD antes de coletar dados reais.
 - Habilite rate limits do Supabase Auth e acompanhe logs. O fluxo não contém endpoint de signup ou bootstrap público.
-- Convites pelo app são feitos na Equipe com Auth administrativo no servidor. Recuperação de senha por operador continua disponível no painel Supabase; não há fluxo público de recuperação nesta etapa. Confira SMTP, URLs e entrega real em homologação.
+- Convites pelo app são feitos na Equipe com Auth administrativo no servidor. Recuperação de senha por operador continua disponível no painel Supabase; não há fluxo público de recuperação nesta etapa. Confira SMTP, URLs e entrega real na infraestrutura existente, com destinatário/escopo aprovados.
 - Consulta de auditoria mostra as últimas 100 ações; retenção permanece no banco. Relatórios históricos/paginação avançada e exportação não fazem parte desta V1.
 - Componentes são próprios com Tailwind; não há shadcn/ui nesta versão. Não foram feitos testes visuais automatizados de navegador ou ensaio de carga de produção.
 

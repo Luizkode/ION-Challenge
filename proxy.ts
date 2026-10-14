@@ -1,8 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { verifyPreviewDatabase } from "./lib/preview-database";
+import { verifySupabaseConfiguration } from "./lib/supabase-config";
 export async function proxy(request: NextRequest) {
-  verifyPreviewDatabase(process.env);
+  verifySupabaseConfiguration(process.env);
   let response = NextResponse.next({ request });
   const isPublic = request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/auth/callback";
   if (

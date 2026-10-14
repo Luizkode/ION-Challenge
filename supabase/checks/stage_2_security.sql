@@ -1,4 +1,4 @@
--- Read-only acceptance check AFTER 003; run as SQL Editor operator in staging.
+-- Read-only acceptance check AFTER 003; run as SQL Editor operator in the existing project.
 BEGIN READ ONLY;
 DO $$ DECLARE t text; f text; BEGIN
   FOREACH t IN ARRAY ARRAY['profiles','teams','campaigns','campaign_participants','opportunities','meetings','meeting_validations','contracts','audit_logs','competition_updates','user_functions','access_companies','client_assignments','partner_companies','access_invitations'] LOOP

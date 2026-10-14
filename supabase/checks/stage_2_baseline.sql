@@ -1,12 +1,9 @@
--- Read-only. Run before AND after 003 in the verified staging project.
+-- Read-only. Run before AND after the pending migrations in the existing project.
 -- Save results privately and compare: these business records must not change.
 BEGIN READ ONLY;
 DO $$ BEGIN
   IF to_regclass('public.profiles') IS NULL OR to_regclass('public.opportunity_scores') IS NULL THEN
-    RAISE EXCEPTION '001 ausente: este check exige um banco com 001 e 002';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='campaign_participants' AND column_name='removed_at') THEN
-    RAISE EXCEPTION '002 ausente: aplique-a antes da 003';
+    RAISE EXCEPTION '001 ausente: este check exige a estrutura original do Challenger';
   END IF;
 END $$;
 SELECT 'profiles' AS entity,count(*) AS records FROM profiles
@@ -18,7 +15,8 @@ UNION ALL SELECT 'validations',count(*) FROM meeting_validations
 UNION ALL SELECT 'contracts',count(*) FROM contracts;
 -- IDs and business fields/points are included in the digest, without exposing them.
 SELECT 'campaigns' AS entity,md5(coalesce(string_agg(to_jsonb(c)::text,'' ORDER BY id),'')) AS digest FROM campaigns c
-UNION ALL SELECT 'participants',md5(coalesce(string_agg(to_jsonb(p)::text,'' ORDER BY campaign_id,profile_id),'')) FROM campaign_participants p
+-- 001 memberships implicitly are active; normalize the additive 002 defaults.
+UNION ALL SELECT 'participants',md5(coalesce(string_agg(jsonb_build_object('campaign_id',campaign_id,'profile_id',profile_id,'team_id',team_id,'active',coalesce((to_jsonb(p)->>'active')::boolean,true),'removed_at',to_jsonb(p)->'removed_at','removed_by',to_jsonb(p)->'removed_by')::text,'' ORDER BY campaign_id,profile_id),'')) FROM campaign_participants p
 UNION ALL SELECT 'opportunities',md5(coalesce(string_agg(to_jsonb(o)::text,'' ORDER BY id),'')) FROM opportunities o
 UNION ALL SELECT 'meetings',md5(coalesce(string_agg(to_jsonb(m)::text,'' ORDER BY id),'')) FROM meetings m
 UNION ALL SELECT 'validations',md5(coalesce(string_agg(to_jsonb(v)::text,'' ORDER BY id),'')) FROM meeting_validations v

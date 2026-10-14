@@ -1,4 +1,4 @@
--- Apply once after 001 and 002, in staging first. No business records are deleted.
+-- Apply once after 001 and 002, with authorization and verified recovery. No business records are deleted.
 BEGIN;
 ALTER TABLE public.profiles DROP CONSTRAINT profiles_role_check;
 ALTER TABLE public.profiles ADD CONSTRAINT profiles_role_check CHECK(role IN ('admin','sdr','closer','member','partner'));

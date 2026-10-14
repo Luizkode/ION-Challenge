@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
-import { verifyPreviewDatabase } from "./lib/preview-database";
-verifyPreviewDatabase(process.env);
+import { verifySupabaseConfiguration } from "./lib/supabase-config";
+verifySupabaseConfiguration(process.env);
 const config: NextConfig = {
   poweredByHeader: false,
   async headers() {

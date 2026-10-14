@@ -1,5 +1,7 @@
 # ION OS — Etapa 2: usuários, funções e permissões
 
+A arquitetura vigente usa o Supabase, a aplicação Vercel, a autenticação e o repositório existentes. Não é obrigatório criar homologação separada. O procedimento de implantação e recuperação está em [DEPLOY_EXISTING_PLATFORM.md](DEPLOY_EXISTING_PLATFORM.md); ele substitui as exigências anteriores de outro projeto.
+
 ## Entrega
 
 O ION OS passa a distinguir Administrador, Colaborador e Parceiro. Colaboradores podem combinar SDR, Closer, Gestor de Tráfego, Designer, Editor de Vídeo e Copywriter. A categoria/funções são consultadas no banco a cada sessão/operação, sem confiar em campos do formulário ou cargos no JWT. Uma conta Auth desativada no perfil não mantém acesso aos dados protegidos, mesmo com token ainda válido.
@@ -16,12 +18,12 @@ A fórmula do Challenger, IDs Auth/profiles, oportunidades, reuniões, contratos
 
 Arquivo: `supabase/migrations/003_access_control.sql`.
 
-1. Use primeiro um projeto Supabase de homologação separado, sem dados/senhas de produção.
-2. Confirme que 001 e 002 já foram aplicadas. Em um projeto novo, aplique 001, depois 002 e então 003. Em um projeto existente, **não reaplique 001/002**.
-3. No SQL Editor, execute todo o arquivo 003 uma vez como operador autorizado. Ele usa `BEGIN`/`COMMIT`: falhas não devem ser tratadas executando trechos aleatórios. O arquivo não é idempotente.
+1. Use o projeto Supabase atual. Inspecione o schema com o inventário somente de leitura e confirme backup/recuperação antes de solicitar autorização de produção.
+2. A 003 depende da 002. A inspeção REST do projeto atual encontrou colunas da 002/003 ausentes; confirme o catálogo SQL. Aplique somente as migrations pendentes. **Não reaplique a 001 nem migrations já existentes.**
+3. Após autorização, use o release SQL preparado para a versão de origem confirmada. O gerador reúne 002/003 pendentes e checks numa única transação. Não execute trechos aleatórios; os arquivos não são idempotentes.
 4. Confira `profiles.category`, as funções migradas em `user_functions`, `access_companies`, `client_assignments`, `partner_companies` e `access_invitations`. Usuários legados SDR/closer mantêm suas funções e UUIDs. O bootstrap antigo continua compatível por trigger; não refaça bootstrap se já há admin.
 5. Faça backup/snapshot conforme o procedimento do projeto antes de qualquer aplicação definitiva. A migration não exclui tabelas comerciais ou usuários e não troca IDs.
-6. Disponibilize o código atualizado somente depois de preparar a homologação. O novo código depende da RPC `current_access`; sem 003 ele falha fechado, em vez de conceder acesso por fallback.
+6. Disponibilize o código atualizado no projeto Vercel atual depois de preparar o schema e obter autorização de produção. O novo código depende da RPC `current_access`; sem 003 ele falha fechado, em vez de conceder acesso por fallback.
 
 A 003 amplia a restrição de `profiles.role`, adiciona categoria e relações novas, protege todas com RLS e revoga escrita direta de `anon`/`authenticated`. Operações administrativas continuam por RPC com verificação do admin ativo, confirmação, justificativa e lock transacional. Os entry points antigos ficam privados para não contornar as novas verificações. Alterações de acesso e vínculos geram auditoria com autor, antes/depois, horário e justificativa.
 
@@ -37,19 +39,21 @@ Configure no **servidor** (na Vercel, por ambiente):
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: chave pública anon do mesmo projeto.
 - `SUPABASE_SERVICE_ROLE_KEY`: chave administrativa do mesmo projeto, em variável privada. **Nunca** criar `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` nem colocar chave em código/chat.
 - `ION_OS_APP_URL`: URL HTTPS da aplicação desse ambiente, sem credenciais. Ex.: a URL de Preview autorizada; para desenvolvimento local é aceito `http://localhost:3000`. Na Vercel, `VERCEL_URL` é alternativa automática se `ION_OS_APP_URL` não existir, mas uma URL estável por ambiente facilita o controle dos callbacks.
-- `ION_OS_PREVIEW_SUPABASE_PROJECT_REF`: obrigatório no ambiente **Preview**, com o identificador público do projeto separado de homologação. O build e as conexões no servidor/proxy falham se a URL não corresponder. JWTs anon legados também precisam corresponder ao ref. Chaves `sb_secret_`/service_role são rejeitadas na variável pública em qualquer ambiente. A trava confirma consistência da configuração, não identifica sozinha se o operador escolheu um projeto de produção: confirme o ref no painel antes de configurar.
+Não há Project Ref adicional obrigatório. `ION_OS_PREVIEW_SUPABASE_PROJECT_REF` não é mais lido. A validação protege a chave pública e a coerência URL/JWT, permitindo reutilizar o projeto atual tanto em Preview quanto em Production. Preview com esse banco compartilha dados; não executar a suíte automatizada ou testes de escrita contra ele sem autorização.
 
-Na homologação Supabase:
+No Supabase existente, após inspeção e autorização para eventuais mudanças:
 
-1. Em Authentication, desative signup público e mantenha o provedor Email.
-2. Em URL Configuration, cadastre o callback exato `https://DOMINIO_DO_AMBIENTE/auth/callback`. Não aponte um Preview para Site URL/credenciais de produção.
-3. Em Email Templates → Invite user, use o link `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=invite`. O servidor envia `RedirectTo` com `/auth/callback`; não use Site URL fixo de produção nos convites de homologação. Para recuperação pelo operador, use o tipo `recovery` correspondente.
-4. Configure SMTP autorizado para entrega real e respeite os limites do Supabase. O retorno do endpoint confirma aceitação do pedido, não entrega na caixa postal.
+1. Preserve o provedor Email. O diagnóstico atual mostrou signup público habilitado; desativá-lo para usar somente convites é uma alteração de configuração que deve ser aprovada.
+2. Preserve Site URL/domínio atual. Confira o callback exato `https://DOMINIO_ATUAL/auth/callback` e adicione apenas se necessário e autorizado.
+3. Em Email Templates → Invite user, use o link `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=invite`. O servidor envia `RedirectTo` com `/auth/callback`; o destino deve ser o endereço autorizado da mesma aplicação existente. Para recuperação pelo operador, use o tipo `recovery` correspondente.
+4. Reutilize o SMTP/envio existente se funcional e respeite os limites do Supabase; configure algo novo somente se necessário e autorizado. O retorno do endpoint confirma aceitação do pedido, não entrega na caixa postal.
 5. Entre como admin, cadastre uma empresa de teste e convide colaborador ou parceiro. Selecione funções/vínculos, justifique e confirme. A pessoa abre o link, estabelece sessão em `/account` e define sua senha.
 
 O pedido de convite e o vínculo são auditados. Email e PostgreSQL não formam uma transação distribuída: se o email for enviado mas a configuração de perfil falhar, o usuário não recebe permissões novas sem perfil ativo configurado. A tela informa a falha e o UUID para reparo; use o painel Supabase Auth para identificar a conta e o formulário “Vincular conta Auth já existente / concluir convite”. Nunca excluímos automaticamente uma conta Auth existente para compensar uma falha. O histórico mantém tentativas pendentes/falhas; não há reenvio automático para evitar duplicar emails. O histórico representa o resultado do fluxo original, inclusive quando a recuperação foi feita manualmente.
 
 ## Como testar
+
+Use PGlite/fixture local para escritas automatizadas. No banco central, execute os cenários com contas/destinatários e escopo de escrita aprovados, após verificar recuperação; não crie campanhas de teste ou altere resultados reais sem aprovação.
 
 1. Confirme o login do admin existente e a mesma campanha/ranking no Challenger.
 2. Crie empresas A e B. Convide produção (traffic ou designer) e atribua somente A. Confira dashboard próprio e a ausência de B. Acesse `/meetings/new`, `/validation`, `/admin`, `/team` e `/finance` por URL: o acesso deve ser bloqueado.
@@ -58,7 +62,7 @@ O pedido de convite e o vínculo são auditados. Email e PostgreSQL não formam 
 5. Desative uma conta mantendo a sessão antiga aberta: na próxima operação, os dados/RPCs devem estar bloqueados. A UI atualiza por refresh/polling; não se apaga conteúdo que já foi recebido antes da desativação.
 6. Teste retirada de SDR de campanha com histórico junto à troca de função: exige confirmação explícita e conserva registros. Falha em uma etapa desfaz a operação inteira.
 7. Tente desativar/rebaixar o último admin ativo: negado. O admin também não remove seu próprio acesso pela aplicação.
-8. Execute `npm test`, `npm run build`, `npm run typecheck` e `npm run test:browser`. As regras SQL são testadas em PostgreSQL PGlite, inclusive upgrade de banco preenchido; navegador usa Auth/REST exclusivo de teste. Entrega real de email/Auth/Realtime hospedado exige conferir o projeto de homologação após configurá-lo.
+8. Execute `npm test`, `npm run build`, `npm run typecheck` e `npm run test:browser`. As regras SQL são testadas em PostgreSQL PGlite, inclusive upgrade de banco preenchido; navegador usa Auth/REST exclusivo de teste. Entrega real de email/Auth/Realtime hospedado exige validar os serviços existentes, com autorização para eventuais escritas.
 
 ## Arquivos
 
@@ -75,37 +79,23 @@ A Etapa 2 não foi publicada nem aplicada ao Supabase de produção. Não há me
 
 ## Validação desta entrega
 
-- `npm test`: 60 testes aprovados após a auditoria, incluindo preservação de histórico preenchido e a trava de Preview.
+- `npm test`: 62 testes aprovados após a revisão, incluindo upgrades desde 001/002, rollback integral e recuperação local.
 - `npm run test:browser -- --max-failures=1`: 50 testes aprovados (desktop e celular), também com o build de produção local. O Playwright agora compila e inicia a aplicação antes da suíte, sem HMR. Um erro interno de roteador observado no cenário de falha simulada em desenvolvimento não se repetiu no build de produção.
 - `npm run build` e `npm run typecheck`: aprovados.
-- Testes SQL em PGlite e navegador com Auth/REST simulado isolado; nenhum teste de escrita em produção. Entrega real dos convites e integração hospedada permanecem para homologação.
+- Testes SQL em PGlite e navegador com Auth/REST simulado isolado; nenhum teste de escrita em produção. Entrega real dos convites e integração hospedada permanecem pendentes de acesso e autorização na infraestrutura existente.
 
-## Auditoria e aplicação assistida em homologação
+## Auditoria e implantação incremental no projeto atual
 
-A ordem é 001 → 002 → 003. A 001 só se aplica a um projeto novo: cria a campanha inicial e objetos e não deve ser reaplicada em um banco existente. Como ela não contém `BEGIN`/`COMMIT`, execute-a inteira dentro de uma transação explícita em projeto novo, evitando estado parcial caso uma instrução falhe. A 002 e a 003 já contêm suas próprias transações. A 002 acrescenta remoção lógica e torna privada a operação administrativa anterior. A 003 depende dessas colunas e renomeações; mantém `profiles.id`/FKs e os registros comerciais, migra funções antigas e torna privado o segundo ponto de entrada legado. Não há migration 004 nesta entrega nem necessidade de editar migrations já aplicadas.
+A ordem de dependências é 001 → 002 → 003. A 001 só pertence à criação original e não deve ser reaplicada em um banco existente. A 002 acrescenta remoção lógica e torna privada a operação administrativa anterior. A 003 depende dessas colunas e renomeações, mantém IDs/FKs e registros comerciais, migra funções e preserva os UUIDs Auth. Não há migration 004.
 
-A auditoria verificou RLS das relações, ACLs de funções/views, vínculo Auth/perfis, isolamento por empresa, acessos inativos, união de funções, último admin, transações e auditoria. A 003 também substitui a autorização legada de validação para negar explicitamente papéis nulos/inativos. O histórico bruto de auditoria e os valores de contratos permanecem restritos a admins. Segurança de futuras tabelas de CRM/serviços não é automaticamente herdada: elas precisarão das próprias políticas.
+A auditoria local verificou RLS, ACLs, vínculos Auth/perfis, isolamento por empresa, bloqueio de inativos, união de funções, último admin, transações e auditoria. O release único acrescenta verificação de origem e rollback integral, inclusive se os checks finais falharem. Os testes com snapshot/restauração local não certificam o backup real hospedado.
 
-Procedimento para o operador autorizado, **no projeto confirmado de homologação**:
+O catálogo e o backup do projeto atual ainda exigem inspeção autorizada. Siga [o plano de implantação e recuperação](DEPLOY_EXISTING_PLATFORM.md), incluindo a janela de atualização coordenada do schema e do código, sem outro Supabase ou aplicação Vercel. Não excluir tabelas/colunas como rollback nem restaurar a 001 por cima do banco.
 
-1. Confira o Project Ref e todas as variáveis Preview; faça snapshot antes da migration. Não basta que a URL contenha `supabase.co`.
-2. Em banco existente com 001/002, execute `supabase/checks/stage_2_baseline.sql` no SQL Editor e guarde o resultado privadamente. É somente leitura; inclui contagens e hashes dos registros comerciais, participantes e pontuação. Em projeto novo, aplique 001/002 antes desse check. Não importe usuários ou credenciais de produção.
-3. Execute a 003 inteira, uma vez. Reexecute o baseline imediatamente, antes de testes/escritas concorrentes: contagens e hashes devem ser iguais. `profiles.category` e `user_functions` são adições esperadas; alterações de perfis geram novos eventos de auditoria, por isso essa tabela não entra no hash.
-4. Execute `supabase/checks/stage_2_security.sql`: exige RLS, ausência de escrita direta para anon/authenticated, pontos de entrada privados, categorias/funções/vínculos coerentes e FKs validadas. Confira também que há administrador ativo. Esses checks de catálogo complementam, não substituem, testes com sessões reais.
-5. Configure Auth/SMTP/template/callback conforme acima. Use contas e caixas postais de teste sob seu controle. Teste aceite de convite → `/account` → definição de senha → logout/login com senha. Verifique refresh de sessão e expiração do link; não coloque tokens em evidências ou screenshots.
-6. Com duas empresas e sessões reais separadas, execute os oito cenários de “Como testar”, incluindo requisição REST com token do parceiro para a empresa não vinculada, RPC comercial com colaborador de produção e tentativa administrativa sem permissão. Acesso negado pode retornar erro de permissão ou lista vazia pela RLS; nunca dados de outro cliente.
-7. Desative e reative uma conta pelo admin, mantendo sua sessão antiga aberta. Confirme negação de dados enquanto inativa e permissões corretas após ativação. Teste alteração SDR + Closer + Tráfego e retirada de SDR da campanha com confirmação; guarde apenas resultados sanitizados da auditoria.
-8. Compare a campanha/ranking antes e depois da migration. Faça cadastros/validações somente na campanha de teste em homologação, verificando zero pontos no agendamento e substituição 1/3/7 após validação/contrato. Não use a campanha de produção como teste.
-9. Só marque a homologação como aprovada depois de registrar os resultados reais de Auth, entrega de email, RLS via REST, sessão e Challenger. Sem acesso ao projeto/contas/SMTP, esses itens permanecem pendentes, mesmo com build e testes locais aprovados.
+## Estado externo da finalização
 
-Se a aplicação precisar ser revertida, não exclua tabelas/colunas nem restaure 001/002 por cima do banco. A recuperação deve ser planejada com snapshot e código compatível; não há rollback destrutivo automático.
+O PR consolidado é https://github.com/Luizkode/ION-Challenge/pull/3. A fundação da Etapa 1 já está incluída nessa branch; não é necessário reconstruir a aplicação nem manter outro fluxo independente.
 
-## Estado externo da finalização — 14/10/2026
+As tentativas anteriores de Preview falharam, e o acesso a logs retornou HTTP 403 sem credencial de gestão. A exigência de Supabase separado foi removida; consulte o status atual no PR. Build bem-sucedido não confirma funcionamento das páginas privadas enquanto `current_access()` estiver ausente do banco atual.
 
-- Branch enviada: `feat/ion-os-access-control`. PR draft: https://github.com/Luizkode/ION-Challenge/pull/3. Contém a fundação do PR #2 e o main remoto `5f7ecbb`; não houve merge, force push ou alteração de Production.
-- Commits de implementação/auditoria: `3bdf2b2` e `839741d`.
-- A integração Vercel disparou o Preview de `839741d`, mas retornou **failure**. Painel: https://vercel.com/ion-challenge/ion-challenge/5Mph9DFZQeaWkhyxZbfh8S8qWDCi. Não é uma versão de teste aprovada. O endpoint de logs retornou HTTP 403 sem credencial Vercel; a causa do build remoto não foi confirmada. Não atribua a falha a uma variável específica sem ler os logs.
-- O acesso anônimo à URL desse Preview redirecionou para `vercel.com/login` (Deployment Protection). O HTTP 200 final era a tela da Vercel, não a aplicação. Para testes automatizados hospedados, será necessário acesso autorizado/bypass do Preview além das contas Supabase de teste; não desative a proteção para contornar esse bloqueio.
-- O ambiente cloud só disponibilizou as variáveis públicas do Supabase, sem confirmação do Project Ref de homologação, chave administrativa, acesso de gestão Supabase/Vercel ou contas/caixas postais de teste. Não foi aplicada migration hospedada, alterado Auth/SMTP ou realizado teste de escrita externo.
-- Para prosseguir: confirmar o Project Ref de homologação; conceder acesso de gestão somente ao ambiente autorizado (ou executar o roteiro SQL/variáveis no painel); configurar credenciais de servidor no Preview; corrigir a causa apontada nos logs; executar Redeploy **do Preview**; concluir o roteiro de aceite real com contas/caixas postais de teste. Não fornecer chaves/senhas pelo chat.
-- Requisitos de gestão foram registrados nas configurações seguras do ambiente (`SUPABASE_ACCESS_TOKEN` para `api.supabase.com`, `VERCEL_TOKEN` para `api.vercel.com`); nenhum valor foi salvo no repositório. Esses tokens não substituem as variáveis de runtime na Vercel. Credenciais e permissões devem ter o menor escopo disponível.
+A inspeção pública somente de leitura identificou a estrutura original e ausência de objetos da 002/003 na API, além de signup público habilitado. Não houve escrita remota, alteração de Auth/SMTP, migration de produção ou merge. Credenciais de gestão ainda não estão disponíveis no ambiente. O catálogo e a recuperação devem ser confirmados antes de pedir a liberação da atualização de produção.
