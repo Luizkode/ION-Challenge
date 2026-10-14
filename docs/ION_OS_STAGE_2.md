@@ -76,13 +76,13 @@ A Etapa 2 não foi publicada nem aplicada ao Supabase de produção. Não há me
 ## Validação desta entrega
 
 - `npm test`: 60 testes aprovados após a auditoria, incluindo preservação de histórico preenchido e a trava de Preview.
-- `npm run test:browser -- --max-failures=1`: 50 testes aprovados (desktop e celular).
+- `npm run test:browser -- --max-failures=1`: 50 testes aprovados (desktop e celular), também com o build de produção local. O Playwright agora compila e inicia a aplicação antes da suíte, sem HMR. Um erro interno de roteador observado no cenário de falha simulada em desenvolvimento não se repetiu no build de produção.
 - `npm run build` e `npm run typecheck`: aprovados.
 - Testes SQL em PGlite e navegador com Auth/REST simulado isolado; nenhum teste de escrita em produção. Entrega real dos convites e integração hospedada permanecem para homologação.
 
 ## Auditoria e aplicação assistida em homologação
 
-A ordem é 001 → 002 → 003. A 001 só se aplica a um projeto novo: cria a campanha inicial e objetos e não deve ser reaplicada em um banco existente. A 002 acrescenta remoção lógica e torna privada a operação administrativa anterior. A 003 depende dessas colunas e renomeações; mantém `profiles.id`/FKs e os registros comerciais, migra funções antigas e torna privado o segundo ponto de entrada legado. Não há migration 004 nesta entrega nem necessidade de editar migrations já aplicadas.
+A ordem é 001 → 002 → 003. A 001 só se aplica a um projeto novo: cria a campanha inicial e objetos e não deve ser reaplicada em um banco existente. Como ela não contém `BEGIN`/`COMMIT`, execute-a inteira dentro de uma transação explícita em projeto novo, evitando estado parcial caso uma instrução falhe. A 002 e a 003 já contêm suas próprias transações. A 002 acrescenta remoção lógica e torna privada a operação administrativa anterior. A 003 depende dessas colunas e renomeações; mantém `profiles.id`/FKs e os registros comerciais, migra funções antigas e torna privado o segundo ponto de entrada legado. Não há migration 004 nesta entrega nem necessidade de editar migrations já aplicadas.
 
 A auditoria verificou RLS das relações, ACLs de funções/views, vínculo Auth/perfis, isolamento por empresa, acessos inativos, união de funções, último admin, transações e auditoria. A 003 também substitui a autorização legada de validação para negar explicitamente papéis nulos/inativos. O histórico bruto de auditoria e os valores de contratos permanecem restritos a admins. Segurança de futuras tabelas de CRM/serviços não é automaticamente herdada: elas precisarão das próprias políticas.
 
@@ -99,3 +99,13 @@ Procedimento para o operador autorizado, **no projeto confirmado de homologaçã
 9. Só marque a homologação como aprovada depois de registrar os resultados reais de Auth, entrega de email, RLS via REST, sessão e Challenger. Sem acesso ao projeto/contas/SMTP, esses itens permanecem pendentes, mesmo com build e testes locais aprovados.
 
 Se a aplicação precisar ser revertida, não exclua tabelas/colunas nem restaure 001/002 por cima do banco. A recuperação deve ser planejada com snapshot e código compatível; não há rollback destrutivo automático.
+
+## Estado externo da finalização — 14/10/2026
+
+- Branch enviada: `feat/ion-os-access-control`. PR draft: https://github.com/Luizkode/ION-Challenge/pull/3. Contém a fundação do PR #2 e o main remoto `5f7ecbb`; não houve merge, force push ou alteração de Production.
+- Commits de implementação/auditoria: `3bdf2b2` e `839741d`.
+- A integração Vercel disparou o Preview de `839741d`, mas retornou **failure**. Painel: https://vercel.com/ion-challenge/ion-challenge/5Mph9DFZQeaWkhyxZbfh8S8qWDCi. Não é uma versão de teste aprovada. O endpoint de logs retornou HTTP 403 sem credencial Vercel; a causa do build remoto não foi confirmada. Não atribua a falha a uma variável específica sem ler os logs.
+- O acesso anônimo à URL desse Preview redirecionou para `vercel.com/login` (Deployment Protection). O HTTP 200 final era a tela da Vercel, não a aplicação. Para testes automatizados hospedados, será necessário acesso autorizado/bypass do Preview além das contas Supabase de teste; não desative a proteção para contornar esse bloqueio.
+- O ambiente cloud só disponibilizou as variáveis públicas do Supabase, sem confirmação do Project Ref de homologação, chave administrativa, acesso de gestão Supabase/Vercel ou contas/caixas postais de teste. Não foi aplicada migration hospedada, alterado Auth/SMTP ou realizado teste de escrita externo.
+- Para prosseguir: confirmar o Project Ref de homologação; conceder acesso de gestão somente ao ambiente autorizado (ou executar o roteiro SQL/variáveis no painel); configurar credenciais de servidor no Preview; corrigir a causa apontada nos logs; executar Redeploy **do Preview**; concluir o roteiro de aceite real com contas/caixas postais de teste. Não fornecer chaves/senhas pelo chat.
+- Requisitos de gestão foram registrados nas configurações seguras do ambiente (`SUPABASE_ACCESS_TOKEN` para `api.supabase.com`, `VERCEL_TOKEN` para `api.vercel.com`); nenhum valor foi salvo no repositório. Esses tokens não substituem as variáveis de runtime na Vercel. Credenciais e permissões devem ter o menor escopo disponível.

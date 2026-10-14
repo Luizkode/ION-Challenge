@@ -104,13 +104,13 @@ O script se recusa a executar se houver admin existente. Cria um usuário confir
 
 ## Vercel: publicação
 
-1. Envie o código para o repositório `Luizkode/ION-Challenge` pelo fluxo normal de commit/PR. Nenhum push ou deployment foi feito automaticamente.
+1. Use uma branch de trabalho e Pull Request para `Luizkode/ION-Challenge`. Consulte o PR e o status da Vercel para confirmar o commit efetivamente implantado; push não comprova que o Preview está funcional.
 2. Na Vercel, **Add New → Project**, importe o repositório e escolha o preset **Next.js**. Raiz do projeto: raiz do repositório. Use Node.js 24, instalação `npm ci` e build `npm run build`.
-3. No ambiente autorizado, cadastre `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Para os convites da Etapa 2, cadastre também `SUPABASE_SERVICE_ROLE_KEY` como variável privada do servidor e `ION_OS_APP_URL`. Preview deve usar exclusivamente homologação. Não cadastre variáveis de bootstrap nem publique/configure Production sem autorização.
+3. No ambiente autorizado, cadastre `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Para os convites da Etapa 2, cadastre também `SUPABASE_SERVICE_ROLE_KEY` como variável privada do servidor e `ION_OS_APP_URL`. Preview exige `ION_OS_PREVIEW_SUPABASE_PROJECT_REF` e deve usar exclusivamente homologação. Não cadastre variáveis de bootstrap nem publique/configure Production sem autorização.
 4. Faça deploy. Configure o domínio final, atualize Site URL e callback do Supabase e confirme acesso por HTTPS.
 5. Valide login, cadastro, validação, contrato, invalidação, rankings e atualização entre sessões no domínio final. Restrinja URLs de preview e redirects de acordo com sua política.
 
-Vercel Hobby tem restrições de uso comercial. Como esta é uma ferramenta interna de uma agência, confirme os termos e elegibilidade antes de escolhê-lo: não é possível prometer hospedagem comercial gratuita na Vercel. O projeto não depende de recursos pagos; outro host compatível com Next.js pode ser utilizado. A aplicação está preparada para implantação, mas não foi publicada.
+Vercel Hobby tem restrições de uso comercial. Como esta é uma ferramenta interna de uma agência, confirme os termos e elegibilidade antes de escolhê-lo: não é possível prometer hospedagem comercial gratuita na Vercel. O projeto não depende de recursos pagos; outro host compatível com Next.js pode ser utilizado. A publicação depende da configuração e autorização por ambiente; esta etapa não autoriza publicação em produção.
 
 ## Segurança antes do uso real
 

@@ -29,7 +29,8 @@ export default defineConfig({
       reuseExistingServer: false,
     },
     {
-      command: "npm run dev -- --webpack --port 3100",
+      // Exercise the compiled application, including hydration and Server Actions.
+      command: "npm run build && npm run start -- --port 3100",
       url: "http://localhost:3100/login",
       reuseExistingServer: false,
       timeout: 120000,
