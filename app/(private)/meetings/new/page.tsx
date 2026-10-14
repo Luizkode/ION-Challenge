@@ -34,6 +34,7 @@ export default async function NewMeeting({
           .select("team_id")
           .eq("campaign_id", campaign.id)
           .eq("profile_id", profile.id)
+          .eq("active", true)
           .maybeSingle(),
         db
           .from("opportunities")

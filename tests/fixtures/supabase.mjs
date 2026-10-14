@@ -3,14 +3,39 @@ import { createServer } from "node:http";
 const ids = {
   sdr: "10000000-0000-0000-0000-000000000001",
   closer: "10000000-0000-0000-0000-000000000002",
+  admin: "10000000-0000-0000-0000-000000000003",
 };
-let state = { mode: "active", meetings: [], requests: [] };
+const campaignId = "30000000-0000-0000-0000-000000000001";
+const teamId = "40000000-0000-0000-0000-000000000001";
+function initialState(mode = "active") {
+  return {
+    mode,
+    meetings: [],
+    requests: [],
+    participants: [
+      {
+        campaign_id: campaignId,
+        profile_id: ids.sdr,
+        team_id: teamId,
+        active: true,
+        profiles: { name: "SDR de teste" },
+        teams: { name: "Time original" },
+      },
+    ],
+  };
+}
+let state = initialState();
 const profiles = Object.fromEntries(
   Object.entries(ids).map(([role, id]) => [
     id,
     {
       id,
-      name: role === "sdr" ? "SDR de teste" : "Closer de teste",
+      name:
+        role === "sdr"
+          ? "SDR de teste"
+          : role === "admin"
+            ? "Administrador de teste"
+            : "Closer de teste",
       role,
       active: true,
     },
@@ -21,7 +46,7 @@ function user(id) {
     id,
     aud: "authenticated",
     role: "authenticated",
-    email: (id === ids.sdr ? "sdr" : "closer") + "@ion.test",
+    email: Object.keys(ids).find((role) => ids[role] === id) + "@ion.test",
     app_metadata: { provider: "email", providers: ["email"] },
     user_metadata: {},
     created_at: new Date().toISOString(),
@@ -71,12 +96,14 @@ createServer(async (req, res) => {
   };
   if (req.method === "OPTIONS") return send({});
   if (url.pathname === "/__test/state") {
-    if (req.method === "POST")
-      state = { mode: body.mode ?? "active", meetings: [], requests: [] };
+    if (req.method === "POST") {
+      state = initialState(body.mode ?? "active");
+      profiles[ids.sdr].role = "sdr";
+    }
     return send(state);
   }
   if (url.pathname === "/auth/v1/token") {
-    const id = body.email === "closer@ion.test" ? ids.closer : ids.sdr;
+    const id = ids[body.email.split("@")[0]] ?? ids.sdr;
     return send({
       access_token: token(id),
       refresh_token: "test-only-refresh",
@@ -92,9 +119,21 @@ createServer(async (req, res) => {
   const table = url.pathname.split("/").at(-1);
   if (table === "dashboard")
     return send({
-      individual: [],
+      individual: state.participants
+        .filter((p) => p.active)
+        .map((p) => ({
+          id: p.profile_id,
+          name: profiles[p.profile_id].name,
+          team: "Time original",
+          points: state.mode.startsWith("admin") ? 7 : 0,
+          held: 1,
+          qualified: 1,
+          contracts: 1,
+          position: 1,
+          active: true,
+        })),
       teams: [],
-      held: 0,
+      held: state.mode.startsWith("admin") ? 1 : 0,
       qualified: 0,
       contracts: 0,
       active_sdrs: 1,
@@ -114,7 +153,9 @@ createServer(async (req, res) => {
         ? state.mode === "no_closer"
           ? []
           : [profiles[ids.closer]]
-        : [profiles[id]],
+        : url.searchParams.has("id")
+          ? [profiles[url.searchParams.get("id").replace("eq.", "")]]
+          : Object.values(profiles),
     );
   }
   const campaign = {
@@ -131,12 +172,56 @@ createServer(async (req, res) => {
   };
   if (table === "campaigns")
     return rows(state.mode === "draft" ? [] : [campaign]);
+  if (table === "teams") return rows([{ id: teamId, name: "Time original" }]);
   if (table === "campaign_participants")
     return rows(
       state.mode === "no_team"
         ? []
-        : [{ team_id: "40000000-0000-0000-0000-000000000001" }],
+        : state.participants.filter(
+            (p) =>
+              (!url.searchParams.has("profile_id") ||
+                p.profile_id ===
+                  url.searchParams.get("profile_id").replace("eq.", "")) &&
+              (!url.searchParams.has("active") || p.active),
+          ),
     );
+  if (table === "admin_operation") {
+    state.requests.push(body);
+    if (profiles[id].role !== "admin")
+      return send(
+        { message: "Acesso restrito ao administrador", code: "P0001" },
+        400,
+      );
+    if (state.mode === "admin_error")
+      return send(
+        {
+          message: "Falha administrativa de teste; nenhuma alteração aplicada",
+          code: "P0001",
+        },
+        400,
+      );
+    const data = body.data;
+    if (body.operation === "participant") {
+      const p = state.participants.find(
+        (p) => p.profile_id === data.profile_id,
+      );
+      if (data.remove === "true") p.active = false;
+      else if (p) p.active = true;
+    }
+    if (body.operation === "profile") {
+      if (data.remove_from_campaign === "true")
+        state.participants
+          .filter((p) => p.profile_id === data.id)
+          .forEach((p) => (p.active = false));
+      profiles[data.id] = {
+        ...profiles[data.id],
+        role: data.role,
+        name: data.name,
+        active: data.active === "true",
+      };
+    }
+    return send(null);
+  }
   if (table === "meetings")
     return rows(
       state.meetings.filter((m) => id === ids.sdr || m.closer_id === id),

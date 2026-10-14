@@ -1,4 +1,6 @@
-# ION Challenge
+# ION OS — Agência ION
+
+A Etapa 1 transforma a entrada do projeto em **ION OS — Agency Operating System**. O Challenger permanece em `/challenger`, com reuniões, regras e administração existentes. Consulte [o diagnóstico técnico, plano de evolução, arquivos e validação da Etapa 1](docs/ION_OS_STAGE_1.md). Os demais módulos ainda têm páginas informativas; clientes, serviços, financeiro, múltiplas funções e portal de parceiros serão implementados nas próximas etapas. Não há migration nova para a Etapa 1.
 
 Aplicação interna da Agência ION: Next.js App Router, React, TypeScript, Tailwind, Lucide e Supabase (Auth + PostgreSQL + RLS + Realtime). Não utiliza localStorage como backend nem dados demonstrativos. Sem Supabase configurado, apresenta a tela de integração pendente e impede operações.
 
@@ -14,7 +16,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-`npm test` executa a migration real em PostgreSQL via PGlite e testa funções SQL com as roles `authenticated`/`anon` e identidades de teste. `npm run build` compila e verifica tipos. `npm run typecheck` verifica os tipos separadamente. Os testes não substituem validação de Supabase Auth, Realtime e entrega de emails em um projeto real.
+`npm test` executa as migrations reais em PostgreSQL via PGlite e testa funções SQL com as roles `authenticated`/`anon` e identidades de teste. `npm run build` compila e verifica tipos. `npm run typecheck` verifica os tipos separadamente. Os testes não substituem validação de Supabase Auth, Realtime e entrega de emails em um projeto real.
 
 ## Testar o cadastro no navegador
 
@@ -40,7 +42,25 @@ Essa suíte usa um servidor Supabase **exclusivo de testes**, sem acessar o proj
 
 Cada oportunidade vale **0, 1, 3 ou 7**, nunca 11. Múltiplas reuniões da mesma oportunidade contam uma única vez. Uma reunião qualificada também conta como realizada. Contrato só pontua enquanto a reunião vinculada continua válida. Ao anulá-lo, o total volta ao resultado da reunião. O telefone duplicado não é descartado: o SDR pode reutilizar sua oportunidade; um admin pode autorizar outra oportunidade legítima com justificativa. Se o telefone estiver em oportunidade de outro SDR, é necessária revisão administrativa, sem expor o contato daquele SDR.
 
-Pontos não são armazenados em tabela editável: são calculados por views privadas e RPC. O time do participante fica congelado depois de sua primeira oportunidade, preservando resultados por equipe. Usuários desativados mantêm seu histórico e pontos; desativar não apaga resultados oficiais. Uma campanha ativa encerra o recebimento de novas reuniões no fim do período; validações e correções continuam até a conferência final. Campanhas finalizadas ficam congeladas e permitem criar a próxima campanha.
+Pontos não são armazenados em tabela editável: são calculados por views privadas e RPC. O time original fica preservado após a primeira oportunidade. A participação pode ser removida sem apagar resultados e reincluída no mesmo time, com seus resultados anteriores voltando ao ranking. Usuários desativados mantêm seu histórico e pontos; desativar não apaga resultados oficiais. Uma campanha ativa encerra o recebimento de novas reuniões no fim do período; validações e correções continuam até a conferência final. Campanhas finalizadas ficam congeladas e permitem criar a próxima campanha.
+
+## Gerenciar participantes e perfis (migration 002)
+
+Aplique `supabase/migrations/002_participant_management.sql` **uma única vez depois da 001**, no SQL Editor do projeto correto. Em um projeto que já tem a V1, execute somente a 002; não reaplique a 001. Em um projeto novo, execute 001 e depois 002. A 002 usa `BEGIN`/`COMMIT`: em caso de erro, não aceite uma instalação parcial nem repita comandos isolados; revise a mensagem antes de tentar novamente. Ela não apaga reuniões, oportunidades, contratos ou vínculos históricos.
+
+A migration adiciona `active`, `removed_at` e `removed_by` aos vínculos da campanha, atualiza a RPC administrativa, filtra os dois rankings pelos vínculos ativos e impede novos cadastros de reunião por participantes removidos. A RPC anterior fica privada, sem acesso por `anon`/`authenticated`, para preservar as demais operações. As políticas RLS e a fórmula 0/1/3/7 permanecem. Mudanças de participação e perfil publicam atualizações no feed Realtime existente, sem dados pessoais; o polling continua como alternativa.
+
+Em **Administração → Colaboradores**, use as ações da linha da pessoa:
+
+- **Remover da campanha**: informe a justificativa, marque a confirmação e confirme o diálogo. Funciona mesmo com reuniões/contratos e conta inativa. A pessoa e seus pontos saem dos rankings individual e de equipes. O histórico permanece e as reuniões válidas continuam contribuindo para a meta coletiva, conforme a regra da campanha.
+- **Alterar perfil**: selecione o novo cargo. Para mudar um participante ativo de SDR para Administrador, marque **Remover da campanha durante a alteração de perfil**. Confirme a operação e o diálogo: remoção e mudança de perfil são uma única transação. Se qualquer etapa falhar, ambas são desfeitas.
+- **Adicionar à campanha**: disponível para SDR ativo fora da campanha. Selecione o time; com histórico, mantenha o time original. A reinclusão restaura seus resultados da campanha no ranking e respeita o limite de cinco integrantes ativos.
+
+Campanhas finalizadas não aceitam remoção ou reinclusão. Seus vínculos históricos não impedem uma troca de cargo. Mudar de Administrador para SDR não cria participação automaticamente. O administrador não pode remover seu próprio acesso administrativo. Permissões usam o perfil do banco nas próximas operações, sem depender de cargo no JWT; as telas também se atualizam pelo feed/polling.
+
+Teste com dois usuários e uma oportunidade qualificada com contrato: confira os 7 pontos; cancele a confirmação de remoção e verifique que nada mudou; confirme a remoção e confira ausência nos rankings, preservação de registros e auditoria; reinclua no mesmo time e confira os 7 pontos novamente. Depois, faça a troca SDR → Administrador com remoção marcada e confirme acesso administrativo na conta alterada. Volte para SDR, confira a perda de acesso administrativo e reinclua explicitamente se desejado. Execute `npm test` e `npm run test:browser` para os cenários automatizados, incluindo rollback, confirmação, segurança e desktop/celular.
+
+Nenhuma variável nova é necessária. A migration foi validada localmente; sua aplicação no Supabase real e uma eventual implantação da versão atualizada dependem do operador. Não faça merge/publicação automaticamente como parte dessa melhoria.
 
 ## Variáveis
 
@@ -57,7 +77,7 @@ As duas primeiras são necessárias para operar. As três últimas são temporá
 ## Supabase: configuração exata
 
 1. Crie um projeto no plano gratuito do Supabase. Escolha região próxima da equipe e guarde a senha do banco em local seguro.
-2. Abra **SQL Editor**, cole todo o arquivo `supabase/migrations/001_ion.sql` e execute uma vez em um projeto novo. A migration cria tabelas, políticas, funções, gatilhos e a campanha inicial. Não é idempotente: não reaplique inteira em um banco já migrado. Não deve ser aplicada sobre dados existentes sem revisão/migration separada.
+2. Abra **SQL Editor**, cole todo o arquivo `supabase/migrations/001_ion.sql` e execute uma vez em um projeto novo. A migration 001 cria tabelas, políticas, funções, gatilhos e a campanha inicial. Em seguida, aplique a 002 para habilitar o gerenciamento atualizado de participantes. Não é idempotente: não reaplique inteira em um banco já migrado. Não deve ser aplicada sobre dados existentes sem revisão/migration separada.
 3. Em **Project Settings → API / API Keys**, obtenha a URL e a chave pública anon legada compatível com o cliente. Preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` no ambiente local e na Vercel.
 4. Em **Authentication → Providers → Email**, mantenha login por email e desabilite novos cadastros públicos. Não há registro público na aplicação.
 5. Em **Authentication → URL Configuration**, defina Site URL para o domínio HTTPS final. Cadastre os redirect URLs exatos: `https://SEU_DOMINIO/auth/callback` e o callback local de desenvolvimento quando necessário. Evite wildcards de produção. Configure SMTP próprio se necessário para entrega confiável de convites; o serviço padrão possui limites.

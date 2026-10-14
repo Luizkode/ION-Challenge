@@ -75,5 +75,15 @@ export async function adminOperation(form: FormData) {
   const { error } = await db.rpc("admin_operation", { operation, data });
   if (error) jump("/admin", error.message);
   revalidatePath("/", "layout");
-  jump("/admin", "Alteração salva e auditada.", "success");
+  const message =
+    operation === "participant"
+      ? data.remove === "true"
+        ? "Participante removido da campanha e dos rankings. Histórico preservado."
+        : "Participante adicionado à campanha. Rankings atualizados."
+      : operation === "profile"
+        ? data.remove_from_campaign === "true"
+          ? "Perfil atualizado e participação removida na mesma operação. Histórico preservado."
+          : "Perfil atualizado. Permissões aplicadas às próximas operações."
+        : "Alteração salva e auditada.";
+  jump("/admin", message, "success");
 }
