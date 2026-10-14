@@ -1,3 +1,4 @@
+import { hasFunction } from "@/lib/access";
 import Link from "next/link";
 import { session } from "@/lib/session";
 import { logout } from "@/app/actions";
@@ -18,12 +19,18 @@ export default async function Layout({
           ION<span> / OS</span>
         </Link>
         <p className="eyebrow nav-label">AGENCY OPERATING SYSTEM</p>
-        <OSNavigation role={profile.role} />
+        <OSNavigation profile={profile} />
         <div className="sidebar-bottom">
           <span className="avatar">{profile.name.slice(0, 1)}</span>
           <div>
             <strong>{profile.name}</strong>
-            <small>{profile.role.toUpperCase()}</small>
+            <small>
+              {profile.category === "admin"
+                ? "ADMINISTRADOR"
+                : profile.category === "partner"
+                  ? "PARCEIRO"
+                  : "COLABORADOR"}
+            </small>
           </div>
           <form action={logout}>
             <button className="icon-button" aria-label="Sair">
@@ -38,12 +45,12 @@ export default async function Layout({
           <Live />
           <Link
             className="profile-link muted small"
-            href="/history"
+            href="/account"
             title={profile.name}
           >
             {profile.name}
           </Link>
-          {profile.role === "sdr" && (
+          {hasFunction(profile, "sdr") && (
             <Link href="/meetings/new" className="button">
               + Nova reunião <ArrowUpRight size={16} />
             </Link>

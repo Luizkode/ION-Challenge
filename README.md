@@ -4,6 +4,10 @@ A Etapa 1 transforma a entrada do projeto em **ION OS — Agency Operating Syste
 
 Aplicação interna da Agência ION: Next.js App Router, React, TypeScript, Tailwind, Lucide e Supabase (Auth + PostgreSQL + RLS + Realtime). Não utiliza localStorage como backend nem dados demonstrativos. Sem Supabase configurado, apresenta a tela de integração pendente e impede operações.
 
+## Etapa 2 — Gestão de acessos
+
+A implementação de categorias, funções múltiplas, convites e vínculos está em [ION_OS_STAGE_2.md](docs/ION_OS_STAGE_2.md). Requer a migration incremental **003**, após 001/002, e configuração privada de convites no servidor. `/team` é a gestão funcional de usuários; parceiros entram no portal de consulta `/partners`. Não aplique migrations em produção nem publique sem autorização. O diagnóstico da Etapa 1 é histórico; o documento da Etapa 2 descreve o comportamento atual das permissões.
+
 ## Desenvolvimento
 
 Node.js 24 LTS e npm 11. Use o checkout existente: tarefas cloud já são isoladas; não crie worktrees.
@@ -64,26 +68,27 @@ Nenhuma variável nova é necessária. A migration foi validada localmente; sua 
 
 ## Variáveis
 
-| Variável                        | Uso                                                                              |
-| ------------------------------- | -------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | URL HTTPS do projeto Supabase                                                    |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave pública anon; autorização depende de Auth e RLS                            |
-| `SUPABASE_SERVICE_ROLE_KEY`     | Somente bootstrap local autorizado; nunca no frontend ou com prefixo NEXT_PUBLIC |
-| `BOOTSTRAP_ADMIN_EMAIL`         | Somente bootstrap local                                                          |
-| `BOOTSTRAP_ADMIN_PASSWORD`      | Somente bootstrap local; mínimo 12 caracteres                                    |
+| Variável                        | Uso                                                                                 |
+| ------------------------------- | ----------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | URL HTTPS do projeto Supabase                                                       |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave pública anon; autorização depende de Auth e RLS                               |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Bootstrap e convites Auth no servidor; nunca no frontend ou com prefixo NEXT_PUBLIC |
+| `ION_OS_APP_URL`                | URL/callback da aplicação por ambiente; necessária aos convites fora da Vercel      |
+| `BOOTSTRAP_ADMIN_EMAIL`         | Somente bootstrap local                                                             |
+| `BOOTSTRAP_ADMIN_PASSWORD`      | Somente bootstrap local; mínimo 12 caracteres                                       |
 
-As duas primeiras são necessárias para operar. As três últimas são temporárias e não são necessárias no runtime da Vercel. Nunca envie valores de credenciais por chat nem faça commit de `.env.local`.
+As duas primeiras são necessárias para operar. BOOTSTRAP_ADMIN_EMAIL e BOOTSTRAP_ADMIN_PASSWORD são temporárias. Na Etapa 2, SUPABASE_SERVICE_ROLE_KEY também é usada exclusivamente no servidor para convites; nunca no frontend. Consulte a configuração de convites no documento da Etapa 2. Nunca envie valores de credenciais por chat nem faça commit de `.env.local`.
 
 ## Supabase: configuração exata
 
 1. Crie um projeto no plano gratuito do Supabase. Escolha região próxima da equipe e guarde a senha do banco em local seguro.
-2. Abra **SQL Editor**, cole todo o arquivo `supabase/migrations/001_ion.sql` e execute uma vez em um projeto novo. A migration 001 cria tabelas, políticas, funções, gatilhos e a campanha inicial. Em seguida, aplique a 002 para habilitar o gerenciamento atualizado de participantes. Não é idempotente: não reaplique inteira em um banco já migrado. Não deve ser aplicada sobre dados existentes sem revisão/migration separada.
+2. Abra **SQL Editor**, cole todo o arquivo `supabase/migrations/001_ion.sql` e execute uma vez em um projeto novo. A migration 001 cria tabelas, políticas, funções, gatilhos e a campanha inicial. Em seguida, aplique 002 e 003, em ordem, para habilitar participantes e as categorias/funções do ION OS. Não é idempotente: não reaplique inteira em um banco já migrado. Não deve ser aplicada sobre dados existentes sem revisão/migration separada.
 3. Em **Project Settings → API / API Keys**, obtenha a URL e a chave pública anon legada compatível com o cliente. Preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` no ambiente local e na Vercel.
 4. Em **Authentication → Providers → Email**, mantenha login por email e desabilite novos cadastros públicos. Não há registro público na aplicação.
 5. Em **Authentication → URL Configuration**, defina Site URL para o domínio HTTPS final. Cadastre os redirect URLs exatos: `https://SEU_DOMINIO/auth/callback` e o callback local de desenvolvimento quando necessário. Evite wildcards de produção. Configure SMTP próprio se necessário para entrega confiável de convites; o serviço padrão possui limites.
 6. Confirme em **Database → Publications** que `supabase_realtime` contém `campaigns` e `competition_updates`. A migration adiciona essas tabelas se a publicação existe. Não publique oportunidades, reuniões, contratos ou auditoria: contêm informações restritas. O feed público inclui somente ID da campanha e instante de atualização.
 7. Execute o bootstrap abaixo uma única vez em máquina autorizada. Alternativa manual segura: crie o usuário em **Authentication → Users → Add user**, copie o UUID e insira o primeiro perfil pelo SQL Editor administrativo: `insert into public.profiles(id,name,role) values ('UUID_DO_USUARIO','Seu nome','admin');`. Não crie endpoint público de bootstrap.
-8. Faça login como admin. Em Administração, crie os times e os perfis dos colaboradores. Para cada colaborador, primeiro use **Authentication → Users → Invite user**, depois copie seu UUID e cadastre o perfil (SDR/closer/admin) no painel. Em **Authentication → Email Templates → Invite user**, use no link do convite `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=invite` (para recuperação pelo operador, a template usa `type=recovery`). Isso troca o token no servidor por uma sessão segura. O convite deve usar o callback configurado; em Meu perfil o usuário define sua senha. A aplicação não usa service role para convidar contas pelo frontend.
+8. Faça login como admin e abra **Equipe**. Cadastre empresas mínimas para vínculos e convide colaboradores/parceiros com as funções e empresas apropriadas. Configure no servidor a chave privada de Auth e `ION_OS_APP_URL` conforme [Etapa 2](docs/ION_OS_STAGE_2.md). Em **Authentication → Email Templates → Invite user**, use `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=invite`; a aplicação fornece o callback correto do ambiente. A pessoa define sua senha em Minha conta. Para contas Auth já existentes, use o formulário de vínculo por UUID. A service role é utilizada somente no servidor, nunca pelo frontend.
 9. Vincule os SDRs aos times (até cinco por time). Cadastre closers ativos. Configure a data oficial da campanha e revise meta/pesos/duração, depois selecione ativar. A campanha não inicia antes da data configurada.
 10. Valide no projeto real com três contas: SDR cria uma reunião, closer atribuído valida, admin confirma contrato. Confira total 0 → 1 → 3 → 7 e meta contada só uma vez. Confirme Realtime com duas sessões abertas e acesso negado ao closer não atribuído.
 
@@ -101,7 +106,7 @@ O script se recusa a executar se houver admin existente. Cria um usuário confir
 
 1. Envie o código para o repositório `Luizkode/ION-Challenge` pelo fluxo normal de commit/PR. Nenhum push ou deployment foi feito automaticamente.
 2. Na Vercel, **Add New → Project**, importe o repositório e escolha o preset **Next.js**. Raiz do projeto: raiz do repositório. Use Node.js 24, instalação `npm ci` e build `npm run build`.
-3. Cadastre somente `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` em Production e, se necessário, Preview. Não cadastre service role nem variáveis de bootstrap.
+3. No ambiente autorizado, cadastre `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Para os convites da Etapa 2, cadastre também `SUPABASE_SERVICE_ROLE_KEY` como variável privada do servidor e `ION_OS_APP_URL`. Preview deve usar exclusivamente homologação. Não cadastre variáveis de bootstrap nem publique/configure Production sem autorização.
 4. Faça deploy. Configure o domínio final, atualize Site URL e callback do Supabase e confirme acesso por HTTPS.
 5. Valide login, cadastro, validação, contrato, invalidação, rankings e atualização entre sessões no domínio final. Restrinja URLs de preview e redirects de acordo com sua política.
 
@@ -116,7 +121,7 @@ Vercel Hobby tem restrições de uso comercial. Como esta é uma ferramenta inte
 - As RPCs serializam writes por campanha e operações administrativas; histórico é auditado no banco. Operadores com service role/acesso SQL continuam tendo privilégios administrativos: a auditoria não é inviolável para o dono do banco.
 - Contatos comerciais só são visíveis ao SDR responsável, closer atribuído e admin. Defina retenção, acesso operacional e política de privacidade/LGPD antes de coletar dados reais.
 - Habilite rate limits do Supabase Auth e acompanhe logs. O fluxo não contém endpoint de signup ou bootstrap público.
-- Convites, recuperação de senha por operador e criação de usuários Auth dependem do painel Supabase. Não há automação de convite dentro do app nem fluxo público de recuperação nesta versão.
+- Convites pelo app são feitos na Equipe com Auth administrativo no servidor. Recuperação de senha por operador continua disponível no painel Supabase; não há fluxo público de recuperação nesta etapa. Confira SMTP, URLs e entrega real em homologação.
 - Consulta de auditoria mostra as últimas 100 ações; retenção permanece no banco. Relatórios históricos/paginação avançada e exportação não fazem parte desta V1.
 - Componentes são próprios com Tailwind; não há shadcn/ui nesta versão. Não foram feitos testes visuais automatizados de navegador ou ensaio de carga de produção.
 

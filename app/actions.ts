@@ -1,4 +1,5 @@
 "use server";
+import { hasFunction } from "@/lib/access";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -30,14 +31,14 @@ export async function changePassword(form: FormData) {
   const { db } = await session();
   const password = String(form.get("password"));
   if (password.length < 12)
-    jump("/history", "Use uma senha de pelo menos 12 caracteres.");
+    jump("/account", "Use uma senha de pelo menos 12 caracteres.");
   const { error } = await db.auth.updateUser({ password });
-  if (error) jump("/history", "Não foi possível atualizar a senha.");
-  jump("/history", "Senha atualizada.", "success");
+  if (error) jump("/account", "Não foi possível atualizar a senha.");
+  jump("/account", "Senha atualizada.", "success");
 }
 export async function createMeeting(form: FormData) {
   const { db, profile } = await session();
-  if (profile.role !== "sdr")
+  if (!hasFunction(profile, "sdr"))
     jump("/meetings", "Apenas SDRs podem cadastrar reuniões.");
   const result = meetingSchema.safeParse(Object.fromEntries(form));
   if (!result.success)

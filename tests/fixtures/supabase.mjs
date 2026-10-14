@@ -4,6 +4,10 @@ const ids = {
   sdr: "10000000-0000-0000-0000-000000000001",
   closer: "10000000-0000-0000-0000-000000000002",
   admin: "10000000-0000-0000-0000-000000000003",
+  traffic: "10000000-0000-0000-0000-000000000004",
+  partner: "10000000-0000-0000-0000-000000000005",
+  multi: "10000000-0000-0000-0000-000000000006",
+  inactive: "10000000-0000-0000-0000-000000000007",
 };
 const campaignId = "30000000-0000-0000-0000-000000000001";
 const teamId = "40000000-0000-0000-0000-000000000001";
@@ -12,6 +16,7 @@ function initialState(mode = "active") {
     mode,
     meetings: [],
     requests: [],
+    invitations: [],
     participants: [
       {
         campaign_id: campaignId,
@@ -36,8 +41,26 @@ const profiles = Object.fromEntries(
           : role === "admin"
             ? "Administrador de teste"
             : "Closer de teste",
-      role,
-      active: true,
+      role: ["traffic", "inactive"].includes(role)
+        ? "member"
+        : role === "multi"
+          ? "sdr"
+          : role,
+      category:
+        role === "admin"
+          ? "admin"
+          : role === "partner"
+            ? "partner"
+            : "employee",
+      functions:
+        role === "multi"
+          ? ["sdr", "closer", "traffic"]
+          : role === "inactive"
+            ? ["traffic"]
+            : ["sdr", "closer", "traffic"].includes(role)
+              ? [role]
+              : [],
+      active: role !== "inactive",
     },
   ]),
 );
@@ -80,6 +103,7 @@ function actor(req) {
     return null;
   }
 }
+const initialProfiles = structuredClone(profiles);
 createServer(async (req, res) => {
   const url = new URL(req.url, "http://127.0.0.1:3101");
   let raw = "";
@@ -98,7 +122,8 @@ createServer(async (req, res) => {
   if (url.pathname === "/__test/state") {
     if (req.method === "POST") {
       state = initialState(body.mode ?? "active");
-      profiles[ids.sdr].role = "sdr";
+      for (const key of Object.keys(profiles)) delete profiles[key];
+      Object.assign(profiles, structuredClone(initialProfiles));
     }
     return send(state);
   }
@@ -113,10 +138,129 @@ createServer(async (req, res) => {
       user: user(id),
     });
   }
+  if (url.pathname === "/auth/v1/invite") {
+    if (req.headers.authorization !== "Bearer test-only-service-role")
+      return send({ message: "Unauthorized" }, 401);
+    if (state.mode === "invite_error")
+      return send({ message: "Test email delivery failure" }, 500);
+    return send({
+      ...user("10000000-0000-0000-0000-000000000008"),
+      email: body.email,
+    });
+  }
   const id = actor(req);
   if (!id) return send({ message: "Unauthorized" }, 401);
   if (url.pathname === "/auth/v1/user") return send(user(id));
   const table = url.pathname.split("/").at(-1);
+  if (table === "current_access")
+    return send(
+      profiles[id].active
+        ? {
+            category: profiles[id].category,
+            functions: profiles[id].functions,
+            challenger:
+              profiles[id].category === "admin" ||
+              profiles[id].functions.includes("closer") ||
+              (profiles[id].functions.includes("sdr") &&
+                state.participants.some(
+                  (p) => p.profile_id === id && p.active,
+                )),
+          }
+        : null,
+    );
+  if (table === "available_closers")
+    return state.mode === "query_error"
+      ? send({ message: "Test failure" }, 400)
+      : send(
+          state.mode === "no_closer"
+            ? []
+            : [profiles[ids.closer], profiles[ids.multi]],
+        );
+  if (table === "user_functions")
+    return send(
+      Object.values(profiles).flatMap((p) =>
+        p.functions.map((function_code) => ({
+          profile_id: p.id,
+          function_code,
+        })),
+      ),
+    );
+  if (table === "access_companies")
+    return send([
+      {
+        id: "90000000-0000-0000-0000-000000000001",
+        name: "Empresa A",
+        active: true,
+      },
+      ...(profiles[id].category === "admin"
+        ? [
+            {
+              id: "90000000-0000-0000-0000-000000000002",
+              name: "Empresa B",
+              active: true,
+            },
+          ]
+        : []),
+    ]);
+  if (table === "client_assignments")
+    return send([
+      {
+        profile_id: ids.traffic,
+        company_id: "90000000-0000-0000-0000-000000000001",
+      },
+    ]);
+  if (table === "partner_companies")
+    return send([
+      {
+        profile_id: ids.partner,
+        company_id: "90000000-0000-0000-0000-000000000001",
+      },
+    ]);
+  if (table === "access_invitations") return send(state.invitations);
+  if (table === "manage_access") {
+    state.requests.push(body);
+    const data = body.data;
+    if (profiles[id].category !== "admin")
+      return send({ message: "Acesso restrito" }, 400);
+    const target = profiles[data.id];
+    profiles[data.id] = {
+      ...target,
+      id: data.id,
+      name: data.name,
+      category: data.category,
+      functions: data.functions,
+      active: data.active === "true",
+      role:
+        data.category === "admin"
+          ? "admin"
+          : data.category === "partner"
+            ? "partner"
+            : data.functions.includes("sdr")
+              ? "sdr"
+              : data.functions.includes("closer")
+                ? "closer"
+                : "member",
+    };
+    return send(null);
+  }
+  if (table === "begin_access_invite") {
+    const iid = "a0000000-0000-0000-0000-000000000001";
+    state.invitations.push({
+      id: iid,
+      ...body.data,
+      status: "pending",
+      created_at: new Date().toISOString(),
+    });
+    return send(iid);
+  }
+  if (table === "complete_access_invite") {
+    state.invitations[0].status = "completed";
+    return send(null);
+  }
+  if (table === "fail_access_invite") {
+    state.invitations[0].status = "failed";
+    return send(null);
+  }
   if (table === "dashboard")
     return send({
       individual: state.participants
@@ -216,6 +360,8 @@ createServer(async (req, res) => {
       profiles[data.id] = {
         ...profiles[data.id],
         role: data.role,
+        category: data.role === "admin" ? "admin" : "employee",
+        functions: ["sdr", "closer"].includes(data.role) ? [data.role] : [],
         name: data.name,
         active: data.active === "true",
       };

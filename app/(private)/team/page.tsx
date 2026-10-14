@@ -1,0 +1,161 @@
+import { redirect } from "next/navigation";
+import { session, check } from "@/lib/session";
+import {
+  saveAccess,
+  inviteAccess,
+  createAccessCompany,
+} from "@/app/team-actions";
+import { Field, Notice, Empty } from "@/components/ui";
+import { Submit } from "@/components/submit";
+import { ConfirmedAdminForm } from "@/components/confirmed-admin-form";
+import { AccessFields } from "@/components/access-fields";
+import { functionLabels, type FunctionCode } from "@/lib/access";
+export default async function Team({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; success?: string }>;
+}) {
+  const { db, profile } = await session();
+  if (profile.category !== "admin")
+    redirect(
+      "/?error=" +
+        encodeURIComponent("Você não tem permissão para acessar este módulo."),
+    );
+  const result = await Promise.all([
+    db.from("profiles").select("*").order("name"),
+    db.from("user_functions").select("*"),
+    db.from("access_companies").select("id,name").order("name"),
+    db.from("client_assignments").select("*"),
+    db.from("partner_companies").select("*"),
+    db
+      .from("access_invitations")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
+  result.forEach((r) => check(r.error));
+  const [users, roles, companies, clients, partners, invitations] = result;
+  const bindings = [...(clients.data ?? []), ...(partners.data ?? [])];
+  return (
+    <>
+      <div className="page-title">
+        <div>
+          <p className="eyebrow">ION TEAM · GESTÃO DE ACESSOS</p>
+          <h1>Equipe</h1>
+          <p className="muted">
+            Categorias, funções e vínculos. As alterações ficam registradas na
+            auditoria.
+          </p>
+        </div>
+      </div>
+      <Notice params={await searchParams} />
+      <section className="panel padded">
+        <h2>Convidar colaborador ou parceiro</h2>
+        <p className="muted small">
+          O convite seguro é enviado pelo Supabase Auth. Nenhuma senha é
+          cadastrada neste formulário.
+        </p>
+        <ConfirmedAdminForm
+          action={inviteAccess}
+          confirmation="Confirma enviar o convite com os acessos selecionados?"
+          submitLabel="Enviar convite"
+        >
+          <Field label="Email do convite" name="email" type="email" />
+          <AccessFields companies={companies.data ?? []} />
+        </ConfirmedAdminForm>
+      </section>
+      <section className="panel padded">
+        <h2>Empresas para vínculos de acesso</h2>
+        <p className="muted small">
+          Cadastro mínimo de identificação. Serviços e dados operacionais serão
+          desenvolvidos nas próximas etapas.
+        </p>
+        <form action={createAccessCompany} className="form-grid">
+          <Field label="Nome da empresa" name="name" />
+          <Submit>Cadastrar empresa</Submit>
+        </form>
+      </section>
+      <section className="panel padded">
+        <h2>Usuários cadastrados</h2>
+        {users.data?.map((u) => (
+          <details key={u.id}>
+            <summary>
+              {u.name} ·{" "}
+              {u.category === "admin"
+                ? "Administrador"
+                : u.category === "partner"
+                  ? "Parceiro"
+                  : "Colaborador"}{" "}
+              · {u.active ? "Ativo" : "Inativo"}
+            </summary>
+            <p className="small muted">
+              {(roles.data ?? [])
+                .filter((r) => r.profile_id === u.id)
+                .map((r) => functionLabels[r.function_code as FunctionCode])
+                .join(" · ") || "Sem funções de colaborador"}{" "}
+              · UUID: {u.id}
+            </p>
+            <ConfirmedAdminForm
+              action={saveAccess}
+              confirmation={`Confirma atualizar o acesso de ${u.name}?`}
+              submitLabel="Salvar acesso"
+            >
+              <input type="hidden" name="id" value={u.id} />
+              <AccessFields
+                profile={u}
+                functions={(roles.data ?? [])
+                  .filter((r) => r.profile_id === u.id)
+                  .map((r) => r.function_code)}
+                bindings={bindings
+                  .filter((b) => b.profile_id === u.id)
+                  .map((b) => b.company_id)}
+                companies={companies.data ?? []}
+              />
+            </ConfirmedAdminForm>
+          </details>
+        ))}
+      </section>
+      <section className="panel padded">
+        <h2>Vincular conta Auth já existente / concluir convite</h2>
+        <p className="small muted">
+          Use o UUID do usuário em Authentication. Esta ação não altera a senha
+          nem cria uma conta Auth.
+        </p>
+        <ConfirmedAdminForm
+          action={saveAccess}
+          confirmation="Confirma configurar este UUID com as permissões selecionadas?"
+          submitLabel="Vincular conta existente"
+        >
+          <Field label="UUID do usuário Auth" name="id" />
+          <AccessFields companies={companies.data ?? []} />
+        </ConfirmedAdminForm>
+      </section>
+      <section className="panel">
+        <div className="panel-title">
+          <h2>Histórico de convites</h2>
+          <span className="small muted">Últimos 50</span>
+        </div>
+        {invitations.data?.length ? (
+          invitations.data.map((i) => (
+            <div className="team-row" key={i.id}>
+              <div>
+                <strong>{i.email}</strong>
+                <small>
+                  {i.status === "completed"
+                    ? "Convite enviado e acesso configurado"
+                    : i.status === "failed"
+                      ? "Falha · revisar envio ou vínculo"
+                      : "Pendente"}{" "}
+                  · {i.created_at}
+                </small>
+                <small>{i.detail}</small>
+              </div>
+            </div>
+          ))
+        ) : (
+          <Empty>Nenhum convite registrado.</Empty>
+        )}
+      </section>
+    </>
+  );
+}

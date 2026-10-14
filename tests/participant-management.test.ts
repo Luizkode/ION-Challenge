@@ -27,11 +27,10 @@ test("participação, troca de cargo, auditoria e transações PostgreSQL", asyn
     [id(5), "sdr"],
   ] as const) {
     await db.query("insert into auth.users values($1)", [uid]);
-    await db.query("insert into profiles values($1,$2,$3,true)", [
-      uid,
-      "Pessoa " + role,
-      role,
-    ]);
+    await db.query(
+      "insert into profiles(id,name,role,active) values($1,$2,$3,true)",
+      [uid, "Pessoa " + role, role],
+    );
   }
   const team = (
     await db.query<{ id: string }>(
@@ -75,6 +74,12 @@ test("participação, troca de cargo, auditoria e transações PostgreSQL", asyn
         "../supabase/migrations/002_participant_management.sql",
         import.meta.url,
       ),
+      "utf8",
+    ),
+  );
+  await db.exec(
+    await readFile(
+      new URL("../supabase/migrations/003_access_control.sql", import.meta.url),
       "utf8",
     ),
   );
@@ -397,7 +402,7 @@ test("participação, troca de cargo, auditoria e transações PostgreSQL", asyn
       for (let n = 10; n <= 13; n++) {
         await db.query("insert into auth.users values($1)", [id(n)]);
         await db.query(
-          "insert into profiles values($1,'Novo participante','sdr',true)",
+          "insert into profiles(id,name,role,active) values($1,'Novo participante','sdr',true)",
           [id(n)],
         );
       }

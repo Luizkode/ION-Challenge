@@ -50,7 +50,7 @@ export default async function Login({
           <Submit>Entrar no ION OS</Submit>
         </form>
         <p className="small muted">
-          <ShieldCheck size={14} /> Acesso restrito a colaboradores. Solicite
+          <ShieldCheck size={14} /> Acesso restrito a usuários convidados. Solicite
           sua conta ao administrador.
         </p>
       </section>

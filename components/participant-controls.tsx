@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Field, Select } from "@/components/ui";
 import { ConfirmedAdminForm } from "@/components/confirmed-admin-form";
 type Profile = { id: string; name: string; role: string; active: boolean };
@@ -15,39 +16,43 @@ export function ParticipantControls({
 }) {
   return (
     <>
-      <details>
-        <summary>Alterar perfil</summary>
-        <ConfirmedAdminForm
-          confirmation={`Confirma alterar o perfil de ${profile.name}?`}
-          submitLabel="Salvar perfil"
-        >
-          <input type="hidden" name="operation" value="profile" />
-          <input type="hidden" name="id" value={profile.id} />
-          <input type="hidden" name="name" value={profile.name} />
-          <input type="hidden" name="active" value={String(profile.active)} />
-          <Select
-            label={`Perfil de ${profile.name}`}
-            name="role"
-            value={profile.role}
+      {["member", "partner"].includes(profile.role) ? (
+        <Link href="/team">Alterar perfil na Equipe</Link>
+      ) : (
+        <details>
+          <summary>Alterar perfil</summary>
+          <ConfirmedAdminForm
+            confirmation={`Confirma alterar o perfil de ${profile.name}?`}
+            submitLabel="Salvar perfil"
           >
-            <option value="sdr">SDR</option>
-            <option value="closer">Closer</option>
-            <option value="admin">Administrador</option>
-          </Select>
-          {membership?.active && (
-            <label className="small">
-              <input
-                type="checkbox"
-                name="remove_from_campaign"
-                value="true"
-                style={{ width: "auto", minHeight: 0, marginRight: 8 }}
-              />
-              Remover da campanha durante a alteração de perfil
-            </label>
-          )}
-          <Field label="Justificativa" name="reason" />
-        </ConfirmedAdminForm>
-      </details>
+            <input type="hidden" name="operation" value="profile" />
+            <input type="hidden" name="id" value={profile.id} />
+            <input type="hidden" name="name" value={profile.name} />
+            <input type="hidden" name="active" value={String(profile.active)} />
+            <Select
+              label={`Perfil de ${profile.name}`}
+              name="role"
+              value={profile.role}
+            >
+              <option value="sdr">SDR</option>
+              <option value="closer">Closer</option>
+              <option value="admin">Administrador</option>
+            </Select>
+            {membership?.active && (
+              <label className="small">
+                <input
+                  type="checkbox"
+                  name="remove_from_campaign"
+                  value="true"
+                  style={{ width: "auto", minHeight: 0, marginRight: 8 }}
+                />
+                Remover da campanha durante a alteração de perfil
+              </label>
+            )}
+            <Field label="Justificativa" name="reason" />
+          </ConfirmedAdminForm>
+        </details>
+      )}
       {campaignId &&
         membership?.active &&
         profile.role === "sdr" &&

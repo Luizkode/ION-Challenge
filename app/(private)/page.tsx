@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { commercialAccess, functionLabels } from "@/lib/access";
 import Link from "next/link";
 import { CommercialChart } from "@/components/commercial-chart";
 import { session, check } from "@/lib/session";
@@ -10,6 +12,43 @@ export default async function Dashboard({
   searchParams: Promise<{ from?: string; to?: string; error?: string }>;
 }) {
   const { db, profile } = await session();
+  if (profile.category === "partner") redirect("/partners");
+  if (!commercialAccess(profile)) {
+    const { data: companies, error } = await db
+      .from("access_companies")
+      .select("id,name");
+    check(error);
+    return (
+      <>
+        <div className="page-title">
+          <div>
+            <p className="eyebrow">ION OS · MINHA ÁREA</p>
+            <h1>Seu dashboard</h1>
+            <p className="muted">
+              {profile.functions.map((f) => functionLabels[f]).join(" · ")}
+            </p>
+          </div>
+        </div>
+        <section className="panel">
+          <div className="panel-title">
+            <h2>Clientes atribuídos</h2>
+          </div>
+          {companies?.length ? (
+            companies.map((c) => (
+              <div className="team-row" key={c.id}>
+                {c.name}
+              </div>
+            ))
+          ) : (
+            <Empty>
+              Nenhuma empresa atribuída. Os indicadores dos serviços serão
+              disponibilizados nas próximas etapas.
+            </Empty>
+          )}
+        </section>
+      </>
+    );
+  }
   const params = await searchParams;
   const period = dashboardPeriod(params);
   const { data: meetings, error } = await db
@@ -53,7 +92,7 @@ export default async function Dashboard({
               : "Acompanhe os registros autorizados para sua função."}
           </p>
         </div>
-        <span className="badge">Etapa 1 · Estrutura da plataforma</span>
+        <span className="badge">ION OS · Acesso por função</span>
       </div>
       <Notice params={{ error: period.error ?? params.error }} />
       <section className="panel">
@@ -125,9 +164,7 @@ export default async function Dashboard({
           <span className="small muted">Evolução incremental</span>
         </div>
         {osModules
-          .filter(
-            (m) => m.id !== "dashboard" && canAccessModule(m.id, profile.role),
-          )
+          .filter((m) => m.id !== "dashboard" && canAccessModule(m.id, profile))
           .map((m) => (
             <div className="team-row" key={m.id}>
               <div>

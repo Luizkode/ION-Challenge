@@ -1,4 +1,5 @@
-export type CurrentRole = "admin" | "sdr" | "closer";
+import { hasFunction, type Access } from "./access";
+export type CurrentRole = Access["role"];
 export const osModules = [
   {
     id: "dashboard",
@@ -51,8 +52,7 @@ export const osModules = [
     path: "/team",
     name: "Equipe",
     roles: ["admin"],
-    description:
-      "As funções múltiplas e atribuições por cliente serão implementadas nas Etapas 2 e 4. A gestão atual de colaboradores e participação em campanhas permanece disponível.",
+    description: "Gestão de acessos, funções e vínculos com empresas.",
   },
   {
     id: "partners",
@@ -60,7 +60,7 @@ export const osModules = [
     name: "Parceiros",
     roles: ["admin"],
     description:
-      "O portal exclusivo de consulta será implementado na Etapa 6, depois do isolamento de dados por empresa e das permissões da Etapa 2. Não há acesso de parceiros nesta etapa.",
+      "Ambiente exclusivo de consulta às empresas vinculadas. Serviços, resultados, relatórios e documentos serão ampliados nas próximas etapas.",
   },
   {
     id: "settings",
@@ -71,7 +71,40 @@ export const osModules = [
       "As configurações da plataforma serão ampliadas progressivamente. As regras e configurações atuais do Challenger continuam disponíveis.",
   },
 ] as const;
-export function canAccessModule(moduleId: string, role: CurrentRole) {
-  const module = osModules.find((m) => m.id === moduleId);
-  return Boolean(module && (module.roles as readonly string[]).includes(role));
+export function canAccessModule(
+  moduleId: string,
+  subject: Access | CurrentRole,
+) {
+  const access: Access =
+    typeof subject === "string"
+      ? {
+          role: subject,
+          category:
+            subject === "admin"
+              ? "admin"
+              : subject === "partner"
+                ? "partner"
+                : "employee",
+          functions: subject === "sdr" || subject === "closer" ? [subject] : [],
+          challenger:
+            subject === "admin" || subject === "sdr" || subject === "closer",
+        }
+      : subject;
+  if (!osModules.some((m) => m.id === moduleId)) return false;
+  if (access.category === "admin") return true;
+  if (access.category === "partner") return moduleId === "partners";
+  if (moduleId === "dashboard") return true;
+  if (moduleId === "crm")
+    return hasFunction(access, "sdr") || hasFunction(access, "closer");
+  if (moduleId === "challenger")
+    return (
+      access.challenger &&
+      (hasFunction(access, "sdr") || hasFunction(access, "closer"))
+    );
+  if (moduleId === "clients")
+    return access.functions.some((f) =>
+      ["traffic", "designer", "video_editor", "copywriter"].includes(f),
+    );
+  if (moduleId === "analytics") return hasFunction(access, "traffic");
+  return false;
 }

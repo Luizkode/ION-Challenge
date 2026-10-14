@@ -12,7 +12,7 @@ import {
   Handshake,
   Settings,
 } from "lucide-react";
-import { osModules, canAccessModule, type CurrentRole } from "@/lib/os-modules";
+import { osModules, canAccessModule } from "@/lib/os-modules";
 const icons = {
   dashboard: LayoutDashboard,
   crm: ContactRound,
@@ -24,12 +24,16 @@ const icons = {
   partners: Handshake,
   settings: Settings,
 };
-export function OSNavigation({ role }: { role: CurrentRole }) {
+export function OSNavigation({
+  profile,
+}: {
+  profile: import("@/lib/access").Access;
+}) {
   const path = usePathname();
   return (
     <nav aria-label="Módulos do ION OS">
       {osModules
-        .filter((m) => canAccessModule(m.id, role))
+        .filter((m) => canAccessModule(m.id, profile))
         .map((m) => {
           const Icon = icons[m.id];
           const active =

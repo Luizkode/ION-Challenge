@@ -1,3 +1,5 @@
+import { canAccessModule } from "@/lib/os-modules";
+import { redirect } from "next/navigation";
 import { ChallengerNavigation } from "@/components/challenger-navigation";
 import { session, check } from "@/lib/session";
 import { Empty, labels } from "@/components/ui";
@@ -11,6 +13,15 @@ import {
 import type { Board } from "@/lib/types";
 export default async function Dashboard() {
   const { db, profile } = await session();
+  if (!canAccessModule("challenger", profile))
+    redirect(
+      profile.category === "partner"
+        ? "/partners"
+        : "/?error=" +
+            encodeURIComponent(
+              "Você não tem permissão para acessar este recurso.",
+            ),
+    );
   const { data: campaigns, error } = await db
     .from("campaigns")
     .select("*")
@@ -20,7 +31,7 @@ export default async function Dashboard() {
   if (!ca)
     return (
       <>
-        <ChallengerNavigation role={profile.role} />
+        <ChallengerNavigation profile={profile} />
         <Empty>Nenhuma campanha configurada.</Empty>
       </>
     );
@@ -40,7 +51,7 @@ export default async function Dashboard() {
     : null;
   return (
     <>
-      <ChallengerNavigation role={profile.role} />
+      <ChallengerNavigation profile={profile} />
       <div className="page-title">
         <div>
           <p className="eyebrow">ION CHALLENGER · {ca.name}</p>

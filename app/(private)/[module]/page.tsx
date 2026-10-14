@@ -14,7 +14,7 @@ export default async function ModulePage({
     (m) => m.id === id && !["dashboard", "challenger"].includes(m.id),
   );
   if (!module) notFound();
-  if (!canAccessModule(module.id, profile.role))
+  if (!canAccessModule(module.id, profile))
     redirect(
       "/?error=" +
         encodeURIComponent("Você não tem permissão para acessar este módulo."),

@@ -6,10 +6,12 @@ export function ConfirmedAdminForm({
   children,
   confirmation,
   submitLabel,
+  action = adminOperation,
 }: {
   children: ReactNode;
   confirmation: string;
   submitLabel: string;
+  action?: (form: FormData) => void | Promise<void>;
 }) {
   function confirm(event: FormEvent<HTMLFormElement>) {
     const data = new FormData(event.currentTarget);
@@ -22,7 +24,7 @@ export function ConfirmedAdminForm({
     if (!window.confirm(message)) event.preventDefault();
   }
   return (
-    <form action={adminOperation} className="form-grid" onSubmit={confirm}>
+    <form action={action} className="form-grid" onSubmit={confirm}>
       {children}
       <label className="small">
         <input
