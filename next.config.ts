@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+import { verifyPreviewDatabase } from "./lib/preview-database";
+verifyPreviewDatabase(process.env);
 const config: NextConfig = {
   poweredByHeader: false,
   async headers() {

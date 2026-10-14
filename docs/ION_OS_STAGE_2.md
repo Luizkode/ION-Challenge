@@ -37,6 +37,7 @@ Configure no **servidor** (na Vercel, por ambiente):
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: chave pública anon do mesmo projeto.
 - `SUPABASE_SERVICE_ROLE_KEY`: chave administrativa do mesmo projeto, em variável privada. **Nunca** criar `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` nem colocar chave em código/chat.
 - `ION_OS_APP_URL`: URL HTTPS da aplicação desse ambiente, sem credenciais. Ex.: a URL de Preview autorizada; para desenvolvimento local é aceito `http://localhost:3000`. Na Vercel, `VERCEL_URL` é alternativa automática se `ION_OS_APP_URL` não existir, mas uma URL estável por ambiente facilita o controle dos callbacks.
+- `ION_OS_PREVIEW_SUPABASE_PROJECT_REF`: obrigatório no ambiente **Preview**, com o identificador público do projeto separado de homologação. O build e as conexões no servidor/proxy falham se a URL não corresponder. JWTs anon legados também precisam corresponder ao ref. Chaves `sb_secret_`/service_role são rejeitadas na variável pública em qualquer ambiente. A trava confirma consistência da configuração, não identifica sozinha se o operador escolheu um projeto de produção: confirme o ref no painel antes de configurar.
 
 Na homologação Supabase:
 
@@ -74,7 +75,27 @@ A Etapa 2 não foi publicada nem aplicada ao Supabase de produção. Não há me
 
 ## Validação desta entrega
 
-- `npm test`: 56 testes aprovados.
+- `npm test`: 60 testes aprovados após a auditoria, incluindo preservação de histórico preenchido e a trava de Preview.
 - `npm run test:browser -- --max-failures=1`: 50 testes aprovados (desktop e celular).
 - `npm run build` e `npm run typecheck`: aprovados.
 - Testes SQL em PGlite e navegador com Auth/REST simulado isolado; nenhum teste de escrita em produção. Entrega real dos convites e integração hospedada permanecem para homologação.
+
+## Auditoria e aplicação assistida em homologação
+
+A ordem é 001 → 002 → 003. A 001 só se aplica a um projeto novo: cria a campanha inicial e objetos e não deve ser reaplicada em um banco existente. A 002 acrescenta remoção lógica e torna privada a operação administrativa anterior. A 003 depende dessas colunas e renomeações; mantém `profiles.id`/FKs e os registros comerciais, migra funções antigas e torna privado o segundo ponto de entrada legado. Não há migration 004 nesta entrega nem necessidade de editar migrations já aplicadas.
+
+A auditoria verificou RLS das relações, ACLs de funções/views, vínculo Auth/perfis, isolamento por empresa, acessos inativos, união de funções, último admin, transações e auditoria. A 003 também substitui a autorização legada de validação para negar explicitamente papéis nulos/inativos. O histórico bruto de auditoria e os valores de contratos permanecem restritos a admins. Segurança de futuras tabelas de CRM/serviços não é automaticamente herdada: elas precisarão das próprias políticas.
+
+Procedimento para o operador autorizado, **no projeto confirmado de homologação**:
+
+1. Confira o Project Ref e todas as variáveis Preview; faça snapshot antes da migration. Não basta que a URL contenha `supabase.co`.
+2. Em banco existente com 001/002, execute `supabase/checks/stage_2_baseline.sql` no SQL Editor e guarde o resultado privadamente. É somente leitura; inclui contagens e hashes dos registros comerciais, participantes e pontuação. Em projeto novo, aplique 001/002 antes desse check. Não importe usuários ou credenciais de produção.
+3. Execute a 003 inteira, uma vez. Reexecute o baseline imediatamente, antes de testes/escritas concorrentes: contagens e hashes devem ser iguais. `profiles.category` e `user_functions` são adições esperadas; alterações de perfis geram novos eventos de auditoria, por isso essa tabela não entra no hash.
+4. Execute `supabase/checks/stage_2_security.sql`: exige RLS, ausência de escrita direta para anon/authenticated, pontos de entrada privados, categorias/funções/vínculos coerentes e FKs validadas. Confira também que há administrador ativo. Esses checks de catálogo complementam, não substituem, testes com sessões reais.
+5. Configure Auth/SMTP/template/callback conforme acima. Use contas e caixas postais de teste sob seu controle. Teste aceite de convite → `/account` → definição de senha → logout/login com senha. Verifique refresh de sessão e expiração do link; não coloque tokens em evidências ou screenshots.
+6. Com duas empresas e sessões reais separadas, execute os oito cenários de “Como testar”, incluindo requisição REST com token do parceiro para a empresa não vinculada, RPC comercial com colaborador de produção e tentativa administrativa sem permissão. Acesso negado pode retornar erro de permissão ou lista vazia pela RLS; nunca dados de outro cliente.
+7. Desative e reative uma conta pelo admin, mantendo sua sessão antiga aberta. Confirme negação de dados enquanto inativa e permissões corretas após ativação. Teste alteração SDR + Closer + Tráfego e retirada de SDR da campanha com confirmação; guarde apenas resultados sanitizados da auditoria.
+8. Compare a campanha/ranking antes e depois da migration. Faça cadastros/validações somente na campanha de teste em homologação, verificando zero pontos no agendamento e substituição 1/3/7 após validação/contrato. Não use a campanha de produção como teste.
+9. Só marque a homologação como aprovada depois de registrar os resultados reais de Auth, entrega de email, RLS via REST, sessão e Challenger. Sem acesso ao projeto/contas/SMTP, esses itens permanecem pendentes, mesmo com build e testes locais aprovados.
+
+Se a aplicação precisar ser revertida, não exclua tabelas/colunas nem restaure 001/002 por cima do banco. A recuperação deve ser planejada com snapshot e código compatível; não há rollback destrutivo automático.

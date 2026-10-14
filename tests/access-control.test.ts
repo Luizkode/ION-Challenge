@@ -80,12 +80,16 @@ test("PostgreSQL Etapa 2: upgrade, RLS, convites e permissões reais", async (t)
     "insert into campaign_participants(campaign_id,profile_id,team_id) values($1,$2,$3)",
     [ca, id(2), team],
   );
+  const baselineSql = await readFile(new URL("../supabase/checks/stage_2_baseline.sql", import.meta.url), "utf8");
+  const baseline = await db.exec(baselineSql);
   await db.exec(
     await readFile(
       new URL("../supabase/migrations/003_access_control.sql", import.meta.url),
       "utf8",
     ),
   );
+  assert.deepEqual(await db.exec(baselineSql), baseline, "003 deve preservar os registros e os resultados comerciais");
+  await db.exec(await readFile(new URL("../supabase/checks/stage_2_security.sql", import.meta.url), "utf8"));
   const actor = async (n: number) => {
     await db.exec("reset role");
     await db.query("select set_config('request.jwt.claim.sub',$1,false)", [
