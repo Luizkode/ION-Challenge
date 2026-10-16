@@ -15,6 +15,9 @@ function initialState(mode = "active") {
   return {
     mode,
     meetings: [],
+    crm_leads: [],
+    crm_activities: [],
+    crm_deals: [],
     requests: [],
     invitations: [],
     participants: [
@@ -168,6 +171,18 @@ createServer(async (req, res) => {
           }
         : null,
     );
+  if (table === "crm_directory") return send(Object.values(profiles).filter(p=>p.active && p.functions.some(f=>['sdr','closer'].includes(f))).map(p=>({...p,is_sdr:p.functions.includes('sdr'),is_closer:p.functions.includes('closer')})));
+  if (table === "crm_report") return send({leads:state.crm_leads.length,contacts:state.crm_activities.filter(a=>a.kind==='contact').length,scheduled:state.meetings.length,held:0,won:state.crm_deals.filter(d=>d.result==='won').length,proposals:state.crm_deals.filter(d=>d.result==='proposal').length,response:0,attendance:0,conversion:0,performance:[]});
+  if (table === "crm_save_lead") {
+    const data=body.data;const existing=state.crm_leads.find(l=>l.id===data.id);
+    if(state.crm_leads.some(l=>l.phone===data.phone && l.id!==data.id))return send({code:'P0001',message:'Possível duplicidade de WhatsApp ou email'},400);
+    const lead={...(existing??{id:crypto.randomUUID(),version:0,stage:'new',created_at:new Date().toISOString(),archived:false,last_contact_at:null}),...data,sdr_id:profiles[id].role==='admin'?data.sdr_id:id,updated_at:new Date().toISOString()};lead.version++;
+    if(existing)Object.assign(existing,lead);else state.crm_leads.push(lead);return send(lead.id);
+  }
+  if (table === "crm_activity") {const data=body.data;const l=state.crm_leads.find(l=>l.id===data.lead_id);state.crm_activities.push({...data,id:crypto.randomUUID(),actor_id:id,created_at:new Date().toISOString()});if(l && data.stage)l.stage=data.stage;return send(null);}
+  if (table === "crm_record_deal") {const data=body.data;state.crm_deals.push({...data,id:crypto.randomUUID(),created_at:new Date().toISOString(),contract_id:null});const l=state.crm_leads.find(l=>l.id===data.lead_id);if(l)l.stage=data.result==='proposal'?'proposed':data.result;return send(state.crm_deals.at(-1).id);}
+  if (table === "crm_schedule_meeting") {const data=body.data;const l=state.crm_leads.find(l=>l.id===data.lead_id);state.meetings.push({...data,id:crypto.randomUUID(),opportunity_id:crypto.randomUUID(),closer_id:data.closer_id,status:'scheduled',opportunities:{company:l.company,crm_lead_id:l.id,sdr_id:l.sdr_id,campaign_id:campaignId}});l.stage='scheduled';return send(state.meetings.at(-1).id);}
+  if (table === "crm_import_leads") {state.requests.push(body);if(body.rows.some(r=>state.crm_leads.some(l=>l.phone===r.phone)))return send({code:'P0001',message:'Possível duplicidade de WhatsApp ou email'},400);for(const row of body.rows)state.crm_leads.push({...row,id:crypto.randomUUID(),sdr_id:profiles[id].role==='admin'?row.sdr_id:id,version:1,stage:'new',created_at:new Date().toISOString(),updated_at:new Date().toISOString(),archived:false});return send(body.rows.length);}
   if (table === "available_closers")
     return state.mode === "query_error"
       ? send({ message: "Test failure" }, 400)
@@ -286,6 +301,13 @@ createServer(async (req, res) => {
     "application/vnd.pgrst.object+json",
   );
   const rows = (data) => send(singular ? (data[0] ?? null) : data);
+  if (['crm_leads','crm_activities','crm_deals','crm_grants'].includes(table)) {
+    let items=state[table]??[];
+    if(url.searchParams.has('id'))items=items.filter(l=>l.id===url.searchParams.get('id').replace('eq.',''));
+    if(url.searchParams.has('lead_id'))items=items.filter(l=>l.lead_id===url.searchParams.get('lead_id').replace('eq.',''));
+    res.setHeader('Content-Range',`0-${Math.max(0,items.length-1)}/${items.length}`);
+    return rows(items);
+  }
   if (table === "profiles") {
     if (state.mode === "query_error" && url.searchParams.has("role"))
       return send(
@@ -370,7 +392,7 @@ createServer(async (req, res) => {
   }
   if (table === "meetings")
     return rows(
-      state.meetings.filter((m) => id === ids.sdr || m.closer_id === id),
+      state.meetings.filter((m) => (profiles[id].role === "admin" || id === ids.sdr || m.closer_id === id) && (!url.searchParams.has("opportunities.crm_lead_id") || (url.searchParams.get("opportunities.crm_lead_id").startsWith("eq.") ? m.opportunities.crm_lead_id===url.searchParams.get("opportunities.crm_lead_id").slice(3) : !!m.opportunities.crm_lead_id))),
     );
   if (table === "opportunities")
     return rows(state.meetings.map((m) => m.opportunities));

@@ -3,6 +3,7 @@ import { verifySupabaseConfiguration } from "./lib/supabase-config";
 verifySupabaseConfiguration(process.env);
 const config: NextConfig = {
   poweredByHeader: false,
+  experimental: { serverActions: { bodySizeLimit: "3mb" } },
   async headers() {
     return [
       {

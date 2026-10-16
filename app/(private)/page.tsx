@@ -75,6 +75,10 @@ export default async function Dashboard({
     activePeople = p.data?.length ?? 0;
   }
   const summary = commercialSummary(meetings ?? [], contracts);
+  const crm = await db.rpc("crm_report", {
+    filters: { from: period.start, to: period.end },
+  });
+  check(crm.error);
   return (
     <>
       <div className="page-title">
@@ -153,6 +157,31 @@ export default async function Dashboard({
           </Empty>
         </section>
       )}
+      <section className="panel">
+        <div className="panel-title">
+          <h2>CRM Comercial</h2>
+          <Link className="button" href="/crm">
+            Abrir CRM
+          </Link>
+        </div>
+        <div className="stats padded">
+          {[
+            ["Leads cadastrados", crm.data?.leads ?? 0],
+            ["Contatos realizados", crm.data?.contacts ?? 0],
+            ["Fechamentos comerciais", crm.data?.won ?? 0],
+          ].map(([label, value]) => (
+            <div className="stat" key={label}>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </div>
+          ))}
+        </div>
+        <p className="table-note">
+          Dados do CRM no período selecionado, limitados ao seu acesso.
+          Fechamentos comerciais aguardam confirmação administrativa para
+          pontuar.
+        </p>
+      </section>
       <CommercialChart
         scheduled={summary.scheduled}
         held={summary.held}
@@ -170,8 +199,10 @@ export default async function Dashboard({
               <div>
                 <strong>{m.name}</strong>
                 <small>
-                  {m.id === "challenger"
-                    ? "Campanhas, pontos e rankings preservados."
+                  {["challenger", "crm"].includes(m.id)
+                    ? m.id === "crm"
+                      ? "Leads, funil, reuniões e negociações integradas."
+                      : "Campanhas, pontos e rankings preservados."
                     : "Estrutura disponível · funcionalidades em desenvolvimento."}
                 </small>
               </div>
