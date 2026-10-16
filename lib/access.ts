@@ -13,6 +13,7 @@ export type Access = {
   category: Category;
   functions: FunctionCode[];
   challenger: boolean;
+  crm?: boolean;
 };
 export function hasFunction(access: Access, code: FunctionCode) {
   return access.category === "employee" && access.functions.includes(code);

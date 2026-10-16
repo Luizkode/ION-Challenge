@@ -14,7 +14,7 @@ export const osModules = [
     name: "CRM Comercial",
     roles: ["admin", "sdr", "closer"],
     description:
-      "Leads, pipeline, propostas e negociações serão implementados na Etapa 3. O cadastro de reuniões existente permanece disponível no Challenger.",
+      "Leads, atividades, reuniões, propostas e negociações integradas ao Challenger.",
   },
   {
     id: "challenger",
@@ -95,7 +95,7 @@ export function canAccessModule(
   if (access.category === "partner") return moduleId === "partners";
   if (moduleId === "dashboard") return true;
   if (moduleId === "crm")
-    return hasFunction(access, "sdr") || hasFunction(access, "closer");
+    return access.crm === true || hasFunction(access, "sdr") || hasFunction(access, "closer");
   if (moduleId === "challenger")
     return (
       access.challenger &&

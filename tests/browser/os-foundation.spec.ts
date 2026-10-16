@@ -48,7 +48,6 @@ test("módulos futuros têm estado informativo sem formulários simulados", asyn
 }) => {
   await login(page);
   for (const [path, name] of [
-    ["/crm", "CRM Comercial"],
     ["/analytics", "Analytics"],
     ["/finance", "Financeiro"],
     ["/settings", "Configurações"],
