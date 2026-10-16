@@ -324,7 +324,16 @@ export default async function LeadDetails({
                   {d.reason} · {new Date(d.created_at).toLocaleString("pt-BR")}
                 </p>
                 {d.contract_id ? (
-                  <span className="badge">Contrato confirmado pelo ADM</span>
+                  <>
+                    <span className="badge">Contrato confirmado pelo ADM</span>
+                    {admin && (
+                      <p>
+                        <Link className="button" href={"/clients?deal=" + d.id}>
+                          Criar ou vincular cliente operacional
+                        </Link>
+                      </p>
+                    )}
+                  </>
                 ) : (
                   d.result === "won" &&
                   admin && (

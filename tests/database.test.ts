@@ -41,6 +41,8 @@ test("PostgreSQL: workflow, pontuação, RLS e antifraude", async (t) => {
       "utf8",
     ),
   );
+  await db.exec(await readFile(new URL("./fixtures/storage.sql", import.meta.url), "utf8"));
+  await db.exec(await readFile(new URL("../supabase/migrations/005_clients_services.sql", import.meta.url), "utf8"));
   for (const [role, id] of Object.entries(ids)) {
     await db.query("insert into auth.users values($1)", [id]);
     await db.query(

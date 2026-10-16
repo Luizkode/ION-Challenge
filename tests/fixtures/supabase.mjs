@@ -15,6 +15,8 @@ function initialState(mode = "active") {
   return {
     mode,
     meetings: [],
+    ops_clients: [{company_id:'90000000-0000-0000-0000-000000000001',contact:'Contato A',phone:'11900000001',email:'a@example.com',niche:'Serviços',city:'São Paulo',state:'SP',instagram:'',website:'',joined_at:'2026-01-01',relationship:'active',partner_visible:false,version:1,created_at:new Date().toISOString(),access_companies:{name:'Empresa A',active:true}}],
+    ops_contracts: [],ops_services: [],ops_updates: [],ops_files: [],ops_service_assignments: [],
     crm_leads: [],
     crm_activities: [],
     crm_deals: [],
@@ -111,13 +113,13 @@ createServer(async (req, res) => {
   const url = new URL(req.url, "http://127.0.0.1:3101");
   let raw = "";
   for await (const c of req) raw += c;
-  const body = raw ? JSON.parse(raw) : {};
+  const body = raw && req.headers["content-type"]?.includes("application/json") ? JSON.parse(raw) : {};
   const send = (data, status = 200) => {
     res.writeHead(status, {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers":
-        "authorization,apikey,content-type,x-client-info,x-supabase-api-version",
+        "authorization,apikey,content-type,x-client-info,x-supabase-api-version,x-upsert,cache-control",
     });
     res.end(JSON.stringify(data));
   };
@@ -171,6 +173,22 @@ createServer(async (req, res) => {
           }
         : null,
     );
+  if (url.pathname.startsWith('/storage/v1/')) {
+    if(url.pathname.includes('/sign/'))return send({signedURL:url.pathname.replace('/storage/v1','')+'?token=test-only'});
+    return send({Key:url.pathname.split('/object/')[1],Id:crypto.randomUUID()});
+  }
+  if (table === 'ops_summary')return send({active_clients:state.ops_clients.length,inactive_clients:0,active_contracts:state.ops_contracts.filter(c=>c.status==='active').length,running:state.ops_services.filter(c=>c.status==='running').length,completed:state.ops_services.filter(c=>c.status==='completed').length,paused:0,overdue:0});
+  if(table==='ops_list_clients')return send({rows:state.ops_clients,count:state.ops_clients.length});
+  if(table==='ops_partner_snapshot'||table==='ops_source_alerts')return send([]);
+  if(table==='ops_directory'||table==='ops_people')return send(Object.values(profiles).filter(p=>p.category==='employee'&&p.active).map(p=>({id:p.id,name:p.name})));
+  if(table==='ops_catalog')return send([{id:'91000000-0000-0000-0000-000000000001',name:'Design',active:true},{id:'91000000-0000-0000-0000-000000000002',name:'Gestão de tráfego pago',active:true}]);
+  if(table==='ops_save_client'){const d=body.data;const existing=state.ops_clients.find(c=>c.company_id===d.company_id);const id=existing?.company_id??crypto.randomUUID();const c={...d,company_id:id,version:(existing?.version??0)+1,created_at:new Date().toISOString(),access_companies:{name:d.name,active:true}};if(existing)Object.assign(existing,c);else state.ops_clients.push(c);return send(id);}
+  if(table==='ops_save_contract'){const d=body.data;const c={...d,id:d.id||crypto.randomUUID(),version:1,created_at:new Date().toISOString(),source_deal_id:null,commercial_contract_id:null};state.ops_contracts.push(c);return send(c.id);}
+  if(table==='ops_save_service'){const d=body.data;const s={...d,id:d.id||crypto.randomUUID(),version:1,created_at:new Date().toISOString(),ops_catalog:{name:d.catalog_id.endsWith('1')?'Design':'Gestão de tráfego pago'}};state.ops_services.push(s);for(const profile_id of d.assignees)state.ops_service_assignments.push({service_id:s.id,profile_id});return send(s.id);}
+  if(table==='ops_progress'){const d=body.data;const service=state.ops_services.find(s=>s.id===d.service_id);Object.assign(service,{status:d.status,version:service.version+1,delivered_at:d.delivered_at});state.ops_updates.push({...d,id:crypto.randomUUID(),actor_id:id,company_id:service.company_id,created_at:new Date().toISOString()});return send(null);}
+  if(table==='ops_begin_file'){const d=body.data;const fid=crypto.randomUUID();const path=d.company_id+'/'+fid;state.ops_files.push({...d,id:fid,state:'pending',object_path:path,uploaded_by:id,created_at:new Date().toISOString(),partner_visible:false});return send({id:fid,path,bucket:'ion-os-documents'});}
+  if(table==='ops_finish_file'){const f=state.ops_files.find(f=>f.id===body.data.id);f.state='ready';return send(null);}
+  if(table==='ops_download'){const f=state.ops_files.find(f=>f.id===body.fid);return send({path:f.object_path,name:f.name});}
   if (table === "crm_directory") return send(Object.values(profiles).filter(p=>p.active && p.functions.some(f=>['sdr','closer'].includes(f))).map(p=>({...p,is_sdr:p.functions.includes('sdr'),is_closer:p.functions.includes('closer')})));
   if (table === "crm_report") return send({leads:state.crm_leads.length,contacts:state.crm_activities.filter(a=>a.kind==='contact').length,scheduled:state.meetings.length,held:0,won:state.crm_deals.filter(d=>d.result==='won').length,proposals:state.crm_deals.filter(d=>d.result==='proposal').length,response:0,attendance:0,conversion:0,performance:[]});
   if (table === "crm_save_lead") {
@@ -202,6 +220,7 @@ createServer(async (req, res) => {
     );
   if (table === "access_companies")
     return send([
+      ...state.ops_clients.filter(c=>!c.company_id.startsWith("90000000")).map(c=>({id:c.company_id,name:c.access_companies.name,active:true})),
       {
         id: "90000000-0000-0000-0000-000000000001",
         name: "Empresa A",
@@ -301,9 +320,10 @@ createServer(async (req, res) => {
     "application/vnd.pgrst.object+json",
   );
   const rows = (data) => send(singular ? (data[0] ?? null) : data);
-  if (['crm_leads','crm_activities','crm_deals','crm_grants'].includes(table)) {
+  if (['crm_leads','crm_activities','crm_deals','crm_grants','ops_clients','ops_contracts','ops_services','ops_updates','ops_files','ops_admin_notes','ops_service_assignments'].includes(table)) {
     let items=state[table]??[];
     if(url.searchParams.has('id'))items=items.filter(l=>l.id===url.searchParams.get('id').replace('eq.',''));
+    if(url.searchParams.has('company_id'))items=items.filter(l=>l.company_id===url.searchParams.get('company_id').replace('eq.',''));
     if(url.searchParams.has('lead_id'))items=items.filter(l=>l.lead_id===url.searchParams.get('lead_id').replace('eq.',''));
     res.setHeader('Content-Range',`0-${Math.max(0,items.length-1)}/${items.length}`);
     return rows(items);

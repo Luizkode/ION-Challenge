@@ -1,3 +1,4 @@
+import { OperationsOverview } from "@/components/operations-overview";
 import { redirect } from "next/navigation";
 import { commercialAccess, functionLabels } from "@/lib/access";
 import Link from "next/link";
@@ -29,6 +30,7 @@ export default async function Dashboard({
             </p>
           </div>
         </div>
+        <OperationsOverview />
         <section className="panel">
           <div className="panel-title">
             <h2>Clientes atribuídos</h2>
@@ -182,6 +184,7 @@ export default async function Dashboard({
           pontuar.
         </p>
       </section>
+      <OperationsOverview />
       <CommercialChart
         scheduled={summary.scheduled}
         held={summary.held}
@@ -219,11 +222,10 @@ export default async function Dashboard({
             <span className="badge">Próximas etapas</span>
           </div>
           <Empty>
-            Clientes ativos e inativos, receita recebida e prevista, despesas,
-            saldo de caixa, cobranças e inadimplência serão calculados quando os
-            módulos Clientes e Serviços e Financeiro forem implementados. Esses
-            valores ainda não estão disponíveis; contratos comerciais não são
-            tratados como dinheiro recebido.
+            Receita recebida e prevista, despesas, saldo de caixa, cobranças e
+            inadimplência serão calculados quando os módulo Financeiro for
+            implementado. Esses valores ainda não estão disponíveis; contratos
+            comerciais não são tratados como dinheiro recebido.
           </Empty>
         </section>
       )}
