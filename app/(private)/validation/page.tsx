@@ -1,3 +1,4 @@
+import { hasFunction } from "@/lib/access";
 import { redirect } from "next/navigation";
 import { session, check } from "@/lib/session";
 import { validateMeeting } from "@/app/actions";
@@ -9,7 +10,16 @@ export default async function Validation({
   searchParams: Promise<{ error?: string; success?: string }>;
 }) {
   const { db, profile } = await session();
-  if (profile.role === "sdr") redirect("/");
+  if (!(profile.category === "admin" || hasFunction(profile, "closer")))
+    redirect(
+      profile.category === "partner"
+        ? "/partners"
+        : "/?error=" +
+            encodeURIComponent(
+              "Você não tem permissão para acessar este recurso.",
+            ),
+    );
+
   const { data, error } = await db
     .from("meetings")
     .select("*,opportunities(company,contact)")

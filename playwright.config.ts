@@ -29,13 +29,16 @@ export default defineConfig({
       reuseExistingServer: false,
     },
     {
-      command: "npm run dev -- --port 3100",
+      // Exercise the compiled application, including hydration and Server Actions.
+      command: "npm run build && npm run start -- --port 3100",
       url: "http://localhost:3100/login",
       reuseExistingServer: false,
       timeout: 120000,
       env: {
         NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:3101",
         NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-only-public-key",
+        SUPABASE_SERVICE_ROLE_KEY: "test-only-service-role",
+        ION_OS_APP_URL: "http://localhost:3100",
       },
     },
   ],

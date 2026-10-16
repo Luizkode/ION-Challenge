@@ -1,3 +1,5 @@
+import { commercialAccess } from "@/lib/access";
+import { redirect } from "next/navigation";
 import { session, check } from "@/lib/session";
 import { adminOperation } from "@/app/actions";
 import { Field, Select, Notice, Empty, labels } from "@/components/ui";
@@ -15,6 +17,15 @@ export default async function Meetings({
 }) {
   const params = await searchParams;
   const { db, profile } = await session();
+  if (!commercialAccess(profile))
+    redirect(
+      profile.category === "partner"
+        ? "/partners"
+        : "/?error=" +
+            encodeURIComponent(
+              "Você não tem permissão para acessar este recurso.",
+            ),
+    );
   let query = db
     .from("meetings")
     .select("*,opportunities(*)")
@@ -40,11 +51,7 @@ export default async function Meetings({
           .toLowerCase()
           .includes(params.company.toLowerCase()),
     ) ?? [];
-  const { data: closers } = await db
-    .from("profiles")
-    .select("id,name")
-    .eq("role", "closer")
-    .eq("active", true);
+  const { data: closers } = await db.rpc("available_closers");
   return (
     <>
       <div className="page-title">
@@ -168,7 +175,7 @@ export default async function Meetings({
                         type="datetime-local"
                       />
                       <Select label="Closer" name="closer_id">
-                        {closers?.map((c) => (
+                        {closers?.map((c: { id: string; name: string }) => (
                           <option key={c.id} value={c.id}>
                             {c.name}
                           </option>

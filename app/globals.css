@@ -741,3 +741,31 @@ footer {
     display: none;
   }
 }
+
+/* ION OS: existing visual tokens and responsive navigation are retained. */
+nav a[aria-current="page"] {
+  background: #1b1823;
+  color: var(--text);
+}
+.module-navigation {
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.profile-link {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .profile-link {
+    max-width: 95px;
+  }
+  .module-navigation {
+    overflow: visible;
+  }
+  .sidebar-bottom {
+    display: none;
+  }
+}

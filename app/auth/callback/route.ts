@@ -16,7 +16,7 @@ export async function GET(request: Request) {
   }
   const response = NextResponse.redirect(
     new URL(
-      ok ? "/history" : "/login?error=Link+inválido+ou+expirado",
+      ok ? "/account" : "/login?error=Link+inválido+ou+expirado",
       url.origin,
     ),
   );

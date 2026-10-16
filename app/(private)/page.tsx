@@ -1,107 +1,138 @@
+import { redirect } from "next/navigation";
+import { commercialAccess, functionLabels } from "@/lib/access";
+import Link from "next/link";
+import { CommercialChart } from "@/components/commercial-chart";
 import { session, check } from "@/lib/session";
-import { Empty, labels } from "@/components/ui";
-import {
-  Target,
-  LockKeyhole,
-  Trophy,
-  ArrowUpRight,
-  CalendarDays,
-} from "lucide-react";
-import type { Board } from "@/lib/types";
-export default async function Dashboard() {
+import { Empty, Field, Notice } from "@/components/ui";
+import { dashboardPeriod, commercialSummary } from "@/lib/os-dashboard";
+import { osModules, canAccessModule } from "@/lib/os-modules";
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string; to?: string; error?: string }>;
+}) {
   const { db, profile } = await session();
-  const { data: campaigns, error } = await db
-    .from("campaigns")
-    .select("*")
-    .order("starts_at", { ascending: false, nullsFirst: true });
+  if (profile.category === "partner") redirect("/partners");
+  if (!commercialAccess(profile)) {
+    const { data: companies, error } = await db
+      .from("access_companies")
+      .select("id,name");
+    check(error);
+    return (
+      <>
+        <div className="page-title">
+          <div>
+            <p className="eyebrow">ION OS · MINHA ÁREA</p>
+            <h1>Seu dashboard</h1>
+            <p className="muted">
+              {profile.functions.map((f) => functionLabels[f]).join(" · ")}
+            </p>
+          </div>
+        </div>
+        <section className="panel">
+          <div className="panel-title">
+            <h2>Clientes atribuídos</h2>
+          </div>
+          {companies?.length ? (
+            companies.map((c) => (
+              <div className="team-row" key={c.id}>
+                {c.name}
+              </div>
+            ))
+          ) : (
+            <Empty>
+              Nenhuma empresa atribuída. Os indicadores dos serviços serão
+              disponibilizados nas próximas etapas.
+            </Empty>
+          )}
+        </section>
+      </>
+    );
+  }
+  const params = await searchParams;
+  const period = dashboardPeriod(params);
+  const { data: meetings, error } = await db
+    .from("meetings")
+    .select("id,status,opportunity_id,scheduled_at")
+    .gte("scheduled_at", period.start)
+    .lt("scheduled_at", period.end);
   check(error);
-  const ca = campaigns?.find((c) => c.state !== "finalized") ?? campaigns?.[0];
-  if (!ca) return <Empty>Nenhuma campanha configurada.</Empty>;
-  const { data, error: rpcError } = await db.rpc("dashboard", {
-    p_campaign: ca.id,
-  });
-  check(rpcError);
-  const b = data as Board;
-  const percent = Math.min(100, (b.held / ca.goal) * 100);
-  const unlocked = b.held >= ca.goal;
-  const me = b.individual.find((r) => r.id === profile.id);
-  const days = ca.ends_at
-    ? Math.max(
-        0,
-        Math.ceil((new Date(ca.ends_at).getTime() - Date.now()) / 86400000),
-      )
-    : null;
+  let contracts: { opportunity_id: string }[] | undefined;
+  let activePeople: number | undefined;
+  if (profile.role === "admin") {
+    const [c, p] = await Promise.all([
+      db
+        .from("contracts")
+        .select("id,opportunity_id")
+        .eq("active", true)
+        .gte("closed_at", period.from)
+        .lte("closed_at", period.to),
+      db.from("profiles").select("id").eq("active", true),
+    ]);
+    check(c.error);
+    check(p.error);
+    contracts = c.data ?? [];
+    activePeople = p.data?.length ?? 0;
+  }
+  const summary = commercialSummary(meetings ?? [], contracts);
   return (
     <>
       <div className="page-title">
         <div>
-          <p className="eyebrow">A CORRIDA PELO IPHONE 13</p>
-          <h1>Uma equipe. Um objetivo.</h1>
+          <p className="eyebrow">ION OS · AGENCY OPERATING SYSTEM</p>
+          <h1>
+            {profile.role === "admin"
+              ? "Visão geral da agência"
+              : "Sua operação, em um só lugar."}
+          </h1>
           <p className="muted">
-            Olá, {profile.name.split(" ")[0]}. Sua próxima conquista começa
-            aqui.
+            Olá, {profile.name.split(" ")[0]}.{" "}
+            {profile.role === "admin"
+              ? "Acompanhe os registros reais da operação e acesse os módulos da ION."
+              : "Acompanhe os registros autorizados para sua função."}
           </p>
         </div>
-        <span className="badge">
-          <i />
-          {ca.state === "active" && days === 0
-            ? "Período encerrado · aguardando conferência"
-            : labels[ca.state]}
-        </span>
+        <span className="badge">ION OS · Acesso por função</span>
       </div>
-      <section className="hero">
-        <div className="progress-section">
-          <p className="eyebrow">
-            <Target size={16} />
-            META COLETIVA
-          </p>
-          <div className="goal">
-            <strong>{b.held}</strong>
-            <span>/ {ca.goal} reuniões</span>
-          </div>
-          <div
-            className="progress"
-            role="progressbar"
-            aria-label="Meta coletiva"
-            aria-valuenow={b.held}
-            aria-valuemax={ca.goal}
-          >
-            <div style={{ width: percent + "%" }} />
-          </div>
-          <div className="progress-caption">
-            <span>{percent.toFixed(1)}% concluído</span>
-            <span>Faltam {Math.max(0, ca.goal - b.held)} reuniões</span>
-          </div>
-          <p className="muted small">
-            Somente oportunidades realizadas e validadas contam para a meta.
-          </p>
-        </div>
-        <div className="prize">
-          <div className="prize-icon">
-            {unlocked ? <Trophy size={36} /> : <LockKeyhole size={36} />}
-          </div>
-          <p className="eyebrow">
-            {unlocked ? "META ATINGIDA" : "PRÊMIO BLOQUEADO"}
-          </p>
-          <h2>{ca.prize}</h2>
-          <p className="muted">
-            {ca.state === "finalized"
-              ? ca.winner_id
-                ? "Vencedor definido após conferência administrativa."
-                : "Campanha encerrada sem atingir a meta."
-              : unlocked
-                ? "Prêmio desbloqueado. A disputa continua até o encerramento."
-                : "Uma conquista individual construída por todos."}
-          </p>
-        </div>
+      <Notice params={{ error: period.error ?? params.error }} />
+      <section className="panel">
+        <form className="filters" method="get">
+          <Field
+            label="Início do período"
+            name="from"
+            type="date"
+            value={period.from}
+          />
+          <Field
+            label="Fim do período"
+            name="to"
+            type="date"
+            value={period.to}
+          />
+          <button className="button">Aplicar período</button>
+        </form>
+        <p className="table-note">
+          Reuniões pelo dia agendado; contratos confirmados pela data de
+          fechamento. Horário de Brasília.{" "}
+          {profile.role !== "admin"
+            ? "Dados limitados ao seu acesso pelo banco."
+            : "Visão de todos os registros autorizados."}
+        </p>
       </section>
       <div className="stats">
         {[
-          ["Realizadas", b.held],
-          ["Bem qualificadas", b.qualified],
-          ["Contratos fechados", b.contracts],
-          ["SDRs ativos", b.active_sdrs],
-          ["Dias restantes", days ?? "—"],
+          ["Reuniões agendadas", summary.scheduled],
+          ["Reuniões realizadas", summary.held],
+          ["Contratos confirmados", summary.contracts ?? "Restrito"],
+          [
+            "Conversão no período",
+            summary.conversion === undefined
+              ? "—"
+              : summary.conversion.toFixed(1) + "%",
+          ],
+          ...(activePeople === undefined
+            ? []
+            : [["Colaboradores ativos", activePeople]]),
         ].map(([label, value]) => (
           <div className="stat" key={label}>
             <span>{label}</span>
@@ -109,125 +140,62 @@ export default async function Dashboard() {
           </div>
         ))}
       </div>
-      {me && (
-        <section className="personal">
-          <div>
-            <p className="eyebrow">SUA PERFORMANCE</p>
-            <h3>{me.team}</h3>
-          </div>
-          <div>
-            <strong>{me.points}</strong>
-            <span>pontos</span>
-          </div>
-          <div>
-            <strong>#{me.position}</strong>
-            <span>posição</span>
-          </div>
-          <div>
-            <strong>{me.held}</strong>
-            <span>realizadas</span>
-          </div>
-          <ArrowUpRight className="purple" />
+      <p className="muted small">
+        Conversão: oportunidades com reunião realizada e contrato confirmado no
+        período, divididas pelas oportunidades com reunião realizada no período.
+        Reuniões repetidas não duplicam essa taxa.
+      </p>
+      {!meetings?.length && (
+        <section className="panel">
+          <Empty>
+            Nenhuma reunião registrada no período para o seu acesso. Os
+            indicadores serão atualizados a partir dos registros reais.
+          </Empty>
         </section>
       )}
-      <div className="rank-grid">
-        <section className="panel">
-          <div className="panel-title">
-            <h2>Ranking individual</h2>
-            <span className="muted small">
-              {b.individual.length} participantes
-            </span>
-          </div>
-          {b.individual.length ? (
-            <div className="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Participante</th>
-                    <th>Real.</th>
-                    <th>Qual.</th>
-                    <th>Contr.</th>
-                    <th>Pontos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {b.individual.map((r) => (
-                    <tr
-                      className={r.id === profile.id ? "mine" : ""}
-                      key={r.id}
-                    >
-                      <td className={r.position <= 3 ? "purple" : ""}>
-                        {String(r.position).padStart(2, "0")}
-                      </td>
-                      <td>
-                        <strong>
-                          {r.name}
-                          {r.id === profile.id ? " · Você" : ""}
-                        </strong>
-                        <small>
-                          {r.team}
-                          {!r.active ? " · Inativo" : ""}
-                          {b.individual.filter((x) => x.position === r.position)
-                            .length > 1
-                            ? " · Empate administrativo"
-                            : ""}
-                        </small>
-                      </td>
-                      <td>{r.held}</td>
-                      <td>{r.qualified}</td>
-                      <td>{r.contracts}</td>
-                      <td className="score">{r.points}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <Empty>
-              Os participantes aparecerão após o vínculo à campanha.
-            </Empty>
-          )}
-          <p className="table-note">
-            Desempate: contratos → qualificadas → realizadas. Empates finais
-            exigem conferência.
-          </p>
-        </section>
-        <section className="panel">
-          <div className="panel-title">
-            <h2>Ranking de equipes</h2>
-            <Trophy size={18} className="muted" />
-          </div>
-          {b.teams.length ? (
-            b.teams.map((t, i) => (
-              <div className="team-row" key={t.id}>
-                <span className="muted">{String(i + 1).padStart(2, "0")}</span>
-                <div>
-                  <strong>{t.name}</strong>
-                  <small>
-                    {t.participants}/5 integrantes · {t.held} realizadas
-                  </small>
-                </div>
-                <strong>
-                  {t.points}
-                  <small>pontos</small>
-                </strong>
+      <CommercialChart
+        scheduled={summary.scheduled}
+        held={summary.held}
+        contracts={summary.contracts}
+      />
+      <section className="panel">
+        <div className="panel-title">
+          <h2>Módulos da plataforma</h2>
+          <span className="small muted">Evolução incremental</span>
+        </div>
+        {osModules
+          .filter((m) => m.id !== "dashboard" && canAccessModule(m.id, profile))
+          .map((m) => (
+            <div className="team-row" key={m.id}>
+              <div>
+                <strong>{m.name}</strong>
+                <small>
+                  {m.id === "challenger"
+                    ? "Campanhas, pontos e rankings preservados."
+                    : "Estrutura disponível · funcionalidades em desenvolvimento."}
+                </small>
               </div>
-            ))
-          ) : (
-            <Empty>Crie os times e vincule os SDRs para começar.</Empty>
-          )}
-          <p className="table-note">
-            O prêmio é definido pelo ranking individual.
-          </p>
+              <Link className="button" href={m.path}>
+                Acessar
+              </Link>
+            </div>
+          ))}
+      </section>
+      {profile.role === "admin" && (
+        <section className="panel">
+          <div className="panel-title">
+            <h2>Clientes e financeiro</h2>
+            <span className="badge">Próximas etapas</span>
+          </div>
+          <Empty>
+            Clientes ativos e inativos, receita recebida e prevista, despesas,
+            saldo de caixa, cobranças e inadimplência serão calculados quando os
+            módulos Clientes e Serviços e Financeiro forem implementados. Esses
+            valores ainda não estão disponíveis; contratos comerciais não são
+            tratados como dinheiro recebido.
+          </Empty>
         </section>
-      </div>
-      <p className="muted small">
-        <CalendarDays size={14} />{" "}
-        {ca.starts_at
-          ? `${new Date(ca.starts_at).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })} a ${new Date(ca.ends_at).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}`
-          : "Data de início aguardando configuração administrativa."}
-      </p>
+      )}
     </>
   );
 }

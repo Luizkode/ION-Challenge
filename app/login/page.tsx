@@ -12,10 +12,10 @@ export default async function Login({
     <main className="login">
       <div className="login-brand">
         <div className="wordmark">
-          ION<span> / CHALLENGE</span>
+          ION<span> / OS</span>
         </div>
         <div>
-          <p className="eyebrow">AGÊNCIA ION · PERFORMANCE COMERCIAL</p>
+          <p className="eyebrow">AGÊNCIA ION · AGENCY OPERATING SYSTEM</p>
           <h1>
             O próximo nível
             <br />é uma conquista
@@ -23,9 +23,9 @@ export default async function Login({
             <em>coletiva.</em>
           </h1>
           <p className="muted">
-            Cada reunião importa. Cada ponto é conquistado.
+            Sua agência conectada. Sua operação em um só lugar.
             <br />
-            Uma equipe inteira na corrida pelo iPhone 13.
+            Comercial, campanhas e gestão evoluindo juntos.
           </p>
         </div>
         <p className="muted small">
@@ -34,7 +34,7 @@ export default async function Login({
       </div>
       <section className="login-form">
         <ArrowUpRight size={32} className="purple" />
-        <h2>Entre na competição.</h2>
+        <h2>Entre no ION OS.</h2>
         <p className="muted">Acesse com sua conta da Agência ION.</p>
         <Notice params={await searchParams} />
         {!configured() && (
@@ -47,10 +47,10 @@ export default async function Login({
         <form action={login}>
           <Field label="Email profissional" name="email" type="email" />
           <Field label="Senha" name="password" type="password" />
-          <Submit>Entrar no ION Challenge</Submit>
+          <Submit>Entrar no ION OS</Submit>
         </form>
         <p className="small muted">
-          <ShieldCheck size={14} /> Acesso restrito a colaboradores. Solicite
+          <ShieldCheck size={14} /> Acesso restrito a usuários convidados. Solicite
           sua conta ao administrador.
         </p>
       </section>

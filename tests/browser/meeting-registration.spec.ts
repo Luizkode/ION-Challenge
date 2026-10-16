@@ -3,7 +3,7 @@ async function login(page: Page, role = "sdr") {
   await page.goto("/login");
   await page.getByLabel("Email profissional").fill(role + "@ion.test");
   await page.getByLabel("Senha", { exact: true }).fill("test-only-password");
-  await page.getByRole("button", { name: "Entrar no ION Challenge" }).click();
+  await page.getByRole("button", { name: "Entrar no ION OS" }).click();
   await page.waitForURL("/");
   await page.goto("/meetings");
 }

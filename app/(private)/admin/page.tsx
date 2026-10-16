@@ -3,6 +3,8 @@ import { session, check } from "@/lib/session";
 import { adminOperation } from "@/app/actions";
 import { Field, Select, Notice, Empty } from "@/components/ui";
 import { Submit } from "@/components/submit";
+import { ConfirmedAdminForm } from "@/components/confirmed-admin-form";
+import { ParticipantControls } from "@/components/participant-controls";
 const hidden = (operation: string) => (
   <input type="hidden" name="operation" value={operation} />
 );
@@ -190,7 +192,10 @@ export default async function Admin({
           (convite). Cadastre abaixo o UUID para conceder o perfil. Não há
           cadastro público.
         </p>
-        <form action={adminOperation} className="form-grid">
+        <ConfirmedAdminForm
+          confirmation="Confirma criar ou atualizar o colaborador com o perfil selecionado?"
+          submitLabel="Criar / atualizar colaborador"
+        >
           {hidden("profile")}
           <Field name="id" label="UUID do usuário em Authentication" />
           <Field name="name" label="Nome" />
@@ -203,8 +208,17 @@ export default async function Admin({
             <option value="true">Ativo</option>
             <option value="false">Inativo</option>
           </Select>
-          <Submit>Criar / atualizar colaborador</Submit>
-        </form>
+          <Select
+            name="remove_from_campaign"
+            label="Remover da campanha em aberto ao mudar de perfil"
+          >
+            <option value="false">Não</option>
+            <option value="true">
+              Sim, remover e alterar perfil na mesma operação
+            </option>
+          </Select>
+          <Field name="reason" label="Justificativa" />
+        </ConfirmedAdminForm>
         <div className="table-scroll">
           <table>
             <thead>
@@ -213,6 +227,7 @@ export default async function Admin({
                 <th>Perfil</th>
                 <th>Situação</th>
                 <th>Identificador para edição</th>
+                <th>Participação / perfil</th>
               </tr>
             </thead>
             <tbody>
@@ -222,6 +237,25 @@ export default async function Admin({
                   <td>{p.role}</td>
                   <td>{p.active ? "Ativo" : "Inativo"}</td>
                   <td className="small">{p.id}</td>
+                  <td>
+                    <p className="small muted">
+                      {participants.data?.find(
+                        (cp) =>
+                          cp.campaign_id === ca?.id && cp.profile_id === p.id,
+                      )?.active
+                        ? "Na campanha"
+                        : "Fora da campanha"}
+                    </p>
+                    <ParticipantControls
+                      profile={p}
+                      campaignId={ca?.id}
+                      membership={participants.data?.find(
+                        (cp) =>
+                          cp.campaign_id === ca?.id && cp.profile_id === p.id,
+                      )}
+                      teams={teams}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -243,39 +277,13 @@ export default async function Admin({
           <Field label="Nome" name="name" />
           <Submit>Criar / renomear time</Submit>
         </form>
-        {ca && (
-          <form action={adminOperation} className="form-grid">
-            {hidden("participant")}
-            <input type="hidden" name="campaign_id" value={ca.id} />
-            <Select label="SDR" name="profile_id">
-              {profiles
-                .filter((p) => p.role === "sdr" && p.active)
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-            </Select>
-            <Select label="Time (máximo 5)" name="team_id">
-              {teams.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </Select>
-            <Select label="Ação" name="remove">
-              <option value="false">Vincular / mover</option>
-              <option value="true">Remover vínculo</option>
-            </Select>
-            <Submit>Atualizar vínculo</Submit>
-          </form>
-        )}
         <p className="muted small">
-          O vínculo fica congelado após a primeira oportunidade, preservando o
-          time da campanha.
+          Use as ações por colaborador para adicionar ou remover participantes.
+          A remoção preserva o histórico; a reinclusão deve manter o time
+          original quando houver oportunidades.
         </p>
         {participants.data
-          ?.filter((p) => p.campaign_id === ca?.id)
+          ?.filter((p) => p.campaign_id === ca?.id && p.active)
           .map((p) => (
             <p className="small" key={p.profile_id}>
               {p.profiles?.name} · {p.teams?.name}

@@ -1,16 +1,10 @@
+import { hasFunction } from "@/lib/access";
 import Link from "next/link";
 import { session } from "@/lib/session";
 import { logout } from "@/app/actions";
-import {
-  LayoutDashboard,
-  CalendarDays,
-  CheckCheck,
-  Settings,
-  LogOut,
-  History,
-  ArrowUpRight,
-} from "lucide-react";
+import { LogOut, ArrowUpRight } from "lucide-react";
 import { Live } from "@/components/live";
+import { OSNavigation } from "@/components/os-navigation";
 export const dynamic = "force-dynamic";
 export default async function Layout({
   children,
@@ -22,40 +16,21 @@ export default async function Layout({
     <div className="shell">
       <aside>
         <Link className="wordmark" href="/">
-          ION<span> / CHALLENGE</span>
+          ION<span> / OS</span>
         </Link>
-        <p className="eyebrow nav-label">WORKSPACE</p>
-        <nav>
-          <Link href="/">
-            <LayoutDashboard size={18} />
-            Visão geral
-          </Link>
-          <Link href="/meetings">
-            <CalendarDays size={18} />
-            {profile.role === "sdr" ? "Minhas reuniões" : "Reuniões"}
-          </Link>
-          {profile.role !== "sdr" && (
-            <Link href="/validation">
-              <CheckCheck size={18} />
-              Validação
-            </Link>
-          )}
-          <Link href="/history">
-            <History size={18} />
-            Meu perfil e histórico
-          </Link>
-          {profile.role === "admin" && (
-            <Link href="/admin">
-              <Settings size={18} />
-              Administração
-            </Link>
-          )}
-        </nav>
+        <p className="eyebrow nav-label">AGENCY OPERATING SYSTEM</p>
+        <OSNavigation profile={profile} />
         <div className="sidebar-bottom">
           <span className="avatar">{profile.name.slice(0, 1)}</span>
           <div>
             <strong>{profile.name}</strong>
-            <small>{profile.role.toUpperCase()}</small>
+            <small>
+              {profile.category === "admin"
+                ? "ADMINISTRADOR"
+                : profile.category === "partner"
+                  ? "PARCEIRO"
+                  : "COLABORADOR"}
+            </small>
           </div>
           <form action={logout}>
             <button className="icon-button" aria-label="Sair">
@@ -66,9 +41,16 @@ export default async function Layout({
       </aside>
       <div className="workspace">
         <header>
-          <span className="muted">Performance / Challenge</span>
+          <span className="muted">ION OS</span>
           <Live />
-          {profile.role === "sdr" && (
+          <Link
+            className="profile-link muted small"
+            href="/account"
+            title={profile.name}
+          >
+            {profile.name}
+          </Link>
+          {hasFunction(profile, "sdr") && (
             <Link href="/meetings/new" className="button">
               + Nova reunião <ArrowUpRight size={16} />
             </Link>
@@ -76,7 +58,7 @@ export default async function Layout({
         </header>
         <main className="content">{children}</main>
         <footer>
-          AGÊNCIA ION <span>Resultados reais. Reconhecimento justo.</span>
+          AGÊNCIA ION <span>Agency Operating System</span>
         </footer>
       </div>
     </div>

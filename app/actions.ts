@@ -1,4 +1,5 @@
 "use server";
+import { hasFunction } from "@/lib/access";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -30,14 +31,14 @@ export async function changePassword(form: FormData) {
   const { db } = await session();
   const password = String(form.get("password"));
   if (password.length < 12)
-    jump("/history", "Use uma senha de pelo menos 12 caracteres.");
+    jump("/account", "Use uma senha de pelo menos 12 caracteres.");
   const { error } = await db.auth.updateUser({ password });
-  if (error) jump("/history", "Não foi possível atualizar a senha.");
-  jump("/history", "Senha atualizada.", "success");
+  if (error) jump("/account", "Não foi possível atualizar a senha.");
+  jump("/account", "Senha atualizada.", "success");
 }
 export async function createMeeting(form: FormData) {
   const { db, profile } = await session();
-  if (profile.role !== "sdr")
+  if (!hasFunction(profile, "sdr"))
     jump("/meetings", "Apenas SDRs podem cadastrar reuniões.");
   const result = meetingSchema.safeParse(Object.fromEntries(form));
   if (!result.success)
@@ -75,5 +76,15 @@ export async function adminOperation(form: FormData) {
   const { error } = await db.rpc("admin_operation", { operation, data });
   if (error) jump("/admin", error.message);
   revalidatePath("/", "layout");
-  jump("/admin", "Alteração salva e auditada.", "success");
+  const message =
+    operation === "participant"
+      ? data.remove === "true"
+        ? "Participante removido da campanha e dos rankings. Histórico preservado."
+        : "Participante adicionado à campanha. Rankings atualizados."
+      : operation === "profile"
+        ? data.remove_from_campaign === "true"
+          ? "Perfil atualizado e participação removida na mesma operação. Histórico preservado."
+          : "Perfil atualizado. Permissões aplicadas às próximas operações."
+        : "Alteração salva e auditada.";
+  jump("/admin", message, "success");
 }

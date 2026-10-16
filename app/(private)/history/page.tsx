@@ -1,3 +1,5 @@
+import { commercialAccess } from "@/lib/access";
+import { redirect } from "next/navigation";
 import { session, check } from "@/lib/session";
 import { changePassword } from "@/app/actions";
 import { Field, Empty, Notice, labels } from "@/components/ui";
@@ -8,6 +10,15 @@ export default async function History({
   searchParams: Promise<{ error?: string; success?: string }>;
 }) {
   const { db, profile, user } = await session();
+  if (!commercialAccess(profile))
+    redirect(
+      profile.category === "partner"
+        ? "/partners"
+        : "/?error=" +
+            encodeURIComponent(
+              "Você não tem permissão para acessar este recurso.",
+            ),
+    );
   const { data, error } = await db
     .from("meeting_validations")
     .select("*,meetings(opportunities(company))")

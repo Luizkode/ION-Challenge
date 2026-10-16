@@ -20,13 +20,27 @@ test("PostgreSQL: workflow, pontuação, RLS e antifraude", async (t) => {
       "utf8",
     ),
   );
+  await db.exec(
+    await readFile(
+      new URL(
+        "../supabase/migrations/002_participant_management.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  await db.exec(
+    await readFile(
+      new URL("../supabase/migrations/003_access_control.sql", import.meta.url),
+      "utf8",
+    ),
+  );
   for (const [role, id] of Object.entries(ids)) {
     await db.query("insert into auth.users values($1)", [id]);
-    await db.query("insert into profiles values($1,$2,$3,true)", [
-      id,
-      role,
-      role === "other" ? "closer" : role === "sdr2" ? "sdr" : role,
-    ]);
+    await db.query(
+      "insert into profiles(id,name,role,active) values($1,$2,$3,true)",
+      [id, role, role === "other" ? "closer" : role === "sdr2" ? "sdr" : role],
+    );
   }
   const team = (
     await db.query<{ id: string }>(
@@ -39,7 +53,7 @@ test("PostgreSQL: workflow, pontuação, RLS e antifraude", async (t) => {
     )
   ).rows[0].id;
   await db.query(
-    "insert into campaign_participants values($1,$2,$3),($1,$4,$3)",
+    "insert into campaign_participants(campaign_id,profile_id,team_id) values($1,$2,$3),($1,$4,$3)",
     [ca, ids.sdr, team, ids.sdr2],
   );
   const actor = async (id: string) => {
@@ -359,7 +373,7 @@ test("PostgreSQL: workflow, pontuação, RLS e antifraude", async (t) => {
         const id = "20000000-0000-0000-0000-" + String(i).padStart(12, "0");
         await db.query("insert into auth.users values($1)", [id]);
         await db.query(
-          "insert into profiles values($1,'Participante','sdr',true)",
+          "insert into profiles(id,name,role,active) values($1,'Participante','sdr',true)",
           [id],
         );
       }

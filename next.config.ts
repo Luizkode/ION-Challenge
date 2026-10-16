@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+import { verifySupabaseConfiguration } from "./lib/supabase-config";
+verifySupabaseConfiguration(process.env);
 const config: NextConfig = {
   poweredByHeader: false,
   async headers() {

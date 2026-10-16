@@ -1,3 +1,4 @@
+import { hasFunction } from "@/lib/access";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { session } from "@/lib/session";
@@ -11,7 +12,18 @@ export default async function NewMeeting({
   searchParams: Promise<{ error?: string; success?: string }>;
 }) {
   const { db, profile } = await session();
-  if (profile.role !== "sdr") redirect("/meetings");
+  if (!hasFunction(profile, "sdr"))
+    redirect(
+      profile.category === "partner"
+        ? "/partners"
+        : hasFunction(profile, "closer")
+          ? "/meetings"
+          : "/?error=" +
+            encodeURIComponent(
+              "Você não tem permissão para acessar este recurso.",
+            ),
+    );
+
   const params = await searchParams;
   const [campaignResult, closerResult] = await Promise.all([
     db
@@ -19,12 +31,7 @@ export default async function NewMeeting({
       .select("id,state,starts_at,ends_at")
       .eq("state", "active")
       .maybeSingle(),
-    db
-      .from("profiles")
-      .select("id,name")
-      .eq("role", "closer")
-      .eq("active", true)
-      .order("name"),
+    db.rpc("available_closers"),
   ]);
   const campaign = campaignResult.data;
   const [participantResult, opportunityResult] = campaign
@@ -34,6 +41,7 @@ export default async function NewMeeting({
           .select("team_id")
           .eq("campaign_id", campaign.id)
           .eq("profile_id", profile.id)
+          .eq("active", true)
           .maybeSingle(),
         db
           .from("opportunities")
@@ -112,7 +120,7 @@ export default async function NewMeeting({
             />
             <Select label="Closer responsável" name="closer_id" required>
               <option value="">Selecione</option>
-              {closerResult.data?.map((c) => (
+              {closerResult.data?.map((c: { id: string; name: string }) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>

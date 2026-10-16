@@ -1,3 +1,4 @@
+import type { Access } from "./access";
 import { redirect } from "next/navigation";
 import { configured, supabase } from "./supabase";
 export async function session() {
@@ -17,13 +18,17 @@ export async function session() {
       "/login?error=" +
         encodeURIComponent("Conta sem perfil ativo. Contate o administrador."),
     );
+  const { data: access, error: accessError } = await db.rpc("current_access");
+  if (accessError || !access || !Array.isArray(access.functions))
+    throw new Error(
+      "Não foi possível carregar as permissões. Verifique a migration 003 e a conexão.",
+    );
   return {
     db,
     user,
-    profile: profile as {
+    profile: { ...profile, ...access } as Access & {
       id: string;
       name: string;
-      role: "sdr" | "closer" | "admin";
       active: boolean;
     },
   };
