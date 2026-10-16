@@ -4,7 +4,7 @@ import { verifySupabaseConfiguration } from "./lib/supabase-config";
 export async function proxy(request: NextRequest) {
   verifySupabaseConfiguration(process.env);
   let response = NextResponse.next({ request });
-  const isPublic = request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/auth/callback";
+  const isPublic = ["/login", "/auth/callback", "/auth/complete"].includes(request.nextUrl.pathname);
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
