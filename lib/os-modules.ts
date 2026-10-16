@@ -29,7 +29,7 @@ export const osModules = [
     name: "Clientes e Serviços",
     roles: ["admin"],
     description:
-      "Cadastro de clientes, contratos de prestação de serviços, responsáveis e entregas serão implementados na Etapa 4.",
+      "Clientes, contratos, serviços, responsáveis e documentos operacionais.",
   },
   {
     id: "analytics",
@@ -102,7 +102,7 @@ export function canAccessModule(
       (hasFunction(access, "sdr") || hasFunction(access, "closer"))
     );
   if (moduleId === "clients")
-    return access.functions.some((f) =>
+    return access.clients === true || access.functions.some((f) =>
       ["traffic", "designer", "video_editor", "copywriter"].includes(f),
     );
   if (moduleId === "analytics") return hasFunction(access, "traffic");
