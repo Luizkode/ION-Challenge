@@ -44,6 +44,7 @@ test("Finance PostgreSQL: ledger, recurrence, commissions, isolation and audit",
     "006_operational_conversion_matching.sql",
     "007_finance.sql",
     "008_finance_historical_mrr.sql",
+    "009_finance_commission_origin.sql",
   ])
     await db.exec(
       await readFile(
@@ -436,6 +437,14 @@ test("Finance PostgreSQL: ledger, recurrence, commissions, isolation and audit",
       });
       assert.equal(report.stats.commission_pending, "120.16");
       assert.equal(report.entries.filter((e: any) => e.rule_id).length, 2);
+      assert(
+        report.entries
+          .filter((e: any) => e.rule_id)
+          .every(
+            (e: any) =>
+              e.company === "Empresa" && e.commercial_reference === "FIN-COMM",
+          ),
+      );
       await db.exec("reset role");
       await db.query("update contracts set active=false where id=$1", [
         uid(23),

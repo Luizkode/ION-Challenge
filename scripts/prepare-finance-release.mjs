@@ -19,13 +19,24 @@ const mrr = (
 )
   .replace("BEGIN;", "")
   .replace(/COMMIT;\s*$/, "");
+const origin = (
+  await readFile(
+    new URL("supabase/migrations/009_finance_commission_origin.sql", root),
+    "utf8",
+  )
+)
+  .replace("BEGIN;", "")
+  .replace(/COMMIT;\s*$/, "");
 sql = sql
   .replace(
     "BEGIN;",
     () =>
       `BEGIN;\nDO $$ BEGIN IF to_regclass('public.ops_clients') IS NULL OR to_regclass('public.fin_entries') IS NOT NULL THEN RAISE EXCEPTION 'Requires exact schema 006; do not reapply';END IF;END $$;`,
   )
-  .replace(/COMMIT;\s*$/, () => mrr + "\n" + checks + "\nCOMMIT;\n");
+  .replace(
+    /COMMIT;\s*$/,
+    () => mrr + "\n" + origin + "\n" + checks + "\nCOMMIT;\n",
+  );
 const output = resolve(
   process.argv.find((v) => v.startsWith("--output="))?.slice(9) ??
     "/tmp/ion-os-finance-release",
@@ -36,7 +47,11 @@ await writeFile(
   resolve(output, "manifest.json"),
   JSON.stringify(
     {
-      migrations: ["007_finance.sql", "008_finance_historical_mrr.sql"],
+      migrations: [
+        "007_finance.sql",
+        "008_finance_historical_mrr.sql",
+        "009_finance_commission_origin.sql",
+      ],
       sha256: createHash("sha256").update(sql).digest("hex"),
       remote_execution: false,
     },

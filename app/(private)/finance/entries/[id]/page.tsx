@@ -100,6 +100,7 @@ export default async function Entry({
         <p>
           Cliente:{" "}
           {options.companies.find((c) => c.id === e.company_id)?.name ??
+            e.company ??
             "Avulso"}
         </p>
         {e.company_id && (
@@ -110,6 +111,7 @@ export default async function Entry({
         <p>
           Contrato:{" "}
           {options.contracts.find((c) => c.id === e.contract_id)?.reference ??
+            e.commercial_reference ??
             e.commercial_contract_id ??
             "Sem contrato"}
         </p>
