@@ -172,6 +172,7 @@ export type FinEntry = {
   beneficiary?: string;
   rule_id?: string;
   commercial_contract_id?: string;
+  commercial_reference?: string;
   rule_snapshot?: unknown;
 };
 export type Schedule = {
