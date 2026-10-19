@@ -192,9 +192,5 @@ export async function downloadFile(
   const record = await db.rpc("ops_download", { fid: id });
   if (record.error)
     return { error: "Documento indisponível ou sem permissão." };
-  const r = await db.storage
-    .from("ion-os-documents")
-    .createSignedUrl(record.data.path, 60, { download: record.data.name });
-  if (r.error) return { error: "Não foi possível autorizar o download." };
-  return { url: r.data.signedUrl };
+  return { url: "/clients/files/" + id };
 }

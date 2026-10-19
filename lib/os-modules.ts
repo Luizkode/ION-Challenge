@@ -37,7 +37,7 @@ export const osModules = [
     name: "Analytics",
     roles: ["admin"],
     description:
-      "Métricas por cliente, relatórios e integrações serão implementados na Etapa 6. Nenhuma métrica de mídia está sendo simulada.",
+      "Resultados reais por cliente, campanhas, relatórios e publicação controlada para parceiros.",
   },
   {
     id: "finance",
@@ -60,7 +60,7 @@ export const osModules = [
     name: "Parceiros",
     roles: ["admin"],
     description:
-      "Ambiente exclusivo de consulta às empresas vinculadas. Serviços, resultados, relatórios e documentos serão ampliados nas próximas etapas.",
+      "Consulta exclusiva a resultados, serviços, relatórios e documentos publicados para empresas vinculadas.",
   },
   {
     id: "settings",
@@ -105,6 +105,6 @@ export function canAccessModule(
     return access.clients === true || access.functions.some((f) =>
       ["traffic", "designer", "video_editor", "copywriter"].includes(f),
     );
-  if (moduleId === "analytics") return hasFunction(access, "traffic");
+  if (moduleId === "analytics") return access.analytics === true || hasFunction(access, "traffic");
   return false;
 }

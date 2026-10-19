@@ -1,3 +1,4 @@
+import { AnalyticsOverview } from "@/components/analytics-overview";
 import { FinanceOverview } from "@/components/finance-overview";
 import { OperationsOverview } from "@/components/operations-overview";
 import { redirect } from "next/navigation";
@@ -33,6 +34,7 @@ export default async function Dashboard({
         </div>
         <OperationsOverview />
         <FinanceOverview />
+        <AnalyticsOverview />
         <section className="panel">
           <div className="panel-title">
             <h2>Clientes atribuídos</h2>
@@ -188,6 +190,7 @@ export default async function Dashboard({
       </section>
       <OperationsOverview />
       <FinanceOverview />
+      <AnalyticsOverview />
       <CommercialChart
         scheduled={summary.scheduled}
         held={summary.held}

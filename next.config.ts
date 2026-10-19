@@ -3,6 +3,9 @@ import { verifySupabaseConfiguration } from "./lib/supabase-config";
 verifySupabaseConfiguration(process.env);
 const config: NextConfig = {
   poweredByHeader: false,
+  outputFileTracingIncludes: {
+    "/analytics/reports/*/pdf": ["./assets/fonts/*.ttf"],
+  },
   experimental: { serverActions: { bodySizeLimit: "3mb" } },
   async headers() {
     return [

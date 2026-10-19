@@ -41,8 +41,32 @@ test("PostgreSQL: workflow, pontuação, RLS e antifraude", async (t) => {
       "utf8",
     ),
   );
-  await db.exec(await readFile(new URL("./fixtures/storage.sql", import.meta.url), "utf8"));
-  await db.exec(await readFile(new URL("../supabase/migrations/005_clients_services.sql", import.meta.url), "utf8"));
+  await db.exec(
+    await readFile(new URL("./fixtures/storage.sql", import.meta.url), "utf8"),
+  );
+  await db.exec(
+    await readFile(
+      new URL(
+        "../supabase/migrations/005_clients_services.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  await db.exec(await readFile(new URL("./fixtures/storage-operations.sql",import.meta.url),"utf8"));
+  for (const name of [
+    "006_operational_conversion_matching.sql",
+    "007_finance.sql",
+    "008_finance_historical_mrr.sql",
+    "009_finance_commission_origin.sql",
+    "010_analytics_partners.sql",
+  ])
+    await db.exec(
+      await readFile(
+        new URL("../supabase/migrations/" + name, import.meta.url),
+        "utf8",
+      ),
+    );
   for (const [role, id] of Object.entries(ids)) {
     await db.query("insert into auth.users values($1)", [id]);
     await db.query(
