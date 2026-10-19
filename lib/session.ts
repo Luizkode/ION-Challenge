@@ -1,7 +1,8 @@
+import { cache } from "react";
 import type { Access } from "./access";
 import { redirect } from "next/navigation";
 import { configured, supabase } from "./supabase";
-export async function session() {
+export const session = cache(async function session() {
   if (!configured()) redirect("/login");
   const db = await supabase();
   const {
@@ -32,7 +33,7 @@ export async function session() {
       active: boolean;
     },
   };
-}
+});
 export function check(error: { message: string } | null) {
   if (error)
     throw new Error(

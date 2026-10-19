@@ -19,6 +19,10 @@ function done(path: string, message: string, error = false): never {
       encodeURIComponent(message),
   );
 }
+function leadPath(form: FormData, field = "lead_id") {
+  const id = z.string().uuid().safeParse(form.get(field));
+  return id.success ? "/crm/" + id.data : "/crm";
+}
 function errorText(code?: string, message?: string) {
   if (code === "23505")
     return "Registro duplicado. Consulte o cadastro existente.";
@@ -57,14 +61,14 @@ export async function addActivity(form: FormData) {
         .optional(),
     })
     .safeParse(Object.fromEntries(form));
-  if (!parsed.success) done("/crm", "Revise a atividade.", true);
+  if (!parsed.success) done(leadPath(form), "Revise a atividade.", true);
   await execute("crm_activity", parsed.data, "/crm/" + parsed.data.lead_id);
   done("/crm/" + parsed.data.lead_id, "Atividade registrada.");
 }
 export async function scheduleCrm(form: FormData) {
   const parsed = meetingInput.safeParse(Object.fromEntries(form));
   if (!parsed.success)
-    done("/crm", "Informe data, horário e closer válidos.", true);
+    done(leadPath(form), "Informe data, horário e closer válidos.", true);
   await execute(
     "crm_schedule_meeting",
     parsed.data,
@@ -77,7 +81,8 @@ export async function scheduleCrm(form: FormData) {
 }
 export async function recordDeal(form: FormData) {
   const parsed = dealInput.safeParse(Object.fromEntries(form));
-  if (!parsed.success) done("/crm", "Revise valor, serviços e prazo.", true);
+  if (!parsed.success)
+    done(leadPath(form), "Revise valor, serviços e prazo.", true);
   await execute("crm_record_deal", parsed.data, "/crm/" + parsed.data.lead_id);
   done(
     "/crm/" + parsed.data.lead_id,
@@ -109,7 +114,7 @@ export async function validateCrm(form: FormData) {
       notes: z.string().max(2000),
     })
     .safeParse(Object.fromEntries(form));
-  if (!p.success) done("/crm", "Dados inválidos de validação.", true);
+  if (!p.success) done(leadPath(form), "Dados inválidos de validação.", true);
   await execute("validate_meeting", p.data, "/crm/" + p.data.lead_id);
   done(
     "/crm/" + p.data.lead_id,

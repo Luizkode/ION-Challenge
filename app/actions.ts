@@ -1,6 +1,7 @@
 "use server";
 import { hasFunction } from "@/lib/access";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { configured, supabase } from "@/lib/supabase";
@@ -24,7 +25,19 @@ export async function login(form: FormData) {
 }
 export async function logout() {
   const db = await supabase();
-  await db.auth.signOut();
+  // End this browser's session without unexpectedly signing out other devices.
+  try {
+    await db.auth.signOut({ scope: "local" });
+  } catch {
+    /* Clear this browser even when Auth is temporarily unreachable. */
+  }
+  const jar = await cookies();
+  const project = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname.split(
+    ".",
+  )[0];
+  for (const cookie of jar.getAll())
+    if (cookie.name.startsWith("sb-" + project + "-auth-token"))
+      jar.delete(cookie.name);
   redirect("/login");
 }
 export async function changePassword(form: FormData) {
@@ -74,7 +87,10 @@ export async function adminOperation(form: FormData) {
   const operation = String(data.operation);
   delete data.operation;
   const { error } = await db.rpc("admin_operation", { operation, data });
-  if (error) jump("/admin", error.message);
+  const path = ["correct_meeting", "duplicate_exception"].includes(operation)
+    ? "/meetings"
+    : "/admin";
+  if (error) jump(path, error.message);
   revalidatePath("/", "layout");
   const message =
     operation === "participant"
@@ -86,5 +102,5 @@ export async function adminOperation(form: FormData) {
           ? "Perfil atualizado e participação removida na mesma operação. Histórico preservado."
           : "Perfil atualizado. Permissões aplicadas às próximas operações."
         : "Alteração salva e auditada.";
-  jump("/admin", message, "success");
+  jump(path, message, "success");
 }
