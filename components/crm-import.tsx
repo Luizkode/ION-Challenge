@@ -77,7 +77,12 @@ export function CrmImport({
       {rows.length > 0 && (
         <>
           <h3>Prévia · {rows.length} leads</h3>
-          <div className="table-scroll">
+          <div
+            className="table-scroll"
+            tabIndex={0}
+            role="region"
+            aria-label="Tabela com rolagem horizontal"
+          >
             <table>
               <thead>
                 <tr>
@@ -111,17 +116,23 @@ export function CrmImport({
             disabled={pending || errors.length > 0 || (admin && !owner)}
             onClick={() =>
               start(async () => {
-                const result = await importLeads(
-                  rows.map((r) => ({
-                    ...r,
-                    ...(admin ? { sdr_id: owner } : {}),
-                  })),
-                );
-                if (result.error) setErrors([result.error]);
-                else {
-                  setRows([]);
-                  setMessage(`${result.count} leads importados.`);
-                  router.refresh();
+                try {
+                  const result = await importLeads(
+                    rows.map((r) => ({
+                      ...r,
+                      ...(admin ? { sdr_id: owner } : {}),
+                    })),
+                  );
+                  if (result.error) setErrors([result.error]);
+                  else {
+                    setRows([]);
+                    setMessage(`${result.count} leads importados.`);
+                    router.refresh();
+                  }
+                } catch {
+                  setErrors([
+                    "Não foi possível importar. Verifique a conexão; a prévia foi preservada.",
+                  ]);
                 }
               })
             }

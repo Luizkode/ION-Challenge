@@ -12,7 +12,7 @@ export function DateField({
   const [iso, setIso] = useState(value ? String(value) : "");
   const [local, setLocal] = useState("");
   useEffect(() => {
-    if (value) {
+    if (value && Number.isFinite(Date.parse(String(value)))) {
       const date = new Date(String(value));
       setLocal(
         new Date(date.getTime() - date.getTimezoneOffset() * 60000)
@@ -26,6 +26,7 @@ export function DateField({
     <>
       <input
         type="datetime-local"
+        name={name + "__local"}
         value={local}
         required={required}
         onChange={(e) => {

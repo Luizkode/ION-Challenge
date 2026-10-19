@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+import { ActionForm } from "@/components/action-form";
 import { login } from "@/app/actions";
 import { configured } from "@/lib/supabase";
 import { Field, Notice } from "@/components/ui";
@@ -44,14 +46,14 @@ export default async function Login({
             demonstrativo é utilizado.
           </p>
         )}
-        <form action={login}>
+        <ActionForm action={login}>
           <Field label="Email profissional" name="email" type="email" />
           <Field label="Senha" name="password" type="password" />
           <Submit>Entrar no ION OS</Submit>
-        </form>
+        </ActionForm>
         <p className="small muted">
-          <ShieldCheck size={14} /> Acesso restrito a usuários convidados. Solicite
-          sua conta ao administrador.
+          <ShieldCheck size={14} /> Acesso restrito a usuários convidados.
+          Solicite sua conta ao administrador.
         </p>
       </section>
     </main>

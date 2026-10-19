@@ -1,3 +1,4 @@
+import { ActionForm } from "@/components/action-form";
 import Link from "next/link";
 import { crmContext, crmDirectory } from "@/lib/crm-server";
 import { hasFunction } from "@/lib/access";
@@ -63,7 +64,9 @@ export default async function Crm({
         from: period.start,
         to: period.end,
         owner,
-        stage: stageCodes.includes(p.stage as keyof typeof stages) ? p.stage : "",
+        stage: stageCodes.includes(p.stage as keyof typeof stages)
+          ? p.stage
+          : "",
       },
     }),
     db
@@ -251,7 +254,12 @@ export default async function Crm({
             </p>
           </div>
         ) : leads.length ? (
-          <div className="table-scroll">
+          <div
+            className="table-scroll"
+            tabIndex={0}
+            role="region"
+            aria-label="Tabela com rolagem horizontal"
+          >
             <table>
               <thead>
                 <tr>
@@ -328,7 +336,12 @@ export default async function Crm({
         <div className="panel-title">
           <h2>Desempenho por SDR e closer</h2>
         </div>
-        <div className="table-scroll">
+        <div
+          className="table-scroll"
+          tabIndex={0}
+          role="region"
+          aria-label="Tabela com rolagem horizontal"
+        >
           <table>
             <thead>
               <tr>
@@ -379,7 +392,7 @@ export default async function Crm({
                 )
                 .join(", ") || "Nenhum"}
             </p>
-            <form action={grantCrm} className="form-grid">
+            <ActionForm action={grantCrm} className="form-grid">
               <Select name="profile_id" label="Colaborador" required>
                 {employees.data?.map((e) => (
                   <option key={e.id} value={e.id}>
@@ -397,7 +410,7 @@ export default async function Crm({
                 Confirmo a alteração de permissão
               </label>
               <Submit>Atualizar permissão</Submit>
-            </form>
+            </ActionForm>
           </details>
         </section>
       )}

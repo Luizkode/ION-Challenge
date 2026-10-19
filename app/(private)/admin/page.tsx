@@ -1,3 +1,6 @@
+import { pageNumber, pageSize } from "@/lib/pagination";
+import { Pagination } from "@/components/pagination";
+import { ActionForm } from "@/components/action-form";
 import { redirect } from "next/navigation";
 import { session, check } from "@/lib/session";
 import { adminOperation } from "@/app/actions";
@@ -11,10 +14,16 @@ const hidden = (operation: string) => (
 export default async function Admin({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; success?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    success?: string;
+    audit_page?: string;
+  }>;
 }) {
   const { db, profile } = await session();
   if (profile.role !== "admin") redirect("/");
+  const params = await searchParams,
+    auditPage = pageNumber(params.audit_page);
   const results = await Promise.all([
     db.from("profiles").select("*").order("name"),
     db.from("teams").select("*").order("name"),
@@ -32,9 +41,9 @@ export default async function Admin({
       .order("closed_at", { ascending: false }),
     db
       .from("audit_logs")
-      .select("*")
+      .select("*", { count: "exact" })
       .order("id", { ascending: false })
-      .limit(100),
+      .range((auditPage - 1) * pageSize, auditPage * pageSize - 1),
     db.from("campaign_participants").select("*,profiles(name),teams(name)"),
   ]);
   results.forEach((r) => check(r.error));
@@ -55,7 +64,7 @@ export default async function Admin({
           </p>
         </div>
       </div>
-      <Notice params={await searchParams} />
+      <Notice params={params} />
       <div className="stats">
         {[
           ["Colaboradores", profiles.length],
@@ -76,7 +85,7 @@ export default async function Admin({
         <h2>Campanha</h2>
         {ca ? (
           <>
-            <form action={adminOperation} className="form-grid">
+            <ActionForm action={adminOperation} className="form-grid">
               {hidden("campaign")}
               <input type="hidden" name="id" value={ca.id} />
               <Field name="name" label="Nome" value={ca.name} />
@@ -148,14 +157,14 @@ export default async function Admin({
                 <option value="true">Sim, conferi e autorizo</option>
               </Select>
               <Submit>Salvar campanha</Submit>
-            </form>
+            </ActionForm>
             <details>
               <summary>Encerramento e conferência do vencedor</summary>
               <p className="muted small">
                 Permitido somente após o período. Meta não alcançada encerra sem
                 prêmio. Empate exige decisão justificada entre os líderes.
               </p>
-              <form action={adminOperation} className="form-grid">
+              <ActionForm action={adminOperation} className="form-grid">
                 {hidden("finalize")}
                 <input type="hidden" name="id" value={ca.id} />
                 <Select label="Vencedor conferido" name="winner_id">
@@ -173,16 +182,16 @@ export default async function Admin({
                   label="Justificativa da conferência / desempate"
                 />
                 <Submit>Finalizar campanha</Submit>
-              </form>
+              </ActionForm>
             </details>
           </>
         ) : (
-          <form action={adminOperation} className="form-grid">
+          <ActionForm action={adminOperation} className="form-grid">
             {hidden("new_campaign")}
             <Field name="name" label="Nome da próxima campanha" />
             <Field name="prize" label="Prêmio" />
             <Submit>Criar campanha em configuração</Submit>
-          </form>
+          </ActionForm>
         )}
       </section>
       <section className="panel padded">
@@ -219,7 +228,12 @@ export default async function Admin({
           </Select>
           <Field name="reason" label="Justificativa" />
         </ConfirmedAdminForm>
-        <div className="table-scroll">
+        <div
+          className="table-scroll"
+          tabIndex={0}
+          role="region"
+          aria-label="Tabela com rolagem horizontal"
+        >
           <table>
             <thead>
               <tr>
@@ -264,7 +278,7 @@ export default async function Admin({
       </section>
       <section className="panel padded">
         <h2>Times e participantes</h2>
-        <form action={adminOperation} className="form-grid">
+        <ActionForm action={adminOperation} className="form-grid">
           {hidden("team")}
           <Select label="Time" name="id">
             <option value="">Novo time</option>
@@ -276,7 +290,7 @@ export default async function Admin({
           </Select>
           <Field label="Nome" name="name" />
           <Submit>Criar / renomear time</Submit>
-        </form>
+        </ActionForm>
         <p className="muted small">
           Use as ações por colaborador para adicionar ou remover participantes.
           A remoção preserva o histórico; a reinclusão deve manter o time
@@ -292,7 +306,7 @@ export default async function Admin({
       </section>
       <section className="panel padded">
         <h2>Contratos</h2>
-        <form action={adminOperation} className="form-grid">
+        <ActionForm action={adminOperation} className="form-grid">
           {hidden("contract")}
           <Select label="Reunião válida vinculada" name="meeting_id">
             {meetings.map((m) => (
@@ -310,7 +324,7 @@ export default async function Admin({
           />
           <Field label="Observações" name="notes" required={false} />
           <Submit>Confirmar contrato</Submit>
-        </form>
+        </ActionForm>
         <p className="small muted">
           O SDR é identificado pela oportunidade vinculada. O contrato substitui
           a pontuação por 7; não soma 11.
@@ -329,12 +343,12 @@ export default async function Admin({
               {c.reference} · {c.closed_at}
             </p>
             {c.active && (
-              <form action={adminOperation} className="form-grid">
+              <ActionForm action={adminOperation} className="form-grid">
                 {hidden("void_contract")}
                 <input type="hidden" name="id" value={c.id} />
                 <Field label="Justificativa para anulação" name="reason" />
                 <Submit>Anular confirmação</Submit>
-              </form>
+              </ActionForm>
             )}
           </details>
         ))}
@@ -368,8 +382,16 @@ export default async function Admin({
             </details>
           ))
         ) : (
-          <Empty>Nenhuma ação registrada.</Empty>
+          <Empty>Nenhuma ação registrada nesta página.</Empty>
         )}
+        <Pagination
+          path="/admin"
+          params={params}
+          page={auditPage}
+          total={audit.count ?? 0}
+          pageKey="audit_page"
+          label="Paginação de auditoria"
+        />
       </section>
     </>
   );

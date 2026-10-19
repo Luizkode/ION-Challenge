@@ -47,8 +47,8 @@ export default async function Dashboard({
             ))
           ) : (
             <Empty>
-              Nenhuma empresa atribuída. Os indicadores dos serviços serão
-              disponibilizados nas próximas etapas.
+              Nenhuma empresa atribuída. Peça ao administrador para vincular seu
+              acesso aos clientes e serviços sob sua responsabilidade.
             </Empty>
           )}
         </section>
@@ -207,15 +207,13 @@ export default async function Dashboard({
             <div className="team-row" key={m.id}>
               <div>
                 <strong>{m.name}</strong>
-                <small>
-                  {["challenger", "crm"].includes(m.id)
-                    ? m.id === "crm"
-                      ? "Leads, funil, reuniões e negociações integradas."
-                      : "Campanhas, pontos e rankings preservados."
-                    : "Estrutura disponível · funcionalidades em desenvolvimento."}
-                </small>
+                <small>{m.description}</small>
               </div>
-              <Link className="button" href={m.path}>
+              <Link
+                className="button"
+                href={m.path}
+                aria-label={"Acessar " + m.name}
+              >
                 Acessar
               </Link>
             </div>
@@ -224,14 +222,14 @@ export default async function Dashboard({
       {profile.role === "admin" && (
         <section className="panel">
           <div className="panel-title">
-            <h2>Clientes e financeiro</h2>
-            <span className="badge">Próximas etapas</span>
+            <h2>Leitura dos indicadores</h2>
+            <span className="badge">Dados reais</span>
           </div>
           <Empty>
-            Receita recebida e prevista, despesas, saldo de caixa, cobranças e
-            inadimplência serão calculados quando os módulo Financeiro for
-            implementado. Esses valores ainda não estão disponíveis; contratos
-            comerciais não são tratados como dinheiro recebido.
+            Contratos comerciais não equivalem a dinheiro recebido. O Financeiro
+            considera liquidações e estornos; o Analytics mostra resultados dos
+            anunciantes. A pontuação permanece sujeita à validação e às regras
+            do Challenger.
           </Empty>
         </section>
       )}

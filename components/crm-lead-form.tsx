@@ -1,3 +1,4 @@
+import { ActionForm } from "@/components/action-form";
 import { saveLead } from "@/app/crm-actions";
 import { Field, Select } from "./ui";
 import { Submit } from "./submit";
@@ -14,7 +15,7 @@ export function CrmLeadForm({
   userId: string;
 }) {
   return (
-    <form action={saveLead} className="form-grid">
+    <ActionForm action={saveLead} className="form-grid">
       {lead && (
         <>
           <input type="hidden" name="id" value={lead.id} />
@@ -81,6 +82,6 @@ export function CrmLeadForm({
         <textarea name="notes" defaultValue={lead?.notes} maxLength={10000} />
       </label>
       <Submit>Salvar lead</Submit>
-    </form>
+    </ActionForm>
   );
 }

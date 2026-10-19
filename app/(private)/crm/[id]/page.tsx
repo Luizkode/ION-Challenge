@@ -1,3 +1,4 @@
+import { ActionForm } from "@/components/action-form";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -67,6 +68,10 @@ export default async function LeadDetails({
     admin || (hasFunction(profile, "sdr") && lead.sdr_id === profile.id);
   const canDeal =
     admin || (hasFunction(profile, "closer") && lead.closer_id === profile.id);
+  const canManage =
+    admin ||
+    (hasFunction(profile, "sdr") && lead.sdr_id === profile.id) ||
+    (hasFunction(profile, "closer") && lead.closer_id === profile.id);
   return (
     <>
       <div className="page-title">
@@ -89,36 +94,56 @@ export default async function LeadDetails({
       <section className="panel padded">
         <details>
           <summary>Cadastro e responsáveis</summary>
-          <CrmLeadForm
-            lead={lead}
-            people={people}
-            admin={admin}
-            userId={profile.id}
-          />
+          {canManage ? (
+            <CrmLeadForm
+              lead={lead}
+              people={people}
+              admin={admin}
+              userId={profile.id}
+            />
+          ) : (
+            <div className="padded">
+              <p>
+                {lead.company} · {lead.contact} · {lead.phone}
+              </p>
+              <p className="muted">
+                {lead.email || "Sem email"} · {lead.niche} · {lead.city} /{" "}
+                {lead.state}
+              </p>
+              <p className="small muted">
+                Origem: {lead.source}. Edição reservada aos responsáveis
+                comerciais.
+              </p>
+            </div>
+          )}
           <p className="table-note">
             Cadastro: {new Date(lead.created_at).toLocaleString("pt-BR")} ·
             Atualizado: {new Date(lead.updated_at).toLocaleString("pt-BR")}
           </p>
         </details>
-        <form action={archiveLead} className="crm-actions">
-          <input type="hidden" name="id" value={id} />
-          <input
-            type="hidden"
-            name="archived"
-            value={lead.archived ? "false" : "true"}
-          />
-          <label className="check">
-            <input type="checkbox" name="confirm" value="true" required />
-            Confirmo {lead.archived ? "restaurar" : "arquivar"} sem apagar
-            histórico
-          </label>
-          <Submit>{lead.archived ? "Restaurar lead" : "Arquivar lead"}</Submit>
-        </form>
+        {canManage && (
+          <ActionForm action={archiveLead} className="crm-actions">
+            <input type="hidden" name="id" value={id} />
+            <input
+              type="hidden"
+              name="archived"
+              value={lead.archived ? "false" : "true"}
+            />
+            <label className="check">
+              <input type="checkbox" name="confirm" value="true" required />
+              Confirmo {lead.archived ? "restaurar" : "arquivar"} sem apagar
+              histórico
+            </label>
+            <Submit>
+              {lead.archived ? "Restaurar lead" : "Arquivar lead"}
+            </Submit>
+          </ActionForm>
+        )}
       </section>
       {!lead.archived && (
         <section className="panel padded">
           <h2>Registrar abordagem / atividade</h2>
-          <form action={addActivity} className="form-grid">
+          <ActionForm action={addActivity} className="form-grid">
             <input type="hidden" name="version" value={lead.version} />
             <input type="hidden" name="lead_id" value={id} />
             <Select label="Tipo" name="kind">
@@ -157,7 +182,7 @@ export default async function LeadDetails({
               <textarea name="description" maxLength={4000} required />
             </label>
             <Submit>Registrar atividade</Submit>
-          </form>
+          </ActionForm>
         </section>
       )}
       {canSchedule && !lead.archived && (
@@ -168,7 +193,7 @@ export default async function LeadDetails({
             automaticamente. Fora de campanha, a reunião permanece no CRM sem
             pontuação.
           </p>
-          <form action={scheduleCrm} className="form-grid">
+          <ActionForm action={scheduleCrm} className="form-grid">
             <input type="hidden" name="lead_id" value={id} />
             <Field
               name="scheduled_at"
@@ -196,7 +221,7 @@ export default async function LeadDetails({
               required={false}
             />
             <Submit>Agendar reunião</Submit>
-          </form>
+          </ActionForm>
           {!people.some((p) => p.is_closer) && (
             <p className="notice error">
               Não há closer ativo. Solicite ao administrador a configuração de
@@ -236,7 +261,7 @@ export default async function LeadDetails({
                     m.closer_id === profile.id &&
                     lead.sdr_id !== profile.id)) &&
                   ["scheduled", "pending", "held"].includes(m.status) && (
-                    <form action={validateCrm} className="form-grid">
+                    <ActionForm action={validateCrm} className="form-grid">
                       <input type="hidden" name="id" value={m.id} />
                       <input type="hidden" name="lead_id" value={id} />
                       <Select name="attended" label="Comparecimento">
@@ -253,7 +278,7 @@ export default async function LeadDetails({
                         required={false}
                       />
                       <Submit>Validar reunião</Submit>
-                    </form>
+                    </ActionForm>
                   )}
               </article>
             ))}
@@ -265,7 +290,7 @@ export default async function LeadDetails({
       {canDeal && !lead.archived && (
         <section className="panel padded">
           <h2>Registrar proposta ou negociação</h2>
-          <form action={recordDeal} className="form-grid">
+          <ActionForm action={recordDeal} className="form-grid">
             <input type="hidden" name="lead_id" value={id} />
             <Field
               name="amount"
@@ -288,7 +313,7 @@ export default async function LeadDetails({
             </Select>
             <Field name="reason" label="Observações / motivo do resultado" />
             <Submit>Registrar negociação</Submit>
-          </form>
+          </ActionForm>
           <p className="table-note">
             Fechamento pelo closer registra o resultado comercial. Pontos de
             contrato dependem de reunião validada e confirmação do ADM.
@@ -337,7 +362,7 @@ export default async function LeadDetails({
                 ) : (
                   d.result === "won" &&
                   admin && (
-                    <form action={confirmCrm} className="form-grid">
+                    <ActionForm action={confirmCrm} className="form-grid">
                       <input type="hidden" name="lead_id" value={id} />
                       <input type="hidden" name="deal_id" value={d.id} />
                       <Select
@@ -367,7 +392,7 @@ export default async function LeadDetails({
                         required={false}
                       />
                       <Submit>Confirmar contrato</Submit>
-                    </form>
+                    </ActionForm>
                   )
                 )}
               </article>

@@ -1,3 +1,6 @@
+import { pageNumber, pageSize } from "@/lib/pagination";
+import { Pagination } from "@/components/pagination";
+import { ActionForm } from "@/components/action-form";
 import { redirect } from "next/navigation";
 import { session, check } from "@/lib/session";
 import {
@@ -13,7 +16,12 @@ import { functionLabels, type FunctionCode } from "@/lib/access";
 export default async function Team({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; success?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    success?: string;
+    page?: string;
+    invitations_page?: string;
+  }>;
 }) {
   const { db, profile } = await session();
   if (profile.category !== "admin")
@@ -21,17 +29,25 @@ export default async function Team({
       "/?error=" +
         encodeURIComponent("Você não tem permissão para acessar este módulo."),
     );
+  const params = await searchParams,
+    page = pageNumber(params.page),
+    invitationsPage = pageNumber(params.invitations_page);
   const result = await Promise.all([
-    db.from("profiles").select("*").order("name"),
+    db
+      .from("profiles")
+      .select("*", { count: "exact" })
+      .order("name")
+      .order("id")
+      .range((page - 1) * pageSize, page * pageSize - 1),
     db.from("user_functions").select("*"),
     db.from("access_companies").select("id,name").order("name"),
     db.from("client_assignments").select("*"),
     db.from("partner_companies").select("*"),
     db
       .from("access_invitations")
-      .select("*")
+      .select("*", { count: "exact" })
       .order("created_at", { ascending: false })
-      .limit(50),
+      .range((invitationsPage - 1) * pageSize, invitationsPage * pageSize - 1),
   ]);
   result.forEach((r) => check(r.error));
   const [users, roles, companies, clients, partners, invitations] = result;
@@ -48,7 +64,7 @@ export default async function Team({
           </p>
         </div>
       </div>
-      <Notice params={await searchParams} />
+      <Notice params={params} />
       <section className="panel padded">
         <h2>Convidar colaborador ou parceiro</h2>
         <p className="muted small">
@@ -67,13 +83,13 @@ export default async function Team({
       <section className="panel padded">
         <h2>Empresas para vínculos de acesso</h2>
         <p className="muted small">
-          Cadastro mínimo de identificação. Serviços e dados operacionais serão
-          desenvolvidos nas próximas etapas.
+          Cadastro de identificação para vínculos de acesso. Contratos, entregas
+          e dados operacionais são gerenciados em Clientes e Serviços.
         </p>
-        <form action={createAccessCompany} className="form-grid">
+        <ActionForm action={createAccessCompany} className="form-grid">
           <Field label="Nome da empresa" name="name" />
           <Submit>Cadastrar empresa</Submit>
-        </form>
+        </ActionForm>
       </section>
       <section className="panel padded">
         <h2>Usuários cadastrados</h2>
@@ -114,6 +130,13 @@ export default async function Team({
             </ConfirmedAdminForm>
           </details>
         ))}
+        <Pagination
+          path="/team"
+          params={params}
+          page={page}
+          total={users.count ?? 0}
+          label="Paginação da equipe"
+        />
       </section>
       <section className="panel padded">
         <h2>Vincular conta Auth já existente / concluir convite</h2>
@@ -133,7 +156,7 @@ export default async function Team({
       <section className="panel">
         <div className="panel-title">
           <h2>Histórico de convites</h2>
-          <span className="small muted">Últimos 50</span>
+          <span className="small muted">Histórico auditado</span>
         </div>
         {invitations.data?.length ? (
           invitations.data.map((i) => (
@@ -153,8 +176,16 @@ export default async function Team({
             </div>
           ))
         ) : (
-          <Empty>Nenhum convite registrado.</Empty>
+          <Empty>Nenhum convite registrado nesta página.</Empty>
         )}
+        <Pagination
+          path="/team"
+          params={params}
+          page={invitationsPage}
+          total={invitations.count ?? 0}
+          pageKey="invitations_page"
+          label="Paginação dos convites"
+        />
       </section>
     </>
   );

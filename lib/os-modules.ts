@@ -68,7 +68,7 @@ export const osModules = [
     name: "Configurações",
     roles: ["admin"],
     description:
-      "As configurações da plataforma serão ampliadas progressivamente. As regras e configurações atuais do Challenger continuam disponíveis.",
+      "Conta, permissões, publicações, integrações e regras das campanhas existentes.",
   },
 ] as const;
 export function canAccessModule(
@@ -95,16 +95,24 @@ export function canAccessModule(
   if (access.category === "partner") return moduleId === "partners";
   if (moduleId === "dashboard") return true;
   if (moduleId === "crm")
-    return access.crm === true || hasFunction(access, "sdr") || hasFunction(access, "closer");
+    return (
+      access.crm === true ||
+      hasFunction(access, "sdr") ||
+      hasFunction(access, "closer")
+    );
   if (moduleId === "challenger")
     return (
       access.challenger &&
       (hasFunction(access, "sdr") || hasFunction(access, "closer"))
     );
   if (moduleId === "clients")
-    return access.clients === true || access.functions.some((f) =>
-      ["traffic", "designer", "video_editor", "copywriter"].includes(f),
+    return (
+      access.clients === true ||
+      access.functions.some((f) =>
+        ["traffic", "designer", "video_editor", "copywriter"].includes(f),
+      )
     );
-  if (moduleId === "analytics") return access.analytics === true || hasFunction(access, "traffic");
+  if (moduleId === "analytics")
+    return access.analytics === true || hasFunction(access, "traffic");
   return false;
 }

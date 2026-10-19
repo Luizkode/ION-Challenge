@@ -1,4 +1,5 @@
 "use client";
+import { ActionForm } from "@/components/action-form";
 import type { ReactNode, FormEvent } from "react";
 import { adminOperation } from "@/app/actions";
 import { Submit } from "@/components/submit";
@@ -24,7 +25,7 @@ export function ConfirmedAdminForm({
     if (!window.confirm(message)) event.preventDefault();
   }
   return (
-    <form action={action} className="form-grid" onSubmit={confirm}>
+    <ActionForm action={action} className="form-grid" onSubmit={confirm}>
       {children}
       <label className="small">
         <input
@@ -37,6 +38,6 @@ export function ConfirmedAdminForm({
         Confirmo a operação selecionada e a preservação do histórico.
       </label>
       <Submit>{submitLabel}</Submit>
-    </form>
+    </ActionForm>
   );
 }

@@ -1,3 +1,6 @@
+import { pageNumber, pageSize } from "@/lib/pagination";
+import { Pagination } from "@/components/pagination";
+import { ActionForm } from "@/components/action-form";
 import { hasFunction } from "@/lib/access";
 import { redirect } from "next/navigation";
 import { session, check } from "@/lib/session";
@@ -7,7 +10,7 @@ import { Submit } from "@/components/submit";
 export default async function Validation({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; success?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; page?: string }>;
 }) {
   const { db, profile } = await session();
   if (!(profile.category === "admin" || hasFunction(profile, "closer")))
@@ -20,10 +23,14 @@ export default async function Validation({
             ),
     );
 
-  const { data, error } = await db
+  const params = await searchParams,
+    page = pageNumber(params.page);
+  const { data, error, count } = await db
     .from("meetings")
-    .select("*,opportunities(company,contact)")
-    .order("scheduled_at");
+    .select("*,opportunities(company,contact)", { count: "exact" })
+    .order("scheduled_at")
+    .order("id")
+    .range((page - 1) * pageSize, page * pageSize - 1);
   check(error);
   const groups = [
     ["Pendentes", ["scheduled", "pending", "held"]],
@@ -42,7 +49,11 @@ export default async function Validation({
           </p>
         </div>
       </div>
-      <Notice params={await searchParams} />
+      <Notice params={params} />
+      <p className="table-note">
+        Categorias referentes aos registros desta página. Use a paginação para
+        consultar todo o histórico.
+      </p>
       {groups.map(([title, statuses]) => {
         const items =
           data?.filter((m) =>
@@ -75,7 +86,10 @@ export default async function Validation({
                         Validar reunião
                         {m.status === "held" ? " / qualificar" : ""}
                       </summary>
-                      <form action={validateMeeting} className="form-grid">
+                      <ActionForm
+                        action={validateMeeting}
+                        className="form-grid"
+                      >
                         <input type="hidden" name="id" value={m.id} />
                         <Select label="A empresa compareceu?" name="attended">
                           <option value="true">Sim</option>
@@ -91,7 +105,7 @@ export default async function Validation({
                           required={false}
                         />
                         <Submit>Confirmar validação</Submit>
-                      </form>
+                      </ActionForm>
                     </details>
                   )}
                 </article>
@@ -102,6 +116,12 @@ export default async function Validation({
           </section>
         );
       })}
+      <Pagination
+        path="/validation"
+        params={params}
+        page={page}
+        total={count ?? 0}
+      />
     </>
   );
 }

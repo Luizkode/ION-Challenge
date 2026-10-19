@@ -254,7 +254,12 @@ export default async function Finance({
             <span>{entries.length} registros</span>
           </div>
           {rows.length ? (
-            <div style={{ overflowX: "auto" }}>
+            <div
+              className="table-scroll"
+              tabIndex={0}
+              role="region"
+              aria-label="Tabela com rolagem horizontal"
+            >
               <table>
                 <thead>
                   <tr>
@@ -484,7 +489,12 @@ export default async function Finance({
                 Mensal
               </Link>
             </div>
-            <div style={{ overflowX: "auto" }}>
+            <div
+              className="table-scroll"
+              tabIndex={0}
+              role="region"
+              aria-label="Tabela com rolagem horizontal"
+            >
               <table>
                 <thead>
                   <tr>

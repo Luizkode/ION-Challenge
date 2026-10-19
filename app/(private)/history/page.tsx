@@ -1,3 +1,6 @@
+import { pageNumber, pageSize } from "@/lib/pagination";
+import { Pagination } from "@/components/pagination";
+import { ActionForm } from "@/components/action-form";
 import { commercialAccess } from "@/lib/access";
 import { redirect } from "next/navigation";
 import { session, check } from "@/lib/session";
@@ -7,7 +10,12 @@ import { Submit } from "@/components/submit";
 export default async function History({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; success?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    success?: string;
+    page?: string;
+    events_page?: string;
+  }>;
 }) {
   const { db, profile, user } = await session();
   if (!commercialAccess(profile))
@@ -19,10 +27,15 @@ export default async function History({
               "Você não tem permissão para acessar este recurso.",
             ),
     );
-  const { data, error } = await db
+  const params = await searchParams,
+    page = pageNumber(params.page),
+    eventsPage = pageNumber(params.events_page);
+  const { data, error, count } = await db
     .from("meeting_validations")
-    .select("*,meetings(opportunities(company))")
-    .order("created_at", { ascending: false });
+    .select("*,meetings(opportunities(company))", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .order("id")
+    .range((page - 1) * pageSize, page * pageSize - 1);
   check(error);
   const { data: history, error: he } = await db.rpc("point_history");
   check(he);
@@ -37,25 +50,26 @@ export default async function History({
           </p>
         </div>
       </div>
-      <Notice params={await searchParams} />
+      <Notice params={params} />
       <section className="panel padded">
         <h2>Segurança da conta</h2>
-        <form action={changePassword} className="form-grid">
+        <ActionForm action={changePassword} className="form-grid">
           <Field
             name="password"
             label="Nova senha (mínimo 12 caracteres)"
             type="password"
+            minLength={12}
           />
           <Submit>Atualizar senha</Submit>
-        </form>
+        </ActionForm>
       </section>
       <section className="panel">
         <div className="panel-title">
           <h2>Histórico de validações</h2>
         </div>
         <p className="table-note">
-          Cada oportunidade vale 0, 1, 3 ou 7 pontos conforme seu resultado
-          atual. Correções e anulações recalculam o total.
+          A pontuação segue a configuração de cada campanha e o resultado atual
+          da oportunidade. Correções e anulações recalculam o total.
         </p>
         {data?.length ? (
           data.map((v) => (
@@ -77,6 +91,12 @@ export default async function History({
         ) : (
           <Empty>Nenhuma validação registrada.</Empty>
         )}
+        <Pagination
+          path="/history"
+          params={params}
+          page={page}
+          total={count ?? 0}
+        />
       </section>
       <section className="panel">
         <div className="panel-title">
@@ -97,24 +117,34 @@ export default async function History({
               action: string;
               reason: string | null;
             }[]
-          ).map((e, i) => (
-            <div className="team-row" key={i}>
-              <div>
-                <strong>{e.company}</strong>
-                <small>
-                  {e.action} · {e.reason}
-                </small>
+          )
+            .slice((eventsPage - 1) * pageSize, eventsPage * pageSize)
+            .map((e, i) => (
+              <div className="team-row" key={i}>
+                <div>
+                  <strong>{e.company}</strong>
+                  <small>
+                    {e.action} · {e.reason}
+                  </small>
+                </div>
+                <span className="muted small">
+                  {new Date(e.date).toLocaleString("pt-BR", {
+                    timeZone: "America/Sao_Paulo",
+                  })}
+                </span>
               </div>
-              <span className="muted small">
-                {new Date(e.date).toLocaleString("pt-BR", {
-                  timeZone: "America/Sao_Paulo",
-                })}
-              </span>
-            </div>
-          ))
+            ))
         ) : (
-          <Empty>Nenhum evento de pontuação.</Empty>
+          <Empty>Nenhum evento de pontuação nesta página.</Empty>
         )}
+        <Pagination
+          path="/history"
+          params={params}
+          page={eventsPage}
+          total={Array.isArray(history) ? history.length : 0}
+          pageKey="events_page"
+          label="Paginação de pontuação"
+        />
       </section>
     </>
   );

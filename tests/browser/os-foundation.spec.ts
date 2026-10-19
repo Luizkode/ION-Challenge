@@ -8,6 +8,9 @@ async function login(page: Page, role = "admin") {
   await page.getByLabel("Senha", { exact: true }).fill("test-only-password");
   await page.getByRole("button", { name: "Entrar no ION OS" }).click();
   await page.waitForURL("/");
+  await expect(page.locator("aside")).toBeVisible();
+  const menu = page.getByRole("button", { name: "Menu de módulos" });
+  if (await menu.isVisible()) await menu.click();
 }
 test.beforeEach(async ({ request }) => {
   await request.post("http://127.0.0.1:3101/__test/state", {
@@ -21,6 +24,12 @@ test("ION OS abre dashboard da agência, nove módulos e Challenger preservado",
   await expect(
     page.getByRole("heading", { name: "Visão geral da agência" }),
   ).toBeVisible();
+  const menu = page.getByRole("button", { name: "Menu de módulos" });
+  if (
+    (await menu.isVisible()) &&
+    (await menu.getAttribute("aria-expanded")) === "false"
+  )
+    await menu.click();
   const nav = page.getByRole("navigation", { name: "Módulos do ION OS" });
   await expect(nav.getByRole("link")).toHaveCount(9);
   await expect(
@@ -43,19 +52,17 @@ test("ION OS abre dashboard da agência, nove módulos e Challenger preservado",
       .getByRole("link", { name: "Administração do Challenger" }),
   ).toBeVisible();
 });
-test("módulos futuros têm estado informativo sem formulários simulados", async ({
+test("Configurações apresenta controles reais e encaminha à administração", async ({
   page,
 }) => {
   await login(page);
-  for (const [path, name] of [
-    ["/settings", "Configurações"],
-  ]) {
+  for (const [path, name] of [["/settings", "Configurações"]]) {
     await page.goto(path);
     await expect(
       page.getByRole("heading", { name, exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByText("Em desenvolvimento", { exact: true }),
+      page.getByRole("link", { name: "Abrir administração existente" }),
     ).toBeVisible();
     await expect(page.locator("main form")).toHaveCount(0);
   }

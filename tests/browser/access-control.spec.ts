@@ -11,6 +11,13 @@ async function login(page: Page, role: string) {
         ? /\/login\?error=/
         : "/",
   );
+  if (role !== "inactive") await expect(page.locator("aside")).toBeVisible();
+  const menu = page.getByRole("button", { name: "Menu de módulos" });
+  if (
+    (await menu.isVisible()) &&
+    (await menu.getAttribute("aria-expanded")) === "false"
+  )
+    await menu.click();
 }
 test.beforeEach(async ({ request }) => {
   await request.post("http://127.0.0.1:3101/__test/state", {
@@ -24,6 +31,12 @@ test("produção: dashboard próprio, clientes atribuídos e URLs comerciais blo
   await expect(
     page.getByRole("heading", { name: "Seu dashboard" }),
   ).toBeVisible();
+  const menu = page.getByRole("button", { name: "Menu de módulos" });
+  if (
+    (await menu.isVisible()) &&
+    (await menu.getAttribute("aria-expanded")) === "false"
+  )
+    await menu.click();
   const nav = page.getByRole("navigation", { name: "Módulos do ION OS" });
   await expect(
     nav.getByRole("link", { name: "Clientes e Serviços" }),
@@ -87,6 +100,12 @@ test("funções múltiplas combinam menu e validação sem liberar administraç�
   page,
 }) => {
   await login(page, "multi");
+  const menu = page.getByRole("button", { name: "Menu de módulos" });
+  if (
+    (await menu.isVisible()) &&
+    (await menu.getAttribute("aria-expanded")) === "false"
+  )
+    await menu.click();
   const nav = page.getByRole("navigation", { name: "Módulos do ION OS" });
   await expect(nav.getByRole("link", { name: "CRM Comercial" })).toBeVisible();
   await expect(

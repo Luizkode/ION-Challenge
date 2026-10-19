@@ -1,5 +1,5 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import {
@@ -20,6 +20,7 @@ export function FileUpload({
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [pending, start] = useTransition();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const router = useRouter();
   return (
@@ -28,6 +29,7 @@ export function FileUpload({
         <span>Arquivo privado (até 10 MB)</span>
         <input
           type="file"
+          ref={inputRef}
           disabled={pending}
           accept={allowedMime.join(",")}
           onChange={(e) => {
@@ -86,6 +88,7 @@ export function FileUpload({
               else {
                 setMessage("Documento enviado com acesso privado.");
                 setFile(null);
+                if (inputRef.current) inputRef.current.value = "";
                 router.refresh();
               }
             } catch {
@@ -120,10 +123,17 @@ export function FileDownload({ id, name }: { id: string; name: string }) {
         disabled={pending}
         onClick={() =>
           start(async () => {
-            const r = await downloadFile(id);
-            if (r.error) setError(r.error);
-            else if (r.url) {
-              window.location.assign(r.url);
+            setError("");
+            try {
+              const r = await downloadFile(id);
+              if (r.error) setError(r.error);
+              else if (r.url) {
+                window.location.assign(r.url);
+              }
+            } catch {
+              setError(
+                "Não foi possível autorizar o download. Verifique a conexão e tente novamente.",
+              );
             }
           })
         }

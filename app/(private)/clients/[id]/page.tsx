@@ -1,3 +1,4 @@
+import { ActionForm } from "@/components/action-form";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -174,7 +175,7 @@ export default async function ClientDetails({
               </p>
               {f.state === "ready" && <FileDownload id={f.id} name={f.name} />}{" "}
               {admin && (
-                <form action={manageFile} className="form-grid">
+                <ActionForm action={manageFile} className="form-grid">
                   <input type="hidden" name="id" value={f.id} />
                   <input type="hidden" name="company_id" value={id} />
                   <Select
@@ -192,7 +193,7 @@ export default async function ClientDetails({
                     value={f.partner_visible}
                   />
                   <Submit>Atualizar documento</Submit>
-                </form>
+                </ActionForm>
               )}
             </div>
           ))}
@@ -252,7 +253,7 @@ export default async function ClientDetails({
                 O fechamento comercial foi cancelado ou perdeu a validação. Nada
                 foi excluído da operação.
               </p>
-              <form action={reconcileSource} className="form-grid">
+              <ActionForm action={reconcileSource} className="form-grid">
                 <input type="hidden" name="id" value={a.id} />
                 <input type="hidden" name="company_id" value={id} />
                 <Select name="decision" label="Decisão operacional">
@@ -271,7 +272,7 @@ export default async function ClientDetails({
                   Confirmo a decisão e a preservação do histórico
                 </label>
                 <Submit>Registrar revisão</Submit>
-              </form>
+              </ActionForm>
             </section>
           ))}
       <section className="panel">
@@ -431,7 +432,7 @@ export default async function ClientDetails({
               {admin && (
                 <details>
                   <summary>Publicação autorizada do resumo</summary>
-                  <form action={publishUpdate} className="form-grid">
+                  <ActionForm action={publishUpdate} className="form-grid">
                     <input type="hidden" name="id" value={u.id} />
                     <input type="hidden" name="company_id" value={id} />
                     <label className="field">
@@ -452,7 +453,7 @@ export default async function ClientDetails({
                       Publicar no portal de consulta
                     </label>
                     <Submit>Atualizar publicação</Submit>
-                  </form>
+                  </ActionForm>
                 </details>
               )}
             </article>
