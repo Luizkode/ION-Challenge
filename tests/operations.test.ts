@@ -53,6 +53,12 @@ test("PostgreSQL operações: clientes, contratos, serviços, Storage, RLS e CRM
   await db.exec(
     "create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key,email text);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text,owner_id text,metadata jsonb);alter table storage.objects enable row level security;grant usage on schema storage to authenticated;grant select,insert on storage.objects to authenticated;",
   );
+  await db.exec(
+    await readFile(
+      new URL("./fixtures/storage-operations.sql", import.meta.url),
+      "utf8",
+    ),
+  );
   for (const file of [
     "001_ion.sql",
     "002_participant_management.sql",
@@ -60,6 +66,11 @@ test("PostgreSQL operações: clientes, contratos, serviços, Storage, RLS e CRM
     "004_commercial_crm.sql",
     "005_clients_services.sql",
     "006_operational_conversion_matching.sql",
+    "007_finance.sql",
+    "008_finance_historical_mrr.sql",
+    "009_finance_commission_origin.sql",
+    "010_analytics_partners.sql",
+    "011_authenticated_document_downloads.sql",
   ])
     await db.exec(
       await readFile(
@@ -95,6 +106,9 @@ test("PostgreSQL operações: clientes, contratos, serviços, Storage, RLS e CRM
     await db.query("select set_config('request.jwt.claim.sub',$1,false)", [
       uid(n),
     ]);
+    await db.query(
+      "select set_config('storage.operation','storage.object.get_authenticated',false)",
+    );
     await db.exec("set role authenticated");
   };
   const rpc = async <T = string>(fn: string, data: unknown) =>
