@@ -213,6 +213,13 @@ export default async function ClientDetails({
           Voltar aos clientes
         </Link>
       </div>
+      {admin && (
+        <p>
+          <Link className="button" href={"/finance?company_id=" + id}>
+            Abrir financeiro deste cliente
+          </Link>
+        </p>
+      )}
       <Notice params={await searchParams} />
       <p>
         <span className="badge">{relationships[c.relationship]}</span> ·

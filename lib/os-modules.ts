@@ -45,7 +45,7 @@ export const osModules = [
     name: "Financeiro",
     roles: ["admin"],
     description:
-      "Receitas, despesas, cobranças e comissões serão implementadas na Etapa 5. Contratos comerciais do Challenger não representam receita recebida.",
+      "Receitas, despesas, mensalidades, comissões, cobranças e relatórios financeiros auditáveis.",
   },
   {
     id: "team",
