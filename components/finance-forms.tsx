@@ -1,3 +1,4 @@
+import { ActionForm } from "@/components/action-form";
 import { randomUUID } from "node:crypto";
 import { Field, Select } from "./ui";
 import { Submit } from "./submit";
@@ -138,10 +139,10 @@ export function EntryForm({
       {fields}
     </ConfirmedAdminForm>
   ) : (
-    <form className="form-grid" action={saveEntry}>
+    <ActionForm className="form-grid" action={saveEntry}>
       {fields}
       <Submit>Cadastrar {kind === "income" ? "receita" : "despesa"}</Submit>
-    </form>
+    </ActionForm>
   );
 }
 export function ScheduleForm({

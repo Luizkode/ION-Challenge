@@ -1,3 +1,4 @@
+import { ActionForm } from "@/components/action-form";
 import { hasFunction } from "@/lib/access";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -97,7 +98,7 @@ export default async function NewMeeting({
             </p>
           </div>
         ))}
-        <form action={createMeeting}>
+        <ActionForm action={createMeeting}>
           <input type="hidden" name="campaign_id" value={campaign?.id ?? ""} />
           <fieldset
             disabled={disabled}
@@ -145,7 +146,7 @@ export default async function NewMeeting({
             </p>
             <Submit disabled={disabled}>Cadastrar reunião</Submit>
           </fieldset>
-        </form>
+        </ActionForm>
       </section>
     </>
   );

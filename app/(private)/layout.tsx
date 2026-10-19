@@ -1,3 +1,4 @@
+import { FormScope, ActionForm } from "@/components/action-form";
 import { hasFunction } from "@/lib/access";
 import Link from "next/link";
 import { session } from "@/lib/session";
@@ -13,54 +14,66 @@ export default async function Layout({
 }) {
   const { profile } = await session();
   return (
-    <div className="shell">
-      <aside>
-        <Link className="wordmark" href="/">
-          ION<span> / OS</span>
-        </Link>
-        <p className="eyebrow nav-label">AGENCY OPERATING SYSTEM</p>
-        <OSNavigation profile={profile} />
-        <div className="sidebar-bottom">
-          <span className="avatar">{profile.name.slice(0, 1)}</span>
-          <div>
-            <strong>{profile.name}</strong>
-            <small>
-              {profile.category === "admin"
-                ? "ADMINISTRADOR"
-                : profile.category === "partner"
-                  ? "PARCEIRO"
-                  : "COLABORADOR"}
-            </small>
-          </div>
-          <form action={logout}>
-            <button className="icon-button" aria-label="Sair">
-              <LogOut size={17} />
-            </button>
-          </form>
-        </div>
-      </aside>
-      <div className="workspace">
-        <header>
-          <span className="muted">ION OS</span>
-          <Live />
-          <Link
-            className="profile-link muted small"
-            href="/account"
-            title={profile.name}
-          >
-            {profile.name}
+    <FormScope owner={profile.id}>
+      <a href="#main-content" className="skip-link">
+        Pular para o conteúdo
+      </a>
+      <div className="shell">
+        <aside>
+          <Link className="wordmark" href="/">
+            ION<span> / OS</span>
           </Link>
-          {hasFunction(profile, "sdr") && (
-            <Link href="/meetings/new" className="button">
-              + Nova reunião <ArrowUpRight size={16} />
+          <p className="eyebrow nav-label">AGENCY OPERATING SYSTEM</p>
+          <OSNavigation profile={profile} />
+          <div className="sidebar-bottom">
+            <span className="avatar">{profile.name.slice(0, 1)}</span>
+            <div>
+              <strong>{profile.name}</strong>
+              <small>
+                {profile.category === "admin"
+                  ? "ADMINISTRADOR"
+                  : profile.category === "partner"
+                    ? "PARCEIRO"
+                    : "COLABORADOR"}
+              </small>
+            </div>
+            <ActionForm action={logout}>
+              <button className="icon-button" aria-label="Sair">
+                <LogOut size={17} />
+              </button>
+            </ActionForm>
+          </div>
+        </aside>
+        <div className="workspace">
+          <header>
+            <span className="muted">ION OS</span>
+            <Live />
+            <Link
+              className="profile-link muted small"
+              href="/account"
+              title={profile.name}
+            >
+              {profile.name}
             </Link>
-          )}
-        </header>
-        <main className="content">{children}</main>
-        <footer>
-          AGÊNCIA ION <span>Agency Operating System</span>
-        </footer>
+            {hasFunction(profile, "sdr") && (
+              <Link href="/meetings/new" className="button">
+                + Nova reunião <ArrowUpRight size={16} />
+              </Link>
+            )}
+            <ActionForm action={logout} className="mobile-logout">
+              <button className="icon-button" aria-label="Sair">
+                <LogOut size={18} />
+              </button>
+            </ActionForm>
+          </header>
+          <main id="main-content" tabIndex={-1} className="content">
+            {children}
+          </main>
+          <footer>
+            AGÊNCIA ION <span>Agency Operating System</span>
+          </footer>
+        </div>
       </div>
-    </div>
+    </FormScope>
   );
 }

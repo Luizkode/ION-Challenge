@@ -91,7 +91,12 @@ export function AnalyticsResults({
           </section>
           <section className="panel padded">
             <h2>Observações da evolução</h2>
-            <div style={{ overflowX: "auto" }}>
+            <div
+              className="table-scroll"
+              tabIndex={0}
+              role="region"
+              aria-label="Tabela com rolagem horizontal"
+            >
               <table>
                 <thead>
                   <tr>

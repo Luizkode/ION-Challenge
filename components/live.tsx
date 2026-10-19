@@ -1,21 +1,36 @@
 "use client";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 export function Live() {
-  const router = useRouter();
+  const router = useRouter(),
+    path = usePathname();
+  const challenger = [
+    "/challenger",
+    "/meetings",
+    "/validation",
+    "/admin",
+    "/history",
+  ].some((p) => path === p || path.startsWith(p + "/"));
   useEffect(() => {
-    const db = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
     let timer: ReturnType<typeof setTimeout>;
     const refresh = () => {
+      if (
+        document.visibilityState !== "visible" ||
+        document.querySelector('[data-form-dirty="true"]')
+      )
+        return;
       clearTimeout(timer);
       timer = setTimeout(() => router.refresh(), 300);
     };
+    const db = challenger
+      ? createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        )
+      : null;
     const channel = db
-      .channel("campaign-updates")
+      ?.channel("campaign-updates")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "campaigns" },
@@ -27,21 +42,19 @@ export function Live() {
         refresh,
       )
       .subscribe();
-    const interval = setInterval(() => {
-      if (document.visibilityState === "visible") refresh();
-    }, 15000);
+    const interval = challenger ? setInterval(refresh, 15000) : undefined;
     window.addEventListener("focus", refresh);
     return () => {
       clearTimeout(timer);
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
       window.removeEventListener("focus", refresh);
-      void db.removeChannel(channel);
+      if (db && channel) void db.removeChannel(channel);
     };
-  }, [router]);
+  }, [router, challenger]);
   return (
     <span className="live">
       <i />
-      Ao vivo · reconexão automática
+      {challenger ? "Atualização automática" : "ION OS · operação integrada"}
     </span>
   );
 }

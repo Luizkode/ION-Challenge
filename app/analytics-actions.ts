@@ -14,7 +14,7 @@ import { dateInput } from "@/lib/finance";
 function notice(path: string, message: string, error = false): never {
   redirect(
     path +
-      "?" +
+      (path.includes("?") ? "&" : "?") +
       (error ? "error" : "success") +
       "=" +
       encodeURIComponent(message),
@@ -67,14 +67,26 @@ async function execute(
   return r.data;
 }
 export async function saveAdAccount(f: FormData) {
-  await execute("ana_save_account", accountSchema, f);
+  await execute(
+    "ana_save_account",
+    accountSchema,
+    f,
+    false,
+    "/analytics?view=accounts",
+  );
   notice(
     "/analytics",
     "Conta de dados salva. Integração automática permanece desativada.",
   );
 }
 export async function saveAdCampaign(f: FormData) {
-  await execute("ana_save_campaign", campaignSchema, f);
+  await execute(
+    "ana_save_campaign",
+    campaignSchema,
+    f,
+    false,
+    "/analytics?view=campaigns",
+  );
   notice(
     "/analytics",
     "Campanha salva. A publicação depende do administrador.",

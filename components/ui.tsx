@@ -7,6 +7,7 @@ export function Field({
   value,
   required = true,
   min,
+  minLength,
 }: {
   label: string;
   name: string;
@@ -14,6 +15,7 @@ export function Field({
   value?: string | number;
   required?: boolean;
   min?: number;
+  minLength?: number;
 }) {
   return (
     <label className="field">
@@ -26,6 +28,7 @@ export function Field({
           type={type}
           defaultValue={value}
           required={required}
+          minLength={minLength}
           min={min}
           step={type === "number" ? "any" : undefined}
           maxLength={type === "text" ? 2000 : undefined}

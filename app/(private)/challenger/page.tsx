@@ -158,7 +158,12 @@ export default async function Dashboard() {
             </span>
           </div>
           {b.individual.length ? (
-            <div className="table-scroll">
+            <div
+              className="table-scroll"
+              tabIndex={0}
+              role="region"
+              aria-label="Tabela com rolagem horizontal"
+            >
               <table>
                 <thead>
                   <tr>

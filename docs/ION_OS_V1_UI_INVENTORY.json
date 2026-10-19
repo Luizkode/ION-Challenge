@@ -1,0 +1,2967 @@
+{
+  "scope": "Static inventory only; real execution evidence is recorded separately",
+  "pages": [
+    "app/(private)/[module]/page.tsx",
+    "app/(private)/account/page.tsx",
+    "app/(private)/admin/page.tsx",
+    "app/(private)/analytics/metrics/[id]/page.tsx",
+    "app/(private)/analytics/page.tsx",
+    "app/(private)/analytics/reports/[id]/page.tsx",
+    "app/(private)/challenger/page.tsx",
+    "app/(private)/clients/[id]/page.tsx",
+    "app/(private)/clients/new/page.tsx",
+    "app/(private)/clients/page.tsx",
+    "app/(private)/crm/[id]/page.tsx",
+    "app/(private)/crm/new/page.tsx",
+    "app/(private)/crm/page.tsx",
+    "app/(private)/finance/entries/[id]/page.tsx",
+    "app/(private)/finance/page.tsx",
+    "app/(private)/history/page.tsx",
+    "app/(private)/meetings/new/page.tsx",
+    "app/(private)/meetings/page.tsx",
+    "app/(private)/page.tsx",
+    "app/(private)/partners/page.tsx",
+    "app/(private)/settings/page.tsx",
+    "app/(private)/team/page.tsx",
+    "app/(private)/validation/page.tsx",
+    "app/auth/complete/page.tsx",
+    "app/login/page.tsx"
+  ],
+  "controls": [
+    {
+      "file": "app/(private)/[module]/page.tsx",
+      "line": 40,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/admin\""
+      }
+    },
+    {
+      "file": "app/(private)/[module]/page.tsx",
+      "line": 47,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/meetings\""
+      }
+    },
+    {
+      "file": "app/(private)/account/page.tsx",
+      "line": 20,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{changePassword}"
+      }
+    },
+    {
+      "file": "app/(private)/account/page.tsx",
+      "line": 27,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 12,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"operation\""
+      }
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 88,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{adminOperation}"
+      }
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 90,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 159,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 162,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 167,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{adminOperation}"
+      }
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 169,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 184,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 189,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{adminOperation}"
+      }
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 193,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 204,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "submitLabel": "\"Criar / atualizar colaborador\""
+      }
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 281,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{adminOperation}"
+      }
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 292,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 309,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{adminOperation}"
+      }
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 326,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 334,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 346,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{adminOperation}"
+      }
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 348,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 350,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/admin/page.tsx",
+      "line": 364,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/metrics/[id]/page.tsx",
+      "line": 3,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/analytics\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 50,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/analytics\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 123,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/partners\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 143,
+      "element": "Link",
+      "attributes": {
+        "href": "{next({ view: key, page: \"1\" })}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 154,
+      "element": "form",
+      "attributes": {
+        "method": "\"get\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 155,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"view\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 279,
+      "element": "button",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 303,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 307,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 315,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/analytics/template\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 318,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{importPerformance}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 343,
+      "element": "input",
+      "attributes": {
+        "type": "\"file\"",
+        "name": "\"csv\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 350,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 401,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/analytics/metrics/\" + m.id}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 415,
+      "element": "Link",
+      "attributes": {
+        "href": "{next({ page: String(page - 1) })}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 423,
+      "element": "Link",
+      "attributes": {
+        "href": "{next({ page: String(page + 1) })}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 439,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 445,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 468,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 474,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 492,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/clients/\" + c.company_id}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 513,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{createAnalyticsReport}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 517,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "{k}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 540,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 555,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/analytics/reports/\" + r.id}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 568,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/analytics/reports/\" + r.id + \"/pdf\"}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 596,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 600,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{publishCampaign}",
+        "submitLabel": "\"Atualizar publicação da campanha\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 605,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 622,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"metrics\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 643,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{publishMetrics}",
+        "submitLabel": "\"Atualizar publicação dos resultados\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 648,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"campaign_id\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 677,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 680,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{publishReport}",
+        "submitLabel": "\"Atualizar publicação do relatório\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 685,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 731,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/analytics/metrics/\" + h.entity_id}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 747,
+      "element": "Link",
+      "attributes": {
+        "href": "{next({ page: String(page - 1) })}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 755,
+      "element": "Link",
+      "attributes": {
+        "href": "{next({ page: String(page + 1) })}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 775,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{saveAnalyticsGrant}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/page.tsx",
+      "line": 801,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/analytics/reports/[id]/page.tsx",
+      "line": 2,
+      "element": "Link",
+      "attributes": {
+        "href": "{'/analytics/reports/'+id+'/pdf'+(portal?'?public=1':'')}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/reports/[id]/page.tsx",
+      "line": 2,
+      "element": "Link",
+      "attributes": {
+        "href": "{portal?'/partners':'/analytics?view=reports'}"
+      }
+    },
+    {
+      "file": "app/(private)/analytics/reports/[id]/page.tsx",
+      "line": 2,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{publishReport}",
+        "submitLabel": "\"Salvar visibilidade do relatório\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/reports/[id]/page.tsx",
+      "line": 2,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/analytics/reports/[id]/page.tsx",
+      "line": 2,
+      "element": "Link",
+      "attributes": {
+        "href": "{'/analytics/reports/'+id+'?public=1'}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 142,
+      "element": "FileUpload",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 176,
+      "element": "FileDownload",
+      "attributes": {
+        "name": "{f.name}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 178,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{manageFile}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 179,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 180,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"company_id\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 195,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 213,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/clients\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 219,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/finance?company_id=\" + id}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 236,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 256,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{reconcileSource}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 257,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 258,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"company_id\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 271,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"confirm\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 274,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 308,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 318,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 332,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 366,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 371,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 385,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 395,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 434,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 435,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{publishUpdate}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 436,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 437,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"company_id\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 440,
+      "element": "textarea",
+      "attributes": {
+        "name": "\"partner_body\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 447,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"published\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/[id]/page.tsx",
+      "line": 455,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 135,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/clients/new\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 142,
+      "element": "form",
+      "attributes": {
+        "method": "\"get\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 198,
+      "element": "button",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 233,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/clients/\" + a.company_id}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 252,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/clients/\" + c.company_id}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 267,
+      "element": "Link",
+      "attributes": {
+        "href": "{next(page - 1)}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 272,
+      "element": "Link",
+      "attributes": {
+        "href": "{next(page + 1)}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 282,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 289,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{convertDeal}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 324,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 330,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 331,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{saveCatalog}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 333,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 337,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 340,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{saveCatalog}"
+      }
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 341,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 351,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 359,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/clients/page.tsx",
+      "line": 362,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/clients/new?company=\" + c.id}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 85,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/crm\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 96,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 125,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{archiveLead}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 126,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 127,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"archived\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 133,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"confirm\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 137,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 146,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{addActivity}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 147,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 148,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"lead_id\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 182,
+      "element": "textarea",
+      "attributes": {
+        "name": "\"description\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 184,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 196,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{scheduleCrm}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 197,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"lead_id\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 223,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 264,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{validateCrm}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 265,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 266,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"lead_id\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 280,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 293,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{recordDeal}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 294,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"lead_id\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 315,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 356,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/clients?deal=\" + d.id}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 365,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{confirmCrm}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 366,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"lead_id\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 367,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"deal_id\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/[id]/page.tsx",
+      "line": 394,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/crm/page.tsx",
+      "line": 119,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/crm/new\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/page.tsx",
+      "line": 126,
+      "element": "form",
+      "attributes": {
+        "method": "\"get\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/page.tsx",
+      "line": 179,
+      "element": "button",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/crm/page.tsx",
+      "line": 234,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/crm/\" + m.opportunities.crm_lead_id}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/page.tsx",
+      "line": 278,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/crm/\" + l.id}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/page.tsx",
+      "line": 323,
+      "element": "Link",
+      "attributes": {
+        "href": "{pageLink(page - 1)}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/page.tsx",
+      "line": 328,
+      "element": "Link",
+      "attributes": {
+        "href": "{pageLink(page + 1)}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/page.tsx",
+      "line": 378,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/crm/page.tsx",
+      "line": 395,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{grantCrm}"
+      }
+    },
+    {
+      "file": "app/(private)/crm/page.tsx",
+      "line": 409,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"confirm\""
+      }
+    },
+    {
+      "file": "app/(private)/crm/page.tsx",
+      "line": 412,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 81,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/finance?view=\" + e.kind}"
+      }
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 107,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/clients/\" + e.company_id}"
+      }
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 125,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 139,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{settle}",
+        "submitLabel": "\"Registrar liquidação\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 144,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"entry_id\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 145,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"request_id\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 175,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 176,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{settle}",
+        "submitLabel": "\"Confirmar estorno\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 181,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"entry_id\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 182,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"request_id\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 187,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"reversal_of\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 188,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"amount\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 189,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"method\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 209,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/entries/[id]/page.tsx",
+      "line": 224,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 35,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/finance\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 98,
+      "element": "Link",
+      "attributes": {
+        "href": "{exportUrl}"
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 114,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/finance?\" + query({ view: key, page: \"1\" })}"
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 125,
+      "element": "form",
+      "attributes": {
+        "method": "\"get\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 126,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"view\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 187,
+      "element": "button",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 237,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 279,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/finance/entries/\" + e.id}"
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 329,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/finance?\" + query({ page: String(page - 1) })}"
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 337,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/finance?\" + query({ page: String(page + 1) })}"
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 359,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 363,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 378,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{generate}",
+        "submitLabel": "\"Gerar parcelas previstas\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 383,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 398,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 423,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 428,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 438,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{commissions}",
+        "submitLabel": "\"Aprovar comissões\""
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 479,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/finance?\" + query({ group: \"day\" })}"
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 485,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/finance?\" + query({ group: \"month\" })}"
+      }
+    },
+    {
+      "file": "app/(private)/finance/page.tsx",
+      "line": 544,
+      "element": "Link",
+      "attributes": {
+        "href": "{\n                  \"/finance/export?\" +\n                  new URLSearchParams({ ...filters, report: key } as Record<\n                    string,\n                    string\n                  >)\n                }"
+      }
+    },
+    {
+      "file": "app/(private)/history/page.tsx",
+      "line": 56,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{changePassword}"
+      }
+    },
+    {
+      "file": "app/(private)/history/page.tsx",
+      "line": 63,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/layout.tsx",
+      "line": 23,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/\""
+      }
+    },
+    {
+      "file": "app/(private)/layout.tsx",
+      "line": 40,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{logout}"
+      }
+    },
+    {
+      "file": "app/(private)/layout.tsx",
+      "line": 41,
+      "element": "button",
+      "attributes": {
+        "aria-label": "\"Sair\""
+      }
+    },
+    {
+      "file": "app/(private)/layout.tsx",
+      "line": 51,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/account\""
+      }
+    },
+    {
+      "file": "app/(private)/layout.tsx",
+      "line": 59,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/meetings/new\""
+      }
+    },
+    {
+      "file": "app/(private)/layout.tsx",
+      "line": 63,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{logout}"
+      }
+    },
+    {
+      "file": "app/(private)/layout.tsx",
+      "line": 64,
+      "element": "button",
+      "attributes": {
+        "aria-label": "\"Sair\""
+      }
+    },
+    {
+      "file": "app/(private)/meetings/new/page.tsx",
+      "line": 84,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/meetings\""
+      }
+    },
+    {
+      "file": "app/(private)/meetings/new/page.tsx",
+      "line": 101,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{createMeeting}"
+      }
+    },
+    {
+      "file": "app/(private)/meetings/new/page.tsx",
+      "line": 102,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"campaign_id\""
+      }
+    },
+    {
+      "file": "app/(private)/meetings/new/page.tsx",
+      "line": 147,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/meetings/page.tsx",
+      "line": 101,
+      "element": "form",
+      "attributes": {
+        "method": "\"get\""
+      }
+    },
+    {
+      "file": "app/(private)/meetings/page.tsx",
+      "line": 131,
+      "element": "button",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/meetings/page.tsx",
+      "line": 163,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/meetings/page.tsx",
+      "line": 164,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{adminOperation}"
+      }
+    },
+    {
+      "file": "app/(private)/meetings/page.tsx",
+      "line": 165,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"operation\""
+      }
+    },
+    {
+      "file": "app/(private)/meetings/page.tsx",
+      "line": 170,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/meetings/page.tsx",
+      "line": 189,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/meetings/page.tsx",
+      "line": 191,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{adminOperation}"
+      }
+    },
+    {
+      "file": "app/(private)/meetings/page.tsx",
+      "line": 192,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"operation\""
+      }
+    },
+    {
+      "file": "app/(private)/meetings/page.tsx",
+      "line": 197,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"opportunity_id\""
+      }
+    },
+    {
+      "file": "app/(private)/meetings/page.tsx",
+      "line": 218,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/page.tsx",
+      "line": 109,
+      "element": "form",
+      "attributes": {
+        "method": "\"get\""
+      }
+    },
+    {
+      "file": "app/(private)/page.tsx",
+      "line": 122,
+      "element": "button",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/page.tsx",
+      "line": 169,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/crm\""
+      }
+    },
+    {
+      "file": "app/(private)/page.tsx",
+      "line": 212,
+      "element": "Link",
+      "attributes": {
+        "href": "{m.path}",
+        "aria-label": "{\"Acessar \" + m.name}"
+      }
+    },
+    {
+      "file": "app/(private)/partners/page.tsx",
+      "line": 65,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/partners\""
+      }
+    },
+    {
+      "file": "app/(private)/partners/page.tsx",
+      "line": 120,
+      "element": "form",
+      "attributes": {
+        "method": "\"get\""
+      }
+    },
+    {
+      "file": "app/(private)/partners/page.tsx",
+      "line": 208,
+      "element": "button",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/partners/page.tsx",
+      "line": 308,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/analytics/reports/\" + r.id + \"?public=1\"}"
+      }
+    },
+    {
+      "file": "app/(private)/partners/page.tsx",
+      "line": 318,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/analytics/reports/\" + r.id + \"/pdf?public=1\"}"
+      }
+    },
+    {
+      "file": "app/(private)/partners/page.tsx",
+      "line": 335,
+      "element": "FileDownload",
+      "attributes": {
+        "name": "{f.name}"
+      }
+    },
+    {
+      "file": "app/(private)/settings/page.tsx",
+      "line": 37,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/account\""
+      }
+    },
+    {
+      "file": "app/(private)/settings/page.tsx",
+      "line": 47,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/team\""
+      }
+    },
+    {
+      "file": "app/(private)/settings/page.tsx",
+      "line": 58,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/analytics?view=publication\""
+      }
+    },
+    {
+      "file": "app/(private)/settings/page.tsx",
+      "line": 61,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/clients\""
+      }
+    },
+    {
+      "file": "app/(private)/settings/page.tsx",
+      "line": 72,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/analytics?view=integrations\""
+      }
+    },
+    {
+      "file": "app/(private)/settings/page.tsx",
+      "line": 80,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/admin\""
+      }
+    },
+    {
+      "file": "app/(private)/team/page.tsx",
+      "line": 74,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{inviteAccess}",
+        "submitLabel": "\"Enviar convite\""
+      }
+    },
+    {
+      "file": "app/(private)/team/page.tsx",
+      "line": 89,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{createAccessCompany}"
+      }
+    },
+    {
+      "file": "app/(private)/team/page.tsx",
+      "line": 91,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/team/page.tsx",
+      "line": 98,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/team/page.tsx",
+      "line": 114,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{saveAccess}",
+        "submitLabel": "\"Salvar acesso\""
+      }
+    },
+    {
+      "file": "app/(private)/team/page.tsx",
+      "line": 119,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/team/page.tsx",
+      "line": 147,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{saveAccess}",
+        "submitLabel": "\"Vincular conta existente\""
+      }
+    },
+    {
+      "file": "app/(private)/validation/page.tsx",
+      "line": 85,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "app/(private)/validation/page.tsx",
+      "line": 89,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{validateMeeting}"
+      }
+    },
+    {
+      "file": "app/(private)/validation/page.tsx",
+      "line": 93,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "app/(private)/validation/page.tsx",
+      "line": 107,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/error.tsx",
+      "line": 10,
+      "element": "button",
+      "attributes": {
+        "onClick": "{reset}"
+      }
+    },
+    {
+      "file": "app/login/page.tsx",
+      "line": 49,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{login}"
+      }
+    },
+    {
+      "file": "app/login/page.tsx",
+      "line": 52,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "app/not-found.tsx",
+      "line": 13,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/\""
+      }
+    },
+    {
+      "file": "components/access-fields.tsx",
+      "line": 41,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"functions\""
+      }
+    },
+    {
+      "file": "components/access-fields.tsx",
+      "line": 61,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"company_ids\""
+      }
+    },
+    {
+      "file": "components/access-fields.tsx",
+      "line": 80,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"remove_from_campaign\""
+      }
+    },
+    {
+      "file": "components/action-form.tsx",
+      "line": 155,
+      "element": "form",
+      "attributes": {
+        "action": "{submit}",
+        "onChange": "{(e) => {\n        e.currentTarget.dataset.formDirty = \"true\";\n        props.onChange?.(e);\n      }}"
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 39,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{saveAdAccount}"
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 42,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 43,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 44,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"company_id\""
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 85,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 97,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{saveAdCampaign}"
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 100,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 101,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 102,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"company_id\""
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 103,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"account_id\""
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 151,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 165,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{saveMetric}"
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 168,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 169,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 170,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"campaign_id\""
+      }
+    },
+    {
+      "file": "components/analytics-forms.tsx",
+      "line": 253,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "components/analytics-overview.tsx",
+      "line": 13,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/analytics\""
+      }
+    },
+    {
+      "file": "components/analytics-results.tsx",
+      "line": 75,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "components/analytics-results.tsx",
+      "line": 126,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "components/challenger-navigation.tsx",
+      "line": 6,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/challenger\""
+      }
+    },
+    {
+      "file": "components/challenger-navigation.tsx",
+      "line": 7,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/meetings\""
+      }
+    },
+    {
+      "file": "components/challenger-navigation.tsx",
+      "line": 11,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/validation\""
+      }
+    },
+    {
+      "file": "components/challenger-navigation.tsx",
+      "line": 13,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/history\""
+      }
+    },
+    {
+      "file": "components/challenger-navigation.tsx",
+      "line": 15,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/admin\""
+      }
+    },
+    {
+      "file": "components/confirmed-admin-form.tsx",
+      "line": 28,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{action}"
+      }
+    },
+    {
+      "file": "components/confirmed-admin-form.tsx",
+      "line": 31,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"confirm\""
+      }
+    },
+    {
+      "file": "components/confirmed-admin-form.tsx",
+      "line": 40,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "components/crm-import.tsx",
+      "line": 21,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "components/crm-import.tsx",
+      "line": 30,
+      "element": "select",
+      "attributes": {
+        "onChange": "{(e) => setOwner(e.target.value)}"
+      }
+    },
+    {
+      "file": "components/crm-import.tsx",
+      "line": 43,
+      "element": "input",
+      "attributes": {
+        "type": "\"file\"",
+        "onChange": "{async (e) => {\n            setRows([]);\n            setErrors([]);\n            setMessage(\"\");\n            const f = e.target.files?.[0];\n            if (!f) return;\n            if (f.size > 2_000_000) {\n              setErrors([\"Arquivo excede 2 MB.\"]);\n              return;\n            }\n            try {\n              const p = parseLeadCsv(await f.text());\n              setRows(p.rows);\n              setErrors(p.errors);\n            } catch {\n              setErrors([\"Não foi possível ler o arquivo.\"]);\n            }\n          }}"
+      }
+    },
+    {
+      "file": "components/crm-import.tsx",
+      "line": 113,
+      "element": "button",
+      "attributes": {
+        "type": "\"button\"",
+        "onClick": "{() =>\n              start(async () => {\n                try {\n                  const result = await importLeads(\n                    rows.map((r) => ({\n                      ...r,\n                      ...(admin ? { sdr_id: owner } : {}),\n                    })),\n                  );\n                  if (result.error) setErrors([result.error]);\n                  else {\n                    setRows([]);\n                    setMessage(`${result.count} leads importados.`);\n                    router.refresh();\n                  }\n                } catch {\n                  setErrors([\n                    \"Não foi possível importar. Verifique a conexão; a prévia foi preservada.\",\n                  ]);\n                }\n              })\n            }"
+      }
+    },
+    {
+      "file": "components/crm-lead-form.tsx",
+      "line": 18,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{saveLead}"
+      }
+    },
+    {
+      "file": "components/crm-lead-form.tsx",
+      "line": 21,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "components/crm-lead-form.tsx",
+      "line": 22,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "components/crm-lead-form.tsx",
+      "line": 55,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"sdr_id\""
+      }
+    },
+    {
+      "file": "components/crm-lead-form.tsx",
+      "line": 82,
+      "element": "textarea",
+      "attributes": {
+        "name": "\"notes\""
+      }
+    },
+    {
+      "file": "components/crm-lead-form.tsx",
+      "line": 84,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "components/crm-pipeline.tsx",
+      "line": 88,
+      "element": "Link",
+      "attributes": {
+        "href": "{\"/crm/\" + l.id}"
+      }
+    },
+    {
+      "file": "components/crm-pipeline.tsx",
+      "line": 94,
+      "element": "select",
+      "attributes": {
+        "onChange": "{(e) => move(l.id, e.target.value)}"
+      }
+    },
+    {
+      "file": "components/date-field.tsx",
+      "line": 27,
+      "element": "input",
+      "attributes": {
+        "type": "\"datetime-local\"",
+        "name": "{name + \"__local\"}",
+        "onChange": "{(e) => {\n          setLocal(e.target.value);\n          setIso(e.target.value ? new Date(e.target.value).toISOString() : \"\");\n        }}"
+      }
+    },
+    {
+      "file": "components/date-field.tsx",
+      "line": 37,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "{name}"
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 79,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"request_id\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 80,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"kind\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 83,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 84,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 85,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"company_id\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 86,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"contract_id\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 134,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{saveEntry}",
+        "submitLabel": "\"Salvar alteração\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 142,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{saveEntry}"
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 144,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 158,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{saveSchedule}",
+        "submitLabel": "\"Salvar recorrência\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 163,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"kind\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 166,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 167,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 168,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"company_id\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 169,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"contract_id\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 170,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"starts_at\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 171,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"months\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 234,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "action": "{saveRule}",
+        "submitLabel": "\"Salvar regra\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 242,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 243,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 244,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"profile_id\""
+      }
+    },
+    {
+      "file": "components/finance-forms.tsx",
+      "line": 245,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"function_code\""
+      }
+    },
+    {
+      "file": "components/finance-overview.tsx",
+      "line": 14,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/finance\""
+      }
+    },
+    {
+      "file": "components/operations-files.tsx",
+      "line": 30,
+      "element": "input",
+      "attributes": {
+        "type": "\"file\"",
+        "onChange": "{(e) => {\n            setFile(e.target.files?.[0] ?? null);\n            setError(\"\");\n            setMessage(\"\");\n          }}"
+      }
+    },
+    {
+      "file": "components/operations-files.tsx",
+      "line": 42,
+      "element": "button",
+      "attributes": {
+        "type": "\"button\"",
+        "onClick": "{() =>\n          start(async () => {\n            if (!file) return;\n            if (\n              file.size < 1 ||\n              file.size > 10485760 ||\n              !allowedMime.includes(file.type as (typeof allowedMime)[number])\n            ) {\n              setError(\"Tipo não permitido ou arquivo maior que 10 MB.\");\n              return;\n            }\n            try {\n              const record = await reserveFile({\n                company_id: companyId,\n                service_id: serviceId,\n                contract_id: contractId,\n                name: file.name,\n                mime: file.type,\n                size: file.size,\n              });\n              if (record.error || !record.path || !record.id) {\n                setError(record.error ?? \"Não foi possível iniciar o envio.\");\n                return;\n              }\n              const db = createBrowserClient(\n                process.env.NEXT_PUBLIC_SUPABASE_URL!,\n                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,\n              );\n              const upload = await db.storage\n                .from(record.bucket!)\n                .upload(record.path, file, {\n                  contentType: file.type,\n                  upsert: false,\n                });\n              if (upload.error) {\n                setError(\n                  \"Upload não concluído. Verifique a conexão e tente novamente.\",\n                );\n                return;\n              }\n              const r = await finishFile(record.id);\n              if (r.error) setError(r.error);\n              else {\n                setMessage(\"Documento enviado com acesso privado.\");\n                setFile(null);\n                if (inputRef.current) inputRef.current.value = \"\";\n                router.refresh();\n              }\n            } catch {\n              setError(\"Não foi possível enviar o arquivo. Tente novamente.\");\n            }\n          })\n        }"
+      }
+    },
+    {
+      "file": "components/operations-files.tsx",
+      "line": 120,
+      "element": "button",
+      "attributes": {
+        "type": "\"button\"",
+        "onClick": "{() =>\n          start(async () => {\n            setError(\"\");\n            try {\n              const r = await downloadFile(id);\n              if (r.error) setError(r.error);\n              else if (r.url) {\n                window.location.assign(r.url);\n              }\n            } catch {\n              setError(\n                \"Não foi possível autorizar o download. Verifique a conexão e tente novamente.\",\n              );\n            }\n          })\n        }"
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 33,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"assignees\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 54,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"partner_visible\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 78,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{saveClient}"
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 80,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"company_id\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 86,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 141,
+      "element": "textarea",
+      "attributes": {
+        "name": "\"admin_notes\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 147,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 163,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{saveContract}"
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 164,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"company_id\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 167,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 168,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 253,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 273,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{saveService}"
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 274,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"company_id\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 277,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 278,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 352,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 364,
+      "element": "ActionForm",
+      "attributes": {
+        "action": "{progressService}"
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 365,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"company_id\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 366,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"service_id\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 367,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"version\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 384,
+      "element": "textarea",
+      "attributes": {
+        "name": "\"body\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 388,
+      "element": "textarea",
+      "attributes": {
+        "name": "\"partner_body\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 392,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"published\""
+      }
+    },
+    {
+      "file": "components/operations-forms.tsx",
+      "line": 396,
+      "element": "Submit",
+      "attributes": {}
+    },
+    {
+      "file": "components/operations-overview.tsx",
+      "line": 14,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/clients\""
+      }
+    },
+    {
+      "file": "components/os-navigation.tsx",
+      "line": 49,
+      "element": "button",
+      "attributes": {
+        "type": "\"button\"",
+        "onClick": "{() => setOpenPath(open ? null : path)}"
+      }
+    },
+    {
+      "file": "components/os-navigation.tsx",
+      "line": 74,
+      "element": "Link",
+      "attributes": {
+        "href": "{m.path}",
+        "onClick": "{() => setOpenPath(null)}"
+      }
+    },
+    {
+      "file": "components/pagination.tsx",
+      "line": 28,
+      "element": "Link",
+      "attributes": {
+        "href": "{pageHref(path, params, page - 1, pageKey)}"
+      }
+    },
+    {
+      "file": "components/pagination.tsx",
+      "line": 36,
+      "element": "Link",
+      "attributes": {
+        "href": "{pageHref(path, params, page + 1, pageKey)}"
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 20,
+      "element": "Link",
+      "attributes": {
+        "href": "\"/team\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 23,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 24,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "submitLabel": "\"Salvar perfil\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 28,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"operation\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 29,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"id\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 30,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"name\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 31,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"active\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 43,
+      "element": "input",
+      "attributes": {
+        "type": "\"checkbox\"",
+        "name": "\"remove_from_campaign\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 61,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 62,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "submitLabel": "\"Salvar time\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 66,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"operation\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 67,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"campaign_id\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 68,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"profile_id\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 86,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 87,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "submitLabel": "\"Remover da campanha\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 91,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"operation\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 92,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"campaign_id\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 93,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"profile_id\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 94,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"remove\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 100,
+      "element": "summary",
+      "attributes": {}
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 101,
+      "element": "ConfirmedAdminForm",
+      "attributes": {
+        "submitLabel": "\"Adicionar à campanha\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 105,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"operation\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 106,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"campaign_id\""
+      }
+    },
+    {
+      "file": "components/participant-controls.tsx",
+      "line": 107,
+      "element": "input",
+      "attributes": {
+        "type": "\"hidden\"",
+        "name": "\"profile_id\""
+      }
+    },
+    {
+      "file": "components/submit.tsx",
+      "line": 12,
+      "element": "button",
+      "attributes": {
+        "type": "\"submit\""
+      }
+    },
+    {
+      "file": "components/ui.tsx",
+      "line": 26,
+      "element": "input",
+      "attributes": {
+        "name": "{name}",
+        "type": "{type}"
+      }
+    },
+    {
+      "file": "components/ui.tsx",
+      "line": 56,
+      "element": "select",
+      "attributes": {
+        "name": "{name}"
+      }
+    }
+  ]
+}

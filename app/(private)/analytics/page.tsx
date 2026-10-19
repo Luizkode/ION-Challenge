@@ -1,3 +1,4 @@
+import { ActionForm } from "@/components/action-form";
 import Link from "next/link";
 import { analyticsContext, analyticsFilters } from "@/lib/analytics-server";
 import {
@@ -314,7 +315,7 @@ export default async function Analytics({
                 <Link className="button" href="/analytics/template">
                   Baixar modelo CSV
                 </Link>
-                <form className="form-grid" action={importPerformance}>
+                <ActionForm className="form-grid" action={importPerformance}>
                   <Select
                     name="campaign_id"
                     label="Campanha do arquivo"
@@ -347,7 +348,7 @@ export default async function Analytics({
                     />
                   </label>
                   <Submit>Importar CSV real</Submit>
-                </form>
+                </ActionForm>
               </details>
             </section>
           )}
@@ -357,7 +358,12 @@ export default async function Analytics({
               <span>{snapshot.record_count} registros</span>
             </div>
             {rows.length ? (
-              <div style={{ overflowX: "auto" }}>
+              <div
+                className="table-scroll"
+                tabIndex={0}
+                role="region"
+                aria-label="Tabela com rolagem horizontal"
+              >
                 <table>
                   <thead>
                     <tr>
@@ -504,7 +510,7 @@ export default async function Analytics({
               publicado automaticamente.
             </p>
             {canWrite ? (
-              <form className="form-grid" action={createAnalyticsReport}>
+              <ActionForm className="form-grid" action={createAnalyticsReport}>
                 {Object.entries(filters)
                   .filter(([k]) => k !== "company_id" && k !== "month")
                   .map(([k, v]) => (
@@ -532,7 +538,7 @@ export default async function Analytics({
                 </Select>
                 <Field name="title" label="Título do relatório" />
                 <Submit>Gerar relatório com dados reais</Submit>
-              </form>
+              </ActionForm>
             ) : (
               <Empty>
                 Sua permissão permite consultar os relatórios, sem gerar novos
@@ -766,7 +772,7 @@ export default async function Analytics({
             operacional vigente. Parceiros não podem receber permissão de edição
             de Analytics.
           </p>
-          <form action={saveAnalyticsGrant} className="form-grid">
+          <ActionForm action={saveAnalyticsGrant} className="form-grid">
             <Select name="company_id" label="Cliente da permissão" required>
               <option value="">Selecione</option>
               {options.companies.map((c) => (
@@ -793,7 +799,7 @@ export default async function Analytics({
             </Select>
             <Field name="reason" label="Motivo da permissão" />
             <Submit>Salvar permissão de Analytics</Submit>
-          </form>
+          </ActionForm>
           {options.grants.map((g) => (
             <p key={g.company_id + g.profile_id}>
               {options.companies.find((c) => c.id === g.company_id)?.name} ·{" "}

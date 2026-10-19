@@ -1,3 +1,7 @@
+import { pageNumber, pageSize } from "@/lib/pagination";
+import { Pagination } from "@/components/pagination";
+import { dateInput } from "@/lib/finance";
+import { ActionForm } from "@/components/action-form";
 import { commercialAccess } from "@/lib/access";
 import { redirect } from "next/navigation";
 import { session, check } from "@/lib/session";
@@ -13,6 +17,7 @@ export default async function Meetings({
     status?: string;
     company?: string;
     date?: string;
+    page?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -26,12 +31,32 @@ export default async function Meetings({
               "Você não tem permissão para acessar este recurso.",
             ),
     );
+  const page = pageNumber(params.page);
+  const dateValid = !params.date || dateInput.safeParse(params.date).success;
+  const statusValid =
+    !params.status ||
+    [
+      "scheduled",
+      "pending",
+      "held",
+      "qualified",
+      "no_show",
+      "cancelled",
+      "invalidated",
+    ].includes(params.status);
   let query = db
     .from("meetings")
-    .select("*,opportunities(*)")
-    .order("scheduled_at", { ascending: false });
-  if (params.status) query = query.eq("status", params.status);
-  if (params.date) {
+    .select("*,opportunities!inner(*)", { count: "exact" })
+    .order("scheduled_at", { ascending: false })
+    .order("id")
+    .range((page - 1) * pageSize, page * pageSize - 1);
+  if (params.status && statusValid) query = query.eq("status", params.status);
+  if (params.company)
+    query = query.ilike(
+      "opportunities.company",
+      "%" + params.company.replace(/[%_\\]/g, "") + "%",
+    );
+  if (params.date && dateValid) {
     query = query
       .gte("scheduled_at", params.date + "T00:00:00-03:00")
       .lt(
@@ -41,17 +66,13 @@ export default async function Meetings({
         ).toISOString(),
       );
   }
-  const { data: raw, error } = await query;
+  const { data: meetings, error, count } = await query;
   check(error);
-  const meetings =
-    raw?.filter(
-      (m) =>
-        !params.company ||
-        m.opportunities.company
-          .toLowerCase()
-          .includes(params.company.toLowerCase()),
-    ) ?? [];
-  const { data: closers } = await db.rpc("available_closers");
+  const { data: closers, error: closerError } =
+    profile.category === "admin"
+      ? await db.rpc("available_closers")
+      : { data: [], error: null };
+  check(closerError);
   return (
     <>
       <div className="page-title">
@@ -63,7 +84,16 @@ export default async function Meetings({
           </p>
         </div>
       </div>
-      <Notice params={params} />
+      <Notice
+        params={{
+          ...params,
+          error: !dateValid
+            ? "Informe uma data válida para filtrar as reuniões."
+            : !statusValid
+              ? "Status inválido. Selecione uma opção disponível."
+              : params.error,
+        }}
+      />
       <section className="panel">
         <div className="panel-title">
           <h2>Registros</h2>
@@ -100,7 +130,7 @@ export default async function Meetings({
           />
           <button className="button">Filtrar</button>
         </form>
-        {meetings.length ? (
+        {meetings?.length ? (
           <div className="meeting-list">
             {meetings.map((m) => (
               <article key={m.id}>
@@ -131,7 +161,7 @@ export default async function Meetings({
                 {profile.role === "admin" && (
                   <details>
                     <summary>Correção / revisão administrativa</summary>
-                    <form action={adminOperation} className="form-grid">
+                    <ActionForm action={adminOperation} className="form-grid">
                       <input
                         type="hidden"
                         name="operation"
@@ -157,8 +187,8 @@ export default async function Meetings({
                         name="reason"
                       />
                       <Submit>Corrigir e auditar</Submit>
-                    </form>
-                    <form action={adminOperation} className="form-grid">
+                    </ActionForm>
+                    <ActionForm action={adminOperation} className="form-grid">
                       <input
                         type="hidden"
                         name="operation"
@@ -186,7 +216,7 @@ export default async function Meetings({
                         name="reason"
                       />
                       <Submit>Autorizar exceção de duplicidade</Submit>
-                    </form>
+                    </ActionForm>
                   </details>
                 )}
               </article>
@@ -195,6 +225,12 @@ export default async function Meetings({
         ) : (
           <Empty>Nenhuma reunião encontrada para estes filtros.</Empty>
         )}
+        <Pagination
+          path="/meetings"
+          params={params}
+          page={page}
+          total={count ?? 0}
+        />
       </section>
     </>
   );

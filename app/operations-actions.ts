@@ -43,14 +43,16 @@ export async function saveClient(form: FormData) {
   const p = clientSchema.safeParse(formObject(form));
   if (!p.success)
     notice(
-      "/clients",
+      z.string().uuid().safeParse(form.get("company_id")).success
+        ? pathFor(form.get("company_id"))
+        : "/clients/new",
       "Revise os campos do cliente, datas e responsáveis.",
       true,
     );
   const id = await execute(
     "ops_save_client",
     p.data,
-    pathFor(p.data.company_id),
+    p.data.company_id ? pathFor(p.data.company_id) : "/clients/new",
   );
   notice("/clients/" + id, "Cliente salvo e histórico preservado.");
 }

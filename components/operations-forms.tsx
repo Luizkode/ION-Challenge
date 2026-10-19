@@ -1,3 +1,4 @@
+import { ActionForm } from "@/components/action-form";
 import { Field, Select } from "./ui";
 import { Submit } from "./submit";
 import {
@@ -74,7 +75,7 @@ export function ClientForm({
   company?: { id: string; name: string };
 }) {
   return (
-    <form action={saveClient} className="form-grid">
+    <ActionForm action={saveClient} className="form-grid">
       {(client || company) && (
         <input
           type="hidden"
@@ -144,7 +145,7 @@ export function ClientForm({
         value={client?.partner_visible}
       />
       <Submit>Salvar cliente</Submit>
-    </form>
+    </ActionForm>
   );
 }
 export function ContractForm({
@@ -159,7 +160,7 @@ export function ContractForm({
   contracts: Contract[];
 }) {
   return (
-    <form action={saveContract} className="form-grid">
+    <ActionForm action={saveContract} className="form-grid">
       <input type="hidden" name="company_id" value={companyId} />
       {contract && (
         <>
@@ -250,7 +251,7 @@ export function ContractForm({
       )}
       <Published value={contract?.partner_visible} />
       <Submit>Salvar contrato</Submit>
-    </form>
+    </ActionForm>
   );
 }
 export function ServiceForm({
@@ -269,7 +270,7 @@ export function ServiceForm({
   selected?: string[];
 }) {
   return (
-    <form action={saveService} className="form-grid">
+    <ActionForm action={saveService} className="form-grid">
       <input type="hidden" name="company_id" value={companyId} />
       {service && (
         <>
@@ -349,7 +350,7 @@ export function ServiceForm({
       <Assignees people={people} selected={selected} />
       <Published value={service?.partner_visible} />
       <Submit>Salvar serviço</Submit>
-    </form>
+    </ActionForm>
   );
 }
 export function ProgressForm({
@@ -360,7 +361,7 @@ export function ProgressForm({
   admin: boolean;
 }) {
   return (
-    <form action={progressService} className="form-grid">
+    <ActionForm action={progressService} className="form-grid">
       <input type="hidden" name="company_id" value={service.company_id} />
       <input type="hidden" name="service_id" value={service.id} />
       <input type="hidden" name="version" value={service.version} />
@@ -393,6 +394,6 @@ export function ProgressForm({
         </label>
       )}
       <Submit>Registrar andamento</Submit>
-    </form>
+    </ActionForm>
   );
 }

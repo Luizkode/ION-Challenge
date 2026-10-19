@@ -1,3 +1,4 @@
+import { ActionForm } from "@/components/action-form";
 import Link from "next/link";
 import { operationsContext } from "@/lib/operations-server";
 import { check } from "@/lib/session";
@@ -285,7 +286,7 @@ export default async function Clients({
                 Apenas contratos comerciais confirmados e válidos. Repetir a
                 conversão retorna o mesmo cliente e contrato.
               </p>
-              <form action={convertDeal} className="form-grid">
+              <ActionForm action={convertDeal} className="form-grid">
                 <Select
                   name="deal_id"
                   label="Fechamento confirmado"
@@ -321,22 +322,22 @@ export default async function Clients({
                   ))}
                 </Select>
                 <Submit>Criar ou vincular cliente</Submit>
-              </form>
+              </ActionForm>
             </details>
           </section>
           <section className="panel padded">
             <details>
               <summary>Catálogo configurável de serviços</summary>
-              <form action={saveCatalog} className="form-grid">
+              <ActionForm action={saveCatalog} className="form-grid">
                 <Field label="Novo serviço do catálogo" name="name" />
                 <Submit>Adicionar ao catálogo</Submit>
-              </form>
+              </ActionForm>
               {allCatalog.map((c) => (
                 <details key={c.id}>
                   <summary>
                     {c.name} · {c.active ? "Ativo" : "Inativo"}
                   </summary>
-                  <form action={saveCatalog} className="form-grid">
+                  <ActionForm action={saveCatalog} className="form-grid">
                     <input type="hidden" name="id" value={c.id} />
                     <Field label="Nome do serviço" name="name" value={c.name} />
                     <Select
@@ -348,7 +349,7 @@ export default async function Clients({
                       <option value="false">Inativo</option>
                     </Select>
                     <Submit>Atualizar catálogo</Submit>
-                  </form>
+                  </ActionForm>
                 </details>
               ))}
             </details>

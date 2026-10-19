@@ -1,3 +1,4 @@
+import { ActionForm } from "@/components/action-form";
 import { Field, Select } from "./ui";
 import { Submit } from "./submit";
 import {
@@ -35,7 +36,7 @@ export function AccountForm({
   account?: Account;
 }) {
   return (
-    <form action={saveAdAccount} className="form-grid">
+    <ActionForm action={saveAdAccount} className="form-grid">
       {a ? (
         <>
           <input type="hidden" name="id" value={a.id} />
@@ -82,7 +83,7 @@ export function AccountForm({
         ativada pelo cadastro da conta.
       </p>
       <Submit>Salvar conta de dados</Submit>
-    </form>
+    </ActionForm>
   );
 }
 export function CampaignForm({
@@ -93,7 +94,7 @@ export function CampaignForm({
   campaign?: Campaign;
 }) {
   return (
-    <form action={saveAdCampaign} className="form-grid">
+    <ActionForm action={saveAdCampaign} className="form-grid">
       {c ? (
         <>
           <input type="hidden" name="id" value={c.id} />
@@ -148,7 +149,7 @@ export function CampaignForm({
         </>
       )}
       <Submit>Salvar campanha de anúncios</Submit>
-    </form>
+    </ActionForm>
   );
 }
 export function MetricForm({
@@ -161,7 +162,7 @@ export function MetricForm({
   const val = (k: string) =>
     r?.[k] === null ? undefined : (r?.[k] as string | number | undefined);
   return (
-    <form action={saveMetric} className="form-grid">
+    <ActionForm action={saveMetric} className="form-grid">
       {r ? (
         <>
           <input type="hidden" name="id" value={String(r.id)} />
@@ -250,6 +251,6 @@ export function MetricForm({
         resultado e revogam relatórios publicados até revisão administrativa.
       </p>
       <Submit>Salvar resultado real</Submit>
-    </form>
+    </ActionForm>
   );
 }

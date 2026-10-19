@@ -46,6 +46,7 @@ test("PostgreSQL CRM: persistência, integração, RLS, concorrência e pontos",
     "002_participant_management.sql",
     "003_access_control.sql",
     "004_commercial_crm.sql",
+    "012_crm_edit_scope.sql",
   ])
     await db.exec(
       await readFile(
@@ -443,6 +444,25 @@ test("PostgreSQL CRM: persistência, integração, RLS, concorrência e pontos",
           scheduled_at: new Date(Date.now() + 3600000).toISOString(),
         }),
         /Somente ADM/,
+      );
+      // Consultation/activity grant must not change master data, archive or bypass RPC via table writes.
+      const current = (
+        await db.query<any>("select * from crm_leads where id=$1", [lid])
+      ).rows[0];
+      await assert.rejects(
+        rpc("crm_save_lead", {
+          ...current,
+          company: "Alteração indevida",
+          version: current.version,
+        }),
+        /Somente o administrador/,
+      );
+      await assert.rejects(
+        rpc("crm_archive", { id: lid, archived: "true", confirm: "true" }),
+        /Somente o administrador/,
+      );
+      await assert.rejects(
+        db.query("update crm_leads set company='Invasão' where id=$1", [lid]),
       );
       await actor(1);
       await rpc("crm_set_grant", {

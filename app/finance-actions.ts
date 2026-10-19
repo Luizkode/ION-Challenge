@@ -13,7 +13,7 @@ import {
 function notice(path: string, message: string, error = false): never {
   redirect(
     path +
-      "?" +
+      (path.includes("?") ? "&" : "?") +
       (error ? "error" : "success") +
       "=" +
       encodeURIComponent(message),
@@ -48,7 +48,11 @@ async function run(
   return r.data;
 }
 export async function saveEntry(f: FormData) {
-  const id = await run("fin_save_entry", entrySchema, f);
+  const existing = z.string().uuid().safeParse(f.get("id"));
+  const path = existing.success
+    ? "/finance/entries/" + existing.data
+    : "/finance?view=" + (f.get("kind") === "expense" ? "expense" : "income");
+  const id = await run("fin_save_entry", entrySchema, f, path);
   notice("/finance/entries/" + id, "Lançamento salvo e auditado.");
 }
 export async function settle(f: FormData) {

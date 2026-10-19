@@ -25,6 +25,7 @@ function initialState(mode = "active") {
     crm_activities: [],
     crm_deals: [],
     requests: [],
+    reads: [],
     invitations: [],
     participants: [
       {
@@ -181,6 +182,7 @@ createServer(async (req, res) => {
     if(url.pathname.includes('/sign/'))return send({signedURL:url.pathname.replace('/storage/v1','')+'?token=test-only'});
     return send({Key:url.pathname.split('/object/')[1],Id:crypto.randomUUID()});
   }
+  if (req.method==='GET' || table==='current_access')state.reads.push({table,query:url.searchParams.toString()});
   if(table?.startsWith('ana_')) {
     const admin=profiles[id].category==='admin',partner=profiles[id].category==='partner';
     const cols=['spend','reach','impressions','frequency','clicks','ctr','cpc','cpm','leads','cpl','conversions','acquisitions','cpa','revenue','roas'];
@@ -357,7 +359,11 @@ createServer(async (req, res) => {
   const singular = req.headers.accept?.includes(
     "application/vnd.pgrst.object+json",
   );
-  const rows = (data) => send(singular ? (data[0] ?? null) : data);
+  const rows = (data) => {
+    const total=data.length, offset=Number(url.searchParams.get('offset')??0),limit=Number(url.searchParams.get('limit')??total);
+    res.setHeader('Content-Range',`${offset}-${Math.max(offset,offset+Math.min(limit,total-offset)-1)}/${total}`);
+    const page=data.slice(offset,offset+limit);return send(singular ? (page[0] ?? null) : page);
+  };
   if (['crm_leads','crm_activities','crm_deals','crm_grants','ops_clients','ops_contracts','ops_services','ops_updates','ops_files','ops_admin_notes','ops_service_assignments'].includes(table)) {
     let items=state[table]??[];
     if(url.searchParams.has('id'))items=items.filter(l=>l.id===url.searchParams.get('id').replace('eq.',''));
