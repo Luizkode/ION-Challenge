@@ -15,7 +15,11 @@ function initialState(mode = "active") {
   return {
     mode,
     meetings: [],
-    ops_clients: [{company_id:'90000000-0000-0000-0000-000000000001',contact:'Contato A',phone:'11900000001',email:'a@example.com',niche:'Serviços',city:'São Paulo',state:'SP',instagram:'',website:'',joined_at:'2026-01-01',relationship:'active',partner_visible:false,version:1,created_at:new Date().toISOString(),access_companies:{name:'Empresa A',active:true}}],
+    ana_accounts:[{id:'97000000-0000-0000-0000-000000000001',company_id:'90000000-0000-0000-0000-000000000001',name:'Conta Meta de teste',reference:'act-test',platform:'meta',time_zone:'America/Sao_Paulo',attribution:'7 dias clique / 1 dia visualização',active:true,version:1}],
+    ana_campaigns:[{id:'97000000-0000-0000-0000-000000000002',company_id:'90000000-0000-0000-0000-000000000001',account_id:'97000000-0000-0000-0000-000000000001',name:'Campanha de teste',reference:'campaign-test',contract_id:null,active:true,version:1,published:mode==='analytics_published',published_metrics:['spend','impressions','clicks','ctr']}],
+    ana_metrics:mode==='analytics_published'?[{id:'97000000-0000-0000-0000-000000000003',campaign_id:'97000000-0000-0000-0000-000000000002',period_from:'2020-01-01',period_to:'2020-01-01',spend:'10.25',impressions:'1000',clicks:'10',source_reference:'ORIGEM INTERNA PRIVADA',revenue_evidence:'EVIDÊNCIA PRIVADA',revenue:'999.99',source_kind:'csv',published:true,version:1,updated_at:new Date().toISOString()}]:[],
+    ana_reports:[],ana_grants:[],
+    ops_clients: [{company_id:'90000000-0000-0000-0000-000000000001',contact:'Contato A',phone:'11900000001',email:'a@example.com',niche:'Serviços',city:'São Paulo',state:'SP',instagram:'',website:'',joined_at:'2026-01-01',relationship:'active',partner_visible:mode==='analytics_published',version:1,created_at:new Date().toISOString(),access_companies:{name:'Empresa A',active:true}}],
     ops_contracts: [],ops_services: [],ops_updates: [],ops_files: [],ops_service_assignments: [],
     crm_leads: [],
     crm_activities: [],
@@ -176,6 +180,35 @@ createServer(async (req, res) => {
   if (url.pathname.startsWith('/storage/v1/')) {
     if(url.pathname.includes('/sign/'))return send({signedURL:url.pathname.replace('/storage/v1','')+'?token=test-only'});
     return send({Key:url.pathname.split('/object/')[1],Id:crypto.randomUUID()});
+  }
+  if(table?.startsWith('ana_')) {
+    const admin=profiles[id].category==='admin',partner=profiles[id].category==='partner';
+    const cols=['spend','reach','impressions','frequency','clicks','ctr','cpc','cpm','leads','cpl','conversions','acquisitions','cpa','revenue','roas'];
+    const company=state.ops_clients[0]?.company_id;
+    const data=body.data;
+    function snapshot(filters={},portal=false) {
+      const rows=state.ana_metrics.filter(m=>!m.voided&&m.period_from>=(filters.from||'0000')&&m.period_to<=(filters.to||'9999')).filter(m=>!filters.campaign_id||m.campaign_id===filters.campaign_id).filter(m=>!portal||m.published&&state.ana_campaigns.find(c=>c.id===m.campaign_id)?.published).map(m=>{const c=state.ana_campaigns.find(c=>c.id===m.campaign_id);const a=state.ana_accounts.find(a=>a.id===c.account_id);const row={...m,company_id:c.company_id,company:'Empresa A',campaign:c.name,account_id:a.id,account:a.name,platform:a.platform,time_zone:a.time_zone,attribution:a.attribution,allowed:portal?c.published_metrics:cols,contract_id:null,contract_reference:null};if(portal){delete row.source_reference;delete row.revenue_evidence;for(const k of ['spend','reach','impressions','clicks','leads','conversions','acquisitions','revenue'])if(!c.published_metrics.includes(k))row[k]=null;}return row;});
+      // UI double only: financial/ratio aggregation is verified in PostgreSQL, not here.
+      const keys=portal?state.ana_campaigns[0].published_metrics:cols;const stats=Object.fromEntries(keys.map(k=>[k,rows.length===1?(rows[0][k]??null):null]));
+      return {from:filters.from||'2020-01-01',to:filters.to||'2020-01-01',generated_at:new Date().toISOString(),record_count:rows.length,partial_count:0,stats,records:rows,groups:[],points:rows.map(r=>({...r,from:r.period_from,to:r.period_to,stats:Object.fromEntries(keys.map(k=>[k,r[k]??null]))})),sources:rows,methodology:'Resultados reais da fixture de interface; cálculos verificados no PostgreSQL.',comparison:null};
+    }
+    if(table==='ana_overview')return send({clients:state.ana_metrics.length?1:0,records:state.ana_metrics.length,reports:state.ana_reports.length,published_reports:state.ana_reports.filter(r=>r.published).length});
+    if(table==='ana_partner_options')return send({companies:state.ops_clients.filter(c=>c.partner_visible).map(c=>({id:c.company_id,name:c.access_companies.name})),campaigns:state.ana_campaigns.filter(c=>c.published),reports:state.ana_reports.filter(r=>r.published)});
+    if(table==='ana_report'||table==='ana_portal_report')return send(snapshot(body.filters,partner||table==='ana_portal_report'));
+    if(table==='ana_get_report'){const r=state.ana_reports.find(r=>r.id===body.rid);if(!r||(partner||body.portal)&&!r.published)return send({code:'P0001',message:'Relatório indisponível'},400);return send({...r,company:'Empresa A',snapshot:partner||body.portal?snapshot(r.filters,true):r.snapshot});}
+    if(partner)return send({code:'P0001',message:'Somente consulta'},403);
+    if(table==='ana_options')return send({companies:state.ops_clients.map(c=>({id:c.company_id,name:c.access_companies.name,can_write:true,portal_visible:c.partner_visible})),accounts:state.ana_accounts,campaigns:state.ana_campaigns,contracts:state.ops_contracts,reports:state.ana_reports,people:Object.values(profiles).filter(p=>p.category==='employee'),grants:state.ana_grants});
+    if(table==='ana_history')return send([]);
+    if(table==='ana_metric_detail')return send(state.ana_metrics.find(r=>r.id===body.mid));
+    if(table==='ana_save_account'||table==='ana_save_campaign'){const list=table==='ana_save_account'?state.ana_accounts:state.ana_campaigns;const old=list.find(r=>r.id===data.id);const item={...data,id:old?.id||crypto.randomUUID(),version:(old?.version||0)+1,published:false,published_metrics:[]};if(old)Object.assign(old,item);else list.push(item);return send(item.id);}
+    if(table==='ana_save_metric'){const old=state.ana_metrics.find(r=>r.id===data.id);const item={...data,id:old?.id||crypto.randomUUID(),version:(old?.version||0)+1,published:false,source_kind:old?.source_kind||'manual',updated_at:new Date().toISOString()};if(old)Object.assign(old,item);else state.ana_metrics.push(item);return send(item.id);}
+    if(table==='ana_import'){for(const d of body.rows)state.ana_metrics.push({...d,id:crypto.randomUUID(),version:1,published:false,source_kind:'csv',updated_at:new Date().toISOString()});return send({inserted:body.rows.length,unchanged:0});}
+    if(table==='ana_create_report'){const r={id:crypto.randomUUID(),company_id:data.company_id,title:data.title,period_from:data.from,period_to:data.to,created_at:new Date().toISOString(),published:false,filters:data,snapshot:snapshot(data)};state.ana_reports.push(r);return send(r.id);}
+    if(!admin)return send({code:'P0001',message:'Somente administrador'},403);
+    if(table==='ana_publish_campaign'){const c=state.ana_campaigns.find(c=>c.id===data.id);c.published=data.published;c.published_metrics=data.metrics;return send(null);}
+    if(table==='ana_publish_metrics'){const rows=state.ana_metrics.filter(r=>r.campaign_id===data.campaign_id);for(const r of rows)r.published=data.published;return send(rows.length);}
+    if(table==='ana_publish_report'){const r=state.ana_reports.find(r=>r.id===data.id);r.published=data.published;return send(null);}
+    if(table==='ana_save_grant'){state.ana_grants.push(data);return send(null);}
   }
   if (table === 'fin_report') {
     if(profiles[id].category!=='admin')return send({code:'P0001',message:'Acesso restrito ao administrador'},403);

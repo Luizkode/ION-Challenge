@@ -169,6 +169,7 @@ export type PartnerSnapshot = {
     name: string;
     description: string;
     status: keyof typeof serviceStatuses;
+    starts_at: string;
     due_at: string | null;
     delivered_at: string | null;
   }[];
