@@ -177,6 +177,11 @@ createServer(async (req, res) => {
     if(url.pathname.includes('/sign/'))return send({signedURL:url.pathname.replace('/storage/v1','')+'?token=test-only'});
     return send({Key:url.pathname.split('/object/')[1],Id:crypto.randomUUID()});
   }
+  if (table === 'fin_report') {
+    if(profiles[id].category!=='admin')return send({code:'P0001',message:'Acesso restrito ao administrador'},403);
+    return send({stats:Object.fromEntries(['received','spent','commission_paid','income_due','expense_due','receivable','payable','commission_pending','overdue','operating','cash_net','mrr'].map(k=>[k,'0.00'])),entries:[],daily:[],cash:[],categories:[],delinquency:[],commissions:[]});
+  }
+  if (table === 'fin_options')return send({categories:[{id:'96000000-0000-0000-0000-000000000001',name:'Outras receitas',kind:'income'},{id:'96000000-0000-0000-0000-000000000002',name:'Outras despesas',kind:'expense'}],companies:[],contracts:[],people:[],schedules:[],rules:[],closures:[]});
   if (table === 'ops_summary')return send({active_clients:state.ops_clients.length,inactive_clients:0,active_contracts:state.ops_contracts.filter(c=>c.status==='active').length,running:state.ops_services.filter(c=>c.status==='running').length,completed:state.ops_services.filter(c=>c.status==='completed').length,paused:0,overdue:0});
   if(table==='ops_list_clients')return send({rows:state.ops_clients,count:state.ops_clients.length});
   if(table==='ops_partner_snapshot'||table==='ops_source_alerts')return send([]);
