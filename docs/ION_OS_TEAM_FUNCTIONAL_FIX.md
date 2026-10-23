@@ -2,7 +2,7 @@
 
 ## Estado da entrega
 
-Branch de trabalho: `fix/team-real-operations`. Correções preparadas para revisão; produção ainda não atualizada. Nenhuma migration nova ou alteração em dados de produção foi executada nesta intervenção.
+Entrega pela branch `fix/team-real-operations`, PR #11. Nenhuma migration nova foi necessária. Foram criados registros técnicos controlados nos serviços existentes para validação; a limpeza e a preservação dos registros anteriores são verificadas antes do encerramento. O SHA e o estado final da implantação são registrados na descrição do PR e no relatório privado de execução.
 
 ## Problemas demonstrados no código
 
@@ -24,24 +24,41 @@ Nenhuma dessas evidências locais comprova a causa específica de uma tentativa 
 
 A autenticação, as políticas RLS, os bloqueios do último administrador e da própria conta, as RPCs transacionais e os cálculos do Challenger não foram relaxados. Convidar um SDR não o inscreve automaticamente no Challenger: campanha e time continuam sendo gerenciados no fluxo administrativo existente.
 
-## Verificação real e bloqueios externos
+## Validação com os serviços reais
 
-Os endpoints públicos `/login` na aplicação existente e `/auth/v1/health` no Supabase responderam HTTP 200. Isso comprova disponibilidade pública, não persistência de operações administrativas.
+Após a atualização segura dos segredos, Supabase Management e o projeto existente da Vercel responderam HTTP 200. Nenhum valor de credencial foi registrado no código ou neste relatório.
 
-Os acessos administrativos injetados nesta execução foram recusados: Supabase Management API, HTTP 401 (`Invalid access token`); Vercel, HTTP 403 por falta de acesso ao escopo `ion-challenge`. O usuário informou que vai atualizar os dois acessos nas configurações seguras. Nenhum valor de credencial foi incluído neste documento.
+Foram concluídas 29 verificações nos serviços reais: PostgREST, Supabase Auth, Storage e uma transação SQL revertida no banco atual. Também passaram 15 fluxos no navegador com a compilação do PR conectada ao Supabase real. Não houve interceptação ou substituição das respostas por fixtures nesses cenários.
 
-Enquanto esses acessos não forem aceitos, permanecem **não validados nesta intervenção**: configuração atual de SMTP/callbacks/segredos da implantação, logs privados, convites reais, promoção/ativação/vínculos em dados remotos, operações dos demais módulos com os cinco perfis, recuperação atual verificável e publicação da correção. SMTP estava pendente na etapa anterior; seu estado atual precisa ser consultado antes de atribuir a ele a falha observada.
+| Área | Evidência real |
+| --- | --- |
+| Equipe | Promoção SDR → ADM com remoção atômica da campanha; bloqueio sem a confirmação; retorno a SDR e reinclusão; persistência de funções e empresas; desativação bloqueando sessão aberta; reativação; bloqueio de autoexclusão administrativa e de escalonamento por outros perfis. |
+| Convites/Auth | Auth aceitou um convite e criou identidade ainda não confirmada, sem perfil implícito; vínculo pela interface, callback com token real, definição de senha, logout e novo login; RPCs `begin_access_invite`/`complete_access_invite` com status `completed`; rejeição de UUID de outro destinatário e de sobrescrita de perfil existente. Os tokens para ensaiar ativação foram emitidos pelo Auth administrativo exclusivamente para contas técnicas; isso não comprova transporte/recebimento de email. |
+| Empresas/Parceiros | Produção consulta empresa atribuída e não consulta outra; parceiro recebe somente a projeção autorizada da empresa vinculada, sem acesso direto às tabelas internas ou a métricas não publicadas. |
+| CRM/Clientes | Lead, atividade, agendamento, validação pelo closer, fechamento, confirmação e conversão para cliente/contrato operacional persistidos; repetição da conversão não duplica o cliente. |
+| Serviços | Serviço atribuído à Produção, atualizado para concluído e consultado com persistência. |
+| Challenger | Inclusão/remoção de participantes refletida no ranking; campanha do iPhone mantida em configuração. Agendamento sem pontos antes da validação e pontos após validação do closer foram conferidos no banco real dentro de transação integralmente revertida, sem ativação permanente da campanha. |
+| Analytics | Resultado manual, snapshot de relatório, importação CSV e identificação de reenvio sem duplicação; PDF autenticado gerado pela aplicação. Integrações Meta/Google permanecem fora desta correção. |
+| Financeiro | Lançamento técnico de R$ 0,01, idempotência, baixa, estorno integral e cancelamento, sem operação bancária externa; saldo líquido zero conferido antes da limpeza; CSV autenticado retornado pela aplicação. |
+| Documentos | Upload real no bucket existente, confirmação de metadados, bloqueio do parceiro antes da publicação e download autorizado após publicação; conteúdo conferido por SHA-256. |
+| Dashboard/Configurações | SSR autenticado dos nove módulos no endereço publicado; navegação e bloqueios para Administrador, SDR, Closer, Produção e Parceiro; regras existentes não alteradas. |
 
-Resultados locais: `npm test` executou 118 testes, todos aprovados; os cenários de Equipe e controle de acesso no Playwright executaram 24 casos, todos aprovados, em computador e celular. A compilação de produção necessária a esses cenários também terminou sem erro. `npm run typecheck` passou. A regressão local de cadastro de reuniões do Challenger passou nos dois dispositivos (2 casos), incluindo RPC, identificação do SDR e consulta pelo closer.
+A navegação da branch foi testada em computador e celular. No endereço público, as verificações usam HTTPS autenticado com validação TLS ativa. O Chromium desta execução não confia na CA de rede atual, e não houve permissão para gravar no seu armazenamento de certificados; por isso não se afirma que houve teste visual direto do endereço público nesse navegador. A interface da branch foi exercitada com os serviços reais, e a publicação é conferida separadamente pelo SHA e pelas respostas autenticadas do servidor.
 
-Os testes automatizados utilizam PostgreSQL local (PGlite) e serviços controlados de teste no navegador. Não são apresentados como evidência de sucesso no Supabase de produção.
+## Causa externa confirmada nos convites
 
-## Continuação assim que os acessos forem restabelecidos
+O projeto ainda utiliza o envio padrão do Supabase, sem SMTP próprio, com `rate_limit_email_sent = 2`. Um convite foi aceito pelo Auth, mas tentativas posteriores receberam HTTP 429, `email rate limit exceeded`. A interface corrigida mostrou o limite específico, preservou o preenchimento e não anunciou sucesso nem concedeu perfil após essa rejeição.
 
-1. Revalidar somente as APIs administrativas bloqueadas, sem imprimir segredos.
-2. Consultar configuração e logs reais; reproduzir com contas e registros técnicos identificáveis, sem alterar dados comerciais ou financeiros existentes.
-3. Verificar persistência e atualização das permissões após recarregamento: convite, Administrador, SDR, Closer, Produção, Parceiro, ativação e vínculos entre empresas. Confirmar bloqueios de acesso indevido e preservação dos registros do Challenger.
-4. Confirmar recuperação verificável antes de publicar; se necessário, gerar cópia segura no projeto existente e validar restauração isoladamente, sem substituir o banco de produção.
-5. Publicar no mesmo projeto/endereço somente após a validação real das correções. Confirmar SHA do deployment e repetir os cenários essenciais na aplicação publicada. Manter a auditoria e remover somente os registros técnicos cuja limpeza seja segura.
+A ausência de SMTP próprio, isoladamente, não foi usada como prova de que todo convite falha: houve aceitação real pelo provedor. O envio completo pela interface ficou limitado pela cota compartilhada durante esta execução. O recebimento em uma caixa autorizada continua **não comprovado**. Para uso diário confiável, configurar SMTP próprio no mesmo Supabase e verificar recebimento, links e limites com uma caixa controlada. Não aumentar/remover limites ou confirmar contas comerciais artificialmente para contornar esse bloqueio.
 
-Nenhuma infraestrutura adicional é requisito para essa continuação.
+## Recuperação e preservação
+
+Antes dos testes e da publicação, foi capturado um snapshot coerente do estado atual: 64 tabelas e 979 registros de `public`/Auth. A cópia foi restaurada em PostgreSQL 17 nativo temporário, com comparação integral dos registros, validação de todas as FKs e ensaio de escrita auditada com rollback. A comparação do catálogo conferiu 537 funções, políticas e constraints com o banco atual, sem divergências.
+
+A cópia criptografada está no bucket privado de recuperação existente; sua chave está em variável privada criptografada do mesmo projeto Vercel. O arquivo foi baixado novamente e decifrado com a chave lida da Vercel. O manifesto documenta formato, escopo e procedimento. O provedor não listou backups gerenciados disponíveis nem PITR ativo: a cópia lógica verificada não é apresentada como PITR ou snapshot completo dos serviços externos.
+
+A restauração é para infraestrutura Supabase compatível e preserva as configurações/signing keys do projeto existente. As migrations foram utilizadas apenas na restauração temporária; nenhuma foi reaplicada em produção. A limpeza remove somente identidades e registros técnicos desta execução, conserva a auditoria e verifica registros comerciais anteriores, campanha e identidades/senhas/bloqueios existentes. Quando um ator técnico é retirado, seu UUID permanece na justificativa de auditoria antes da remoção da referência ao perfil temporário. Contadores de invalidação de cache podem avançar normalmente.
+
+## Regressão local já concluída
+
+Resultados anteriores preservados, sem repetir suítes completas: 118 testes aprovados, 24 cenários de Equipe/permissões e 2 de cadastro de reunião do Challenger em computador/celular; build e tipagem aprovados. Esses cenários de navegador usam fixtures e os testes SQL usam PGlite; seus resultados são distintos das verificações reais acima. A compilação adicional conectada ao projeto Supabase atual também terminou sem erro. A chave de serviço não foi encontrada nos arquivos estáticos destinados ao navegador.
