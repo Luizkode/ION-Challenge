@@ -4,62 +4,79 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { session } from "@/lib/session";
-import { accessInput, accessForm } from "@/lib/access-input";
-function notice(message: string, success = false): never {
-  redirect(
-    "/team?" +
-      (success ? "success" : "error") +
-      "=" +
-      encodeURIComponent(message),
-  );
-}
+import {
+  validateAccess,
+  teamDatabaseError,
+  invitationError,
+  type TeamResult,
+} from "@/lib/access-input";
 async function admin() {
   const ctx = await session();
   if (ctx.profile.category !== "admin") redirect("/");
   return ctx;
 }
-export async function saveAccess(form: FormData) {
+export async function saveAccess(form: FormData): Promise<TeamResult> {
   const { db } = await admin();
-  const parsed = accessInput.safeParse(accessForm(form));
-  if (!parsed.success || !parsed.data.id)
-    notice(
-      "Revise nome, categoria, funções, vínculos, justificativa e confirmação.",
-    );
-  const { error } = await db.rpc("manage_access", { data: parsed.data });
-  if (error) notice(error.message);
+  const parsed = validateAccess(form, "edit");
+  if (!parsed.input.success || Object.keys(parsed.fields).length)
+    return {
+      ok: false,
+      kind: "validation",
+      message: "Corrija os campos indicados antes de salvar.",
+      fields: parsed.fields,
+    };
+  const { error } = await db.rpc("manage_access", { data: parsed.input.data });
+  if (error) return teamDatabaseError(error);
   revalidatePath("/", "layout");
-  notice(
-    "Acesso atualizado. Funções, vínculos e permissões foram aplicados e auditados.",
-    true,
-  );
+  return {
+    ok: true,
+    message:
+      "Acesso atualizado. Funções, vínculos e permissões foram aplicados e auditados.",
+  };
 }
 export async function createAccessCompany(form: FormData) {
   const { db } = await admin();
   const parsed = z.string().trim().min(2).max(150).safeParse(form.get("name"));
   if (!parsed.success)
-    notice("Informe um nome de empresa entre 2 e 150 caracteres.");
+    redirect(
+      "/team?error=Informe+um+nome+de+empresa+entre+2+e+150+caracteres.",
+    );
   const { error } = await db.rpc("manage_access_company", {
     data: { name: parsed.data },
   });
-  if (error) notice(error.message);
+  if (error)
+    redirect(
+      "/team?error=" + encodeURIComponent(teamDatabaseError(error).message),
+    );
   revalidatePath("/", "layout");
-  notice("Empresa cadastrada para vínculos de acesso.", true);
+  redirect("/team?success=Empresa+cadastrada+para+vínculos+de+acesso.");
 }
-export async function inviteAccess(form: FormData) {
+export async function inviteAccess(form: FormData): Promise<TeamResult> {
   const { db } = await admin();
-  const parsed = accessInput.safeParse(accessForm(form));
-  const email = z.string().trim().email().safeParse(form.get("email"));
-  if (!parsed.success || !email.success)
-    notice("Revise os dados do convite, funções e empresas.");
-  // Secret is used only inside this server action, after an authenticated admin check.
+  const parsed = validateAccess(form, "invite");
+  if (
+    !parsed.input.success ||
+    !parsed.email.success ||
+    Object.keys(parsed.fields).length
+  )
+    return {
+      ok: false,
+      kind: "validation",
+      message: "Corrija os campos indicados antes de enviar o convite.",
+      fields: parsed.fields,
+    };
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const appUrl =
     process.env.ION_OS_APP_URL ||
     (process.env.VERCEL_URL ? "https://" + process.env.VERCEL_URL : undefined);
   if (!serviceKey || !appUrl)
-    notice(
-      "Convites precisam de SUPABASE_SERVICE_ROLE_KEY e ION_OS_APP_URL no servidor. Configure-os de forma segura; nunca use NEXT_PUBLIC para a chave administrativa.",
-    );
+    return {
+      ok: false,
+      kind: "infrastructure",
+      message:
+        "O envio de convites não está configurado no servidor. O administrador deve verificar a configuração de autenticação e email.",
+      fields: {},
+    };
   let callback: string;
   try {
     const url = new URL(appUrl);
@@ -68,52 +85,96 @@ export async function inviteAccess(form: FormData) {
       url.password ||
       (url.protocol !== "https:" && url.hostname !== "localhost")
     )
-      throw new Error();
+      throw Error();
     callback = new URL("/auth/callback", url).toString();
   } catch {
-    notice("ION_OS_APP_URL deve ser uma URL HTTPS válida da aplicação.");
+    return {
+      ok: false,
+      kind: "infrastructure",
+      message:
+        "O endereço de retorno dos convites está inválido. O administrador deve conferir o endereço da aplicação na configuração do servidor.",
+      fields: {},
+    };
   }
   const { data: iid, error: beginError } = await db.rpc("begin_access_invite", {
-    data: { ...parsed.data, email: email.data },
+    data: { ...parsed.input.data, email: parsed.email.data },
   });
-  if (beginError)
-    notice(
-      beginError.code === "23505"
-        ? "Já existe um convite pendente para este email. Revise o histórico de convites."
-        : beginError.message,
-    );
+  if (beginError) return teamDatabaseError(beginError);
   const authAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     serviceKey,
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
-  const { data: invited, error } = await authAdmin.auth.admin
-    .inviteUserByEmail(email.data, { redirectTo: callback })
-    .catch(() => ({
-      data: { user: null },
-      error: { message: "Falha de conexão" },
-    }));
+  let result: Awaited<
+    ReturnType<typeof authAdmin.auth.admin.inviteUserByEmail>
+  >;
+  try {
+    result = await authAdmin.auth.admin.inviteUserByEmail(parsed.email.data, {
+      redirectTo: callback,
+    });
+  } catch {
+    return {
+      ok: false,
+      kind: "uncertain",
+      message:
+        "A conexão caiu antes da confirmação do convite. O histórico ficou pendente para conferência; não repita o envio sem verificar o Auth e o histórico de convites.",
+      fields: {},
+    };
+  }
+  const { data: invited, error } = result;
   if (error || !invited.user) {
-    await db.rpc("fail_access_invite", { invitation_id: iid });
-    notice(
-      "Não foi possível enviar o convite. Verifique Auth, SMTP, URL de redirecionamento e se o email já está cadastrado. Nenhuma permissão foi concedida.",
-    );
+    // A network timeout can occur after Auth accepted the request: retain pending state for reconciliation.
+    if (error?.name === "AuthRetryableFetchError" || error?.status === 0)
+      return {
+        ok: false,
+        kind: "uncertain",
+        message:
+          "Não foi possível confirmar o resultado do envio. Confira o Auth e o convite pendente antes de tentar novamente.",
+        fields: {},
+      };
+    const failed = await db.rpc("fail_access_invite", { invitation_id: iid });
+    revalidatePath("/team");
+    if (failed.error)
+      return {
+        ok: false,
+        kind: "uncertain",
+        message:
+          "O envio falhou e o histórico não confirmou a atualização. Recarregue o histórico antes de repetir o convite.",
+        fields: {},
+      };
+    return invitationError(error ?? {});
   }
   const { error: completeError } = await db.rpc("complete_access_invite", {
     invitation_id: iid,
     uid: invited.user.id,
   });
   if (completeError) {
-    await db.rpc("fail_access_invite", { invitation_id: iid });
-    notice(
-      "O convite foi enviado, mas o vínculo de acesso não foi concluído. Não excluímos usuários existentes. Revise o histórico e conclua pelo UUID " +
+    // Record this known access-configuration failure; never delete an existing Auth user.
+    const failed = await db.rpc("fail_access_invite", { invitation_id: iid });
+    revalidatePath("/team");
+    if (failed.error)
+      return {
+        ok: false,
+        kind: "uncertain",
+        message:
+          "O Auth aceitou o convite, mas a configuração do acesso e a atualização do histórico não foram confirmadas. Confira o usuário Auth e o histórico antes de reenviar.",
+        fields: {},
+      };
+    return {
+      ok: false,
+      kind: "uncertain",
+      message:
+        "O Auth aceitou o convite, mas a configuração do acesso não foi confirmada. Confira primeiro se o perfil já existe; se faltar, consulte o histórico e use “Vincular conta existente” com o UUID " +
         invited.user.id +
-        " antes do uso.",
-    );
+        ". " +
+        teamDatabaseError(completeError).message,
+      fields: {},
+    };
   }
   revalidatePath("/", "layout");
-  notice(
-    "Convite enviado e acesso configurado. A pessoa deve abrir o email e definir sua senha.",
-    true,
-  );
+  return {
+    ok: true,
+    message:
+      "Convite enviado e acesso configurado. O Supabase aceitou o envio; confirme o recebimento com a pessoa convidada. O cadastro não comprova a entrega na caixa de email.",
+  };
 }

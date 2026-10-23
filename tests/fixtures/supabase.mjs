@@ -151,6 +151,7 @@ createServer(async (req, res) => {
   if (url.pathname === "/auth/v1/invite") {
     if (req.headers.authorization !== "Bearer test-only-service-role")
       return send({ message: "Unauthorized" }, 401);
+    if (state.mode === "invite_unauthorized")return send({message:"Email address not authorized",code:"email_address_not_authorized"},403);
     if (state.mode === "invite_error")
       return send({ message: "Test email delivery failure" }, 500);
     return send({
