@@ -1302,3 +1302,7 @@ td {
     width: auto;
   }
 }
+/* Functional field feedback; identity and existing layout are retained. */
+.field-error { color:#f1b3bb; font-size:12px; line-height:1.6; }
+[aria-invalid="true"] { border-color:#c76a7d; }
+.required-mark { color:var(--accent); }

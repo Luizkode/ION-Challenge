@@ -2,10 +2,12 @@
 import { useEffect, useState } from "react";
 export function DateField({
   name,
+  label,
   value,
   required,
 }: {
   name: string;
+  label?: string;
   value?: string | number;
   required: boolean;
 }) {
@@ -25,6 +27,7 @@ export function DateField({
   return (
     <>
       <input
+        aria-label={label}
         type="datetime-local"
         name={name + "__local"}
         value={local}

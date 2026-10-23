@@ -173,7 +173,7 @@ for (const category of ["employee", "partner"])
       "Convite enviado e acesso configurado",
     );
   });
-test("falha no envio de convite não concede permissões", async ({
+test("falha 5xx do Auth mantém convite pendente sem configurar acesso", async ({
   page,
   request,
 }) => {
@@ -194,9 +194,16 @@ test("falha no envio de convite não concede permissões", async ({
   await form.getByRole("checkbox", { name: /Confirmo/ }).check();
   page.once("dialog", (d) => d.accept());
   await form.getByRole("button", { name: "Enviar convite" }).click();
-  await expect(
-    page
-      .getByRole("alert")
-      .filter({ hasText: "Nenhuma permissão foi concedida" }),
-  ).toBeVisible();
+  await expect(form.getByRole("alert")).toContainText(
+    "Não foi possível confirmar o resultado do envio",
+  );
+  await expect(form.getByRole("status")).toHaveCount(0);
+  await expect(form.getByLabel("Email do convite")).toHaveValue(
+    "falha@ion.test",
+  );
+  const state = await (
+    await request.get("http://127.0.0.1:3101/__test/state")
+  ).json();
+  expect(state.invitations[0].status).toBe("pending");
+  expect(state.requests).toHaveLength(0);
 });

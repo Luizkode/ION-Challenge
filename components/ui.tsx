@@ -19,12 +19,21 @@ export function Field({
 }) {
   return (
     <label className="field">
-      <span>{label}</span>
+      <span>
+        {label}
+        {required && (
+          <span aria-hidden="true" className="required-mark">
+            {" "}
+            *
+          </span>
+        )}
+      </span>
       {type === "datetime-local" ? (
-        <DateField name={name} value={value} required={required} />
+        <DateField name={name} label={label} value={value} required={required} />
       ) : (
         <input
           name={name}
+          aria-label={label}
           type={type}
           defaultValue={value}
           required={required}
@@ -52,8 +61,21 @@ export function Select({
 }) {
   return (
     <label className="field">
-      <span>{label}</span>
-      <select name={name} defaultValue={value} required={required}>
+      <span>
+        {label}
+        {required && (
+          <span aria-hidden="true" className="required-mark">
+            {" "}
+            *
+          </span>
+        )}
+      </span>
+      <select
+        aria-label={label}
+        name={name}
+        defaultValue={value}
+        required={required}
+      >
         {children}
       </select>
     </label>

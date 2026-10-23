@@ -3,15 +3,10 @@ import { Pagination } from "@/components/pagination";
 import { ActionForm } from "@/components/action-form";
 import { redirect } from "next/navigation";
 import { session, check } from "@/lib/session";
-import {
-  saveAccess,
-  inviteAccess,
-  createAccessCompany,
-} from "@/app/team-actions";
+import { createAccessCompany } from "@/app/team-actions";
 import { Field, Notice, Empty } from "@/components/ui";
 import { Submit } from "@/components/submit";
-import { ConfirmedAdminForm } from "@/components/confirmed-admin-form";
-import { AccessFields } from "@/components/access-fields";
+import { AccessForm } from "@/components/access-form";
 import { functionLabels, type FunctionCode } from "@/lib/access";
 export default async function Team({
   searchParams,
@@ -40,7 +35,11 @@ export default async function Team({
       .order("id")
       .range((page - 1) * pageSize, page * pageSize - 1),
     db.from("user_functions").select("*"),
-    db.from("access_companies").select("id,name").order("name"),
+    db
+      .from("access_companies")
+      .select("id,name")
+      .eq("active", true)
+      .order("name"),
     db.from("client_assignments").select("*"),
     db.from("partner_companies").select("*"),
     db
@@ -51,6 +50,13 @@ export default async function Team({
   ]);
   result.forEach((r) => check(r.error));
   const [users, roles, companies, clients, partners, invitations] = result;
+  const membership = await db
+    .from("campaign_participants")
+    .select("profile_id,campaigns!inner(state)")
+    .eq("active", true)
+    .neq("campaigns.state", "finalized");
+  check(membership.error);
+  const activeParticipants = membership.data ?? [];
   const bindings = [...(clients.data ?? []), ...(partners.data ?? [])];
   return (
     <>
@@ -71,14 +77,7 @@ export default async function Team({
           O convite seguro é enviado pelo Supabase Auth. Nenhuma senha é
           cadastrada neste formulário.
         </p>
-        <ConfirmedAdminForm
-          action={inviteAccess}
-          confirmation="Confirma enviar o convite com os acessos selecionados?"
-          submitLabel="Enviar convite"
-        >
-          <Field label="Email do convite" name="email" type="email" />
-          <AccessFields companies={companies.data ?? []} />
-        </ConfirmedAdminForm>
+        <AccessForm mode="invite" companies={companies.data ?? []} />
       </section>
       <section className="panel padded">
         <h2>Empresas para vínculos de acesso</h2>
@@ -111,23 +110,20 @@ export default async function Team({
                 .join(" · ") || "Sem funções de colaborador"}{" "}
               · UUID: {u.id}
             </p>
-            <ConfirmedAdminForm
-              action={saveAccess}
-              confirmation={`Confirma atualizar o acesso de ${u.name}?`}
-              submitLabel="Salvar acesso"
-            >
-              <input type="hidden" name="id" value={u.id} />
-              <AccessFields
-                profile={u}
-                functions={(roles.data ?? [])
-                  .filter((r) => r.profile_id === u.id)
-                  .map((r) => r.function_code)}
-                bindings={bindings
-                  .filter((b) => b.profile_id === u.id)
-                  .map((b) => b.company_id)}
-                companies={companies.data ?? []}
-              />
-            </ConfirmedAdminForm>
+            <AccessForm
+              mode="edit"
+              profile={u}
+              functions={(roles.data ?? [])
+                .filter((r) => r.profile_id === u.id)
+                .map((r) => r.function_code)}
+              bindings={bindings
+                .filter((b) => b.profile_id === u.id)
+                .map((b) => b.company_id)}
+              companies={companies.data ?? []}
+              participates={activeParticipants.some(
+                (p) => p.profile_id === u.id,
+              )}
+            />
           </details>
         ))}
         <Pagination
@@ -144,14 +140,7 @@ export default async function Team({
           Use o UUID do usuário em Authentication. Esta ação não altera a senha
           nem cria uma conta Auth.
         </p>
-        <ConfirmedAdminForm
-          action={saveAccess}
-          confirmation="Confirma configurar este UUID com as permissões selecionadas?"
-          submitLabel="Vincular conta existente"
-        >
-          <Field label="UUID do usuário Auth" name="id" />
-          <AccessFields companies={companies.data ?? []} />
-        </ConfirmedAdminForm>
+        <AccessForm mode="link" companies={companies.data ?? []} />
       </section>
       <section className="panel">
         <div className="panel-title">
