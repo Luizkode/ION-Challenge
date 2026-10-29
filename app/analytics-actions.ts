@@ -139,7 +139,7 @@ export async function importPerformance(f: FormData) {
   );
 }
 const publication = {
-  id: z.string().uuid(),
+  id: z.string().guid(),
   published: z.boolean(),
   reason: z.string().trim().min(3).max(2000),
   confirm: z.literal("true"),
@@ -170,7 +170,7 @@ export async function publishMetrics(f: FormData) {
   await execute(
     "ana_publish_metrics",
     z.object({
-      campaign_id: z.string().uuid(),
+      campaign_id: z.string().guid(),
       from: dateInput,
       to: dateInput,
       published: z.boolean(),
@@ -200,7 +200,7 @@ export async function createAnalyticsReport(f: FormData) {
     notice("/analytics", "Período do relatório inválido.", true);
   }
   if (
-    !z.string().uuid().safeParse(data.company_id).success ||
+    !z.string().guid().safeParse(data.company_id).success ||
     data.title.trim().length < 3 ||
     data.title.length > 200
   )
@@ -225,8 +225,8 @@ export async function saveAnalyticsGrant(f: FormData) {
   await execute(
     "ana_save_grant",
     z.object({
-      company_id: z.string().uuid(),
-      profile_id: z.string().uuid(),
+      company_id: z.string().guid(),
+      profile_id: z.string().guid(),
       can_write: z.boolean(),
       active: z.boolean(),
       reason: z.string().min(3).max(2000),

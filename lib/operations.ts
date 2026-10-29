@@ -34,7 +34,7 @@ const date = z
       Number.isFinite(Date.parse(v)) &&
       new Date(v).toISOString().slice(0, 10) === v,
   );
-const optionalId = z.union([z.string().uuid(), z.literal("")]).optional();
+const optionalId = z.union([z.string().guid(), z.literal("")]).optional();
 const optionalDate = z.union([date, z.literal("")]).optional();
 export const clientSchema = z.object({
   company_id: optionalId,
@@ -69,12 +69,12 @@ export const clientSchema = z.object({
   relationship: z.enum(["onboarding", "active", "paused", "inactive", "ended"]),
   partner_visible: z.boolean().default(false),
   admin_notes: z.string().max(10000).default(""),
-  assignees: z.array(z.string().uuid()).max(100).default([]),
+  assignees: z.array(z.string().guid()).max(100).default([]),
 });
 export const contractSchema = z.object({
   id: optionalId,
   version: z.coerce.number().int().positive().optional(),
-  company_id: z.string().uuid(),
+  company_id: z.string().guid(),
   reference: z.string().trim().min(3).max(150),
   starts_at: date,
   ends_at: optionalDate,
@@ -83,16 +83,16 @@ export const contractSchema = z.object({
   periodicity: z.enum(["monthly", "quarterly", "annual", "one_off", "custom"]),
   services_text: z.string().trim().min(2).max(4000),
   status: z.enum(["preparation", "active", "paused", "ended", "cancelled"]),
-  responsible_id: z.string().uuid(),
+  responsible_id: z.string().guid(),
   parent_id: optionalId,
   partner_visible: z.boolean().default(false),
 });
 export const serviceSchema = z.object({
   id: optionalId,
   version: z.coerce.number().int().positive().optional(),
-  company_id: z.string().uuid(),
-  contract_id: z.string().uuid(),
-  catalog_id: z.string().uuid(),
+  company_id: z.string().guid(),
+  contract_id: z.string().guid(),
+  catalog_id: z.string().guid(),
   description: z.string().trim().min(2).max(4000),
   partner_description: z.string().max(4000).default(""),
   starts_at: date,
@@ -100,7 +100,7 @@ export const serviceSchema = z.object({
   delivered_at: optionalDate,
   status: z.enum(["pending", "running", "completed", "paused"]),
   partner_visible: z.boolean().default(false),
-  assignees: z.array(z.string().uuid()).max(100).default([]),
+  assignees: z.array(z.string().guid()).max(100).default([]),
 });
 export const allowedMime = [
   "application/pdf",
@@ -113,7 +113,7 @@ export const allowedMime = [
 ] as const;
 export const fileSchema = z
   .object({
-    company_id: z.string().uuid(),
+    company_id: z.string().guid(),
     service_id: optionalId,
     contract_id: optionalId,
     name: z.string().trim().min(1).max(200),

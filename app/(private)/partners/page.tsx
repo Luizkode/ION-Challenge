@@ -83,7 +83,7 @@ export default async function Partners({
     platform: ["meta", "google", "other"].includes(p.platform ?? "")
       ? p.platform
       : "",
-    contract_id: z.string().uuid().safeParse(p.contract_id).success
+    contract_id: z.string().guid().safeParse(p.contract_id).success
       ? p.contract_id
       : "",
   };

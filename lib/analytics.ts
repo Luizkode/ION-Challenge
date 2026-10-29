@@ -106,7 +106,7 @@ export const sourceLabels = {
   meta_api: "API oficial Meta",
   google_api: "API oficial Google",
 };
-const oid = z.union([z.string().uuid(), z.literal("")]).optional();
+const oid = z.union([z.string().guid(), z.literal("")]).optional();
 const zeroMoney = z
   .string()
   .regex(/^\d{1,16}(\.\d{1,2})?$|^$/)
@@ -119,7 +119,7 @@ export const metricSchema = z
   .object({
     id: oid,
     version: z.string().regex(/^\d+$/).optional(),
-    campaign_id: z.string().uuid(),
+    campaign_id: z.string().guid(),
     period_from: dateInput,
     period_to: dateInput,
     spend: zeroMoney,
@@ -153,7 +153,7 @@ export const metricSchema = z
 export const accountSchema = z.object({
   id: oid,
   version: z.string().regex(/^\d+$/).optional(),
-  company_id: z.string().uuid(),
+  company_id: z.string().guid(),
   platform: z.enum(["meta", "google", "other"]),
   name: z.string().trim().min(2).max(150),
   reference: z.string().trim().min(2).max(150),
@@ -165,8 +165,8 @@ export const accountSchema = z.object({
 export const campaignSchema = z.object({
   id: oid,
   version: z.string().regex(/^\d+$/).optional(),
-  company_id: z.string().uuid(),
-  account_id: z.string().uuid(),
+  company_id: z.string().guid(),
+  account_id: z.string().guid(),
   contract_id: oid,
   name: z.string().trim().min(2).max(200),
   reference: z.string().trim().min(2).max(150),

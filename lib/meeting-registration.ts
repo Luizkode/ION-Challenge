@@ -39,7 +39,7 @@ export function registrationBlockers(
   return reasons;
 }
 export const meetingSchema = z.object({
-  campaign_id: z.string().uuid(),
+  campaign_id: z.string().guid(),
   company: z.string().trim().min(2).max(150),
   contact: z.string().trim().min(2).max(120),
   phone: z
@@ -48,7 +48,7 @@ export const meetingSchema = z.object({
     .pipe(z.string().min(10).max(15)),
   city: z.string().trim().min(2).max(100),
   niche: z.string().trim().min(2).max(100),
-  closer_id: z.string().uuid(),
+  closer_id: z.string().guid(),
   scheduled_at: z.string().datetime({ offset: true }),
   notes: z.string().max(2000).default(""),
   opportunity_id: z.string().optional(),

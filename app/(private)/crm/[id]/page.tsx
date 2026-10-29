@@ -32,7 +32,7 @@ export default async function LeadDetails({
 }) {
   const { db, profile } = await crmContext();
   const { id } = await params;
-  if (!z.string().uuid().safeParse(id).success) notFound();
+  if (!z.string().guid().safeParse(id).success) notFound();
   const [record, activityResult, dealResult, meetingResult, people] =
     await Promise.all([
       db.from("crm_leads").select("*").eq("id", id).maybeSingle(),

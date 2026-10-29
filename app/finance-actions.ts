@@ -48,7 +48,7 @@ async function run(
   return r.data;
 }
 export async function saveEntry(f: FormData) {
-  const existing = z.string().uuid().safeParse(f.get("id"));
+  const existing = z.string().guid().safeParse(f.get("id"));
   const path = existing.success
     ? "/finance/entries/" + existing.data
     : "/finance?view=" + (f.get("kind") === "expense" ? "expense" : "income");
@@ -56,7 +56,7 @@ export async function saveEntry(f: FormData) {
   notice("/finance/entries/" + id, "Lançamento salvo e auditado.");
 }
 export async function settle(f: FormData) {
-  const id = z.string().uuid().safeParse(f.get("entry_id"));
+  const id = z.string().guid().safeParse(f.get("entry_id"));
   const path = id.success ? "/finance/entries/" + id.data : "/finance";
   await run("fin_settle", settlementSchema, f, path);
   notice(path, "Liquidação ou estorno registrado. Histórico preservado.");
@@ -71,7 +71,7 @@ export async function saveSchedule(f: FormData) {
 export async function generate(f: FormData) {
   const n = await run(
     "fin_generate",
-    z.object({ id: z.string().uuid(), from: dateInput, to: dateInput }),
+    z.object({ id: z.string().guid(), from: dateInput, to: dateInput }),
     f,
   );
   notice("/finance", `${n} parcelas geradas, sem duplicar ciclos existentes.`);
@@ -87,9 +87,9 @@ export async function commissions(f: FormData) {
   const n = await run(
     "fin_commissions",
     z.object({
-      contract_id: z.string().uuid(),
+      contract_id: z.string().guid(),
       due_at: dateInput,
-      rule_id: z.union([z.string().uuid(), z.literal("")]),
+      rule_id: z.union([z.string().guid(), z.literal("")]),
     }),
     f,
   );

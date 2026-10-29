@@ -20,7 +20,7 @@ function done(path: string, message: string, error = false): never {
   );
 }
 function leadPath(form: FormData, field = "lead_id") {
-  const id = z.string().uuid().safeParse(form.get(field));
+  const id = z.string().guid().safeParse(form.get(field));
   return id.success ? "/crm/" + id.data : "/crm";
 }
 function errorText(code?: string, message?: string) {
@@ -39,7 +39,7 @@ async function execute(fn: string, data: unknown, path: string) {
 }
 export async function saveLead(form: FormData) {
   const raw = Object.fromEntries(form);
-  const id = z.string().uuid().safeParse(raw.id);
+  const id = z.string().guid().safeParse(raw.id);
   const path = id.success ? "/crm/" + id.data : "/crm/new";
   const parsed = leadSchema.safeParse(raw);
   if (!parsed.success)
@@ -50,7 +50,7 @@ export async function saveLead(form: FormData) {
 export async function addActivity(form: FormData) {
   const parsed = z
     .object({
-      lead_id: z.string().uuid(),
+      lead_id: z.string().guid(),
       kind: z.enum(["contact", "response", "note", "stage"]),
       version: z.coerce.number().int().positive().optional(),
       channel: z.string().max(80),
@@ -92,7 +92,7 @@ export async function recordDeal(form: FormData) {
 export async function archiveLead(form: FormData) {
   const parsed = z
     .object({
-      id: z.string().uuid(),
+      id: z.string().guid(),
       archived: z.enum(["true", "false"]),
       confirm: z.literal("true"),
     })
@@ -107,8 +107,8 @@ export async function archiveLead(form: FormData) {
 export async function validateCrm(form: FormData) {
   const p = z
     .object({
-      id: z.string().uuid(),
-      lead_id: z.string().uuid(),
+      id: z.string().guid(),
+      lead_id: z.string().guid(),
       attended: z.enum(["true", "false"]),
       qualified: z.enum(["true", "false"]),
       notes: z.string().max(2000),
@@ -124,9 +124,9 @@ export async function validateCrm(form: FormData) {
 export async function confirmCrm(form: FormData) {
   const p = z
     .object({
-      lead_id: z.string().uuid(),
-      deal_id: z.string().uuid(),
-      meeting_id: z.string().uuid(),
+      lead_id: z.string().guid(),
+      deal_id: z.string().guid(),
+      meeting_id: z.string().guid(),
       closed_at: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       reference: z.string().trim().min(3).max(150),
       notes: z.string().max(2000),
@@ -160,7 +160,7 @@ export async function moveLead(
 ): Promise<{ error?: string }> {
   const { db } = await context();
   if (
-    !z.string().uuid().safeParse(id).success ||
+    !z.string().guid().safeParse(id).success ||
     !["new", "contacted", "replied", "interested", "lost"].includes(stage)
   )
     return {
@@ -184,7 +184,7 @@ export async function grantCrm(form: FormData) {
   if (profile.category !== "admin") redirect("/");
   const p = z
     .object({
-      profile_id: z.string().uuid(),
+      profile_id: z.string().guid(),
       enabled: z.enum(["true", "false"]),
       confirm: z.literal("true"),
       reason: z.string().trim().min(8).max(2000),

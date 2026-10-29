@@ -13,7 +13,7 @@ export default async function NewClient({
   const p = await searchParams;
   const people = await db.rpc("ops_directory");
   check(people.error);
-  const company = z.string().uuid().safeParse(p.company);
+  const company = z.string().guid().safeParse(p.company);
   const existing = company.success
     ? await db
         .from("access_companies")

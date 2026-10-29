@@ -20,7 +20,7 @@ export function analyticsFilters(p: Record<string, string | undefined>) {
   const ids = Object.fromEntries(
     ["company_id", "account_id", "contract_id", "campaign_id"].map((k) => [
       k,
-      z.string().uuid().safeParse(p[k]).success ? p[k] : "",
+      z.string().guid().safeParse(p[k]).success ? p[k] : "",
     ]),
   );
   return {
