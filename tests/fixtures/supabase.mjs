@@ -27,6 +27,7 @@ function initialState(mode = "active") {
     requests: [],
     reads: [],
     invitations: [],
+    recovery_requests: [],
     participants: [
       {
         campaign_id: campaignId,
@@ -136,6 +137,11 @@ createServer(async (req, res) => {
       Object.assign(profiles, structuredClone(initialProfiles));
     }
     return send(state);
+  }
+  if (url.pathname === "/auth/v1/recover") {
+    state.recovery_requests.push({email: body.email, redirect_to: url.searchParams.get("redirect_to"), pkce: !!body.code_challenge});
+    if (state.mode === "recovery_error") return send({message: "Test-only provider failure"}, 503);
+    return send({});
   }
   if (url.pathname === "/auth/v1/token") {
     const id = ids[body.email.split("@")[0]] ?? ids.sdr;
