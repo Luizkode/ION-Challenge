@@ -3,7 +3,7 @@ export const accessInput = z
   .object({
     id: z
       .string()
-      .uuid("Informe um UUID válido do usuário em Authentication.")
+      .guid("Informe um UUID válido do usuário em Authentication.")
       .optional(),
     name: z
       .string()
@@ -11,12 +11,10 @@ export const accessInput = z
       .min(2, "Informe um nome com pelo menos 2 caracteres.")
       .max(120, "O nome deve ter no máximo 120 caracteres."),
     category: z.enum(["admin", "employee", "partner"], {
-      errorMap: () => ({
-        message: "Selecione Administrador, Colaborador ou Parceiro.",
-      }),
+      error: "Selecione Administrador, Colaborador ou Parceiro.",
     }),
     active: z.enum(["true", "false"], {
-      errorMap: () => ({ message: "Selecione Ativo ou Inativo." }),
+      error: "Selecione Ativo ou Inativo.",
     }),
     functions: z.array(
       z.enum([
@@ -28,9 +26,9 @@ export const accessInput = z
         "copywriter",
       ]),
     ),
-    company_ids: z.array(z.string().uuid("Selecione uma empresa válida.")),
+    company_ids: z.array(z.string().guid("Selecione uma empresa válida.")),
     confirm: z.literal("true", {
-      errorMap: () => ({ message: "Confirme a operação antes de continuar." }),
+      error: "Confirme a operação antes de continuar.",
     }),
     reason: z
       .string()

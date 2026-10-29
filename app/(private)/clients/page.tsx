@@ -35,7 +35,7 @@ export default async function Clients({
   const p = await searchParams;
   const page = Math.max(1, Math.floor(Number(p.page) || 1));
   const uuid = (v?: string) =>
-    z.string().uuid().safeParse(v).success ? v : "";
+    z.string().guid().safeParse(v).success ? v : "";
   const filters = {
     company_id: uuid(p.company_id),
     owner: uuid(p.owner),

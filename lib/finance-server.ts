@@ -14,10 +14,10 @@ export function financeFilters(p: Record<string, string | undefined>) {
   const period = financePeriod(p);
   return {
     ...period,
-    company_id: z.string().uuid().safeParse(p.company_id).success
+    company_id: z.string().guid().safeParse(p.company_id).success
       ? p.company_id
       : "",
-    category_id: z.string().uuid().safeParse(p.category_id).success
+    category_id: z.string().guid().safeParse(p.category_id).success
       ? p.category_id
       : "",
     basis: p.basis === "competence" ? "competence" : "due",

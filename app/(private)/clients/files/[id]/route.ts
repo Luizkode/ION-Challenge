@@ -6,7 +6,7 @@ export async function GET(
 ) {
   const { db } = await session();
   const { id } = await params;
-  if (!z.string().uuid().safeParse(id).success)
+  if (!z.string().guid().safeParse(id).success)
     return new Response("Documento indisponível", { status: 404 });
   const r = await db.rpc("ops_download", { fid: id });
   if (r.error)

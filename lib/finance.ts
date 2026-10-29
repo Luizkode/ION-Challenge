@@ -11,7 +11,7 @@ export const dateInput = z
       Number.isFinite(Date.parse(v + "T12:00:00Z")) &&
       new Date(v + "T12:00:00Z").toISOString().slice(0, 10) === v,
   );
-const optionalId = z.union([z.string().uuid(), z.literal("")]).optional();
+const optionalId = z.union([z.string().guid(), z.literal("")]).optional();
 const common = {
   id: optionalId,
   version: z.string().regex(/^\d+$/).optional(),
@@ -19,14 +19,14 @@ const common = {
   kind: z.enum(["income", "expense"]),
   company_id: optionalId,
   contract_id: optionalId,
-  category_id: z.string().uuid(),
+  category_id: z.string().guid(),
   amount: moneyInput,
   notes: z.string().max(4000).default(""),
   reason: z.string().max(2000).optional(),
 };
 export const entrySchema = z.object({
   ...common,
-  request_id: z.string().uuid().optional(),
+  request_id: z.string().guid().optional(),
   competence: dateInput,
   due_at: dateInput,
   state: z.enum(["planned", "pending", "cancelled"]),
@@ -72,13 +72,13 @@ export const ruleSchema = z
       (!v.ends_at || v.ends_at >= v.starts_at),
   );
 export const settlementSchema = z.object({
-  entry_id: z.string().uuid(),
+  entry_id: z.string().guid(),
   amount: moneyInput,
   paid_at: dateInput,
   method: z.string().trim().min(2).max(80),
   notes: z.string().max(4000),
   reversal_of: optionalId,
-  request_id: z.string().uuid(),
+  request_id: z.string().guid(),
 });
 export const statuses: Record<string, string> = {
   planned: "Previsto",

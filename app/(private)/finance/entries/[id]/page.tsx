@@ -33,7 +33,7 @@ export default async function Entry({
 }) {
   const { db } = await financeAdmin();
   const { id } = await params;
-  if (!z.string().uuid().safeParse(id).success) notFound();
+  if (!z.string().guid().safeParse(id).success) notFound();
   const [r, o] = await Promise.all([
     db.rpc("fin_detail", { eid: id }),
     db.rpc("fin_options"),

@@ -11,7 +11,8 @@ export async function GET(request: Request) {
   // Fragments are only available in the browser; HTTP redirects preserve them.
   if (!code && !token_hash) {
     const response = NextResponse.redirect(new URL("/auth/complete", origin));
-    response.headers.set("Cache-Control", "no-store");
+    response.headers.set("Cache-Control", "private, no-store");
+    response.headers.set("Referrer-Policy", "no-referrer");
     return response;
   }
   let ok = false;
@@ -23,11 +24,9 @@ export async function GET(request: Request) {
     ok = !error;
   }
   const response = NextResponse.redirect(
-    new URL(
-      ok ? "/account" : "/login?error=Link+inválido+ou+expirado",
-      origin,
-    ),
+    new URL(ok ? "/account" : "/login?error=Link+inválido+ou+expirado", origin),
   );
-  response.headers.set("Cache-Control", "no-store");
+  response.headers.set("Cache-Control", "private, no-store");
+  response.headers.set("Referrer-Policy", "no-referrer");
   return response;
 }

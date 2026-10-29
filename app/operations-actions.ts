@@ -28,7 +28,7 @@ function safeError(e: { code?: string; message: string }) {
       : "Não foi possível salvar. Revise os campos e tente novamente.";
 }
 function pathFor(id: unknown) {
-  return z.string().uuid().safeParse(id).success
+  return z.string().guid().safeParse(id).success
     ? "/clients/" + id
     : "/clients";
 }
@@ -43,7 +43,7 @@ export async function saveClient(form: FormData) {
   const p = clientSchema.safeParse(formObject(form));
   if (!p.success)
     notice(
-      z.string().uuid().safeParse(form.get("company_id")).success
+      z.string().guid().safeParse(form.get("company_id")).success
         ? pathFor(form.get("company_id"))
         : "/clients/new",
       "Revise os campos do cliente, datas e responsáveis.",
@@ -77,9 +77,9 @@ export async function saveService(form: FormData) {
 export async function convertDeal(form: FormData) {
   const p = z
     .object({
-      deal_id: z.string().uuid(),
-      responsible_id: z.union([z.string().uuid(), z.literal("")]).optional(),
-      company_id: z.union([z.string().uuid(), z.literal("")]).optional(),
+      deal_id: z.string().guid(),
+      responsible_id: z.union([z.string().guid(), z.literal("")]).optional(),
+      company_id: z.union([z.string().guid(), z.literal("")]).optional(),
     })
     .safeParse(Object.fromEntries(form));
   if (!p.success)
@@ -93,7 +93,7 @@ export async function convertDeal(form: FormData) {
 export async function saveCatalog(form: FormData) {
   const p = z
     .object({
-      id: z.union([z.string().uuid(), z.literal("")]).optional(),
+      id: z.union([z.string().guid(), z.literal("")]).optional(),
       name: z.string().trim().min(2).max(150),
       active: z.enum(["true", "false"]).default("true"),
     })
@@ -105,8 +105,8 @@ export async function saveCatalog(form: FormData) {
 export async function progressService(form: FormData) {
   const p = z
     .object({
-      company_id: z.string().uuid(),
-      service_id: z.string().uuid(),
+      company_id: z.string().guid(),
+      service_id: z.string().guid(),
       version: z.coerce.number().int().positive(),
       status: z.enum(["pending", "running", "completed", "paused"]),
       delivered_at: z.string().optional(),
@@ -122,8 +122,8 @@ export async function progressService(form: FormData) {
 export async function publishUpdate(form: FormData) {
   const p = z
     .object({
-      id: z.string().uuid(),
-      company_id: z.string().uuid(),
+      id: z.string().guid(),
+      company_id: z.string().guid(),
       partner_body: z.string().max(4000),
       published: z.boolean(),
     })
@@ -135,8 +135,8 @@ export async function publishUpdate(form: FormData) {
 export async function reconcileSource(form: FormData) {
   const p = z
     .object({
-      id: z.string().uuid(),
-      company_id: z.string().uuid(),
+      id: z.string().guid(),
+      company_id: z.string().guid(),
       decision: z.enum(["keep", "paused", "cancelled"]),
       confirm: z.literal("true"),
       reason: z.string().trim().min(8).max(4000),
@@ -165,7 +165,7 @@ export async function reserveFile(
 }
 export async function finishFile(id: string): Promise<{ error?: string }> {
   const { db } = await operationsContext();
-  if (!z.string().uuid().safeParse(id).success)
+  if (!z.string().guid().safeParse(id).success)
     return { error: "Envio inválido." };
   const r = await db.rpc("ops_finish_file", { data: { id } });
   if (r.error) return { error: safeError(r.error) };
@@ -175,8 +175,8 @@ export async function finishFile(id: string): Promise<{ error?: string }> {
 export async function manageFile(form: FormData) {
   const p = z
     .object({
-      id: z.string().uuid(),
-      company_id: z.string().uuid(),
+      id: z.string().guid(),
+      company_id: z.string().guid(),
       state: z.enum(["ready", "archived"]),
       partner_visible: z.boolean(),
     })
@@ -189,7 +189,7 @@ export async function downloadFile(
   id: string,
 ): Promise<{ error?: string; url?: string }> {
   const { db } = await session();
-  if (!z.string().uuid().safeParse(id).success)
+  if (!z.string().guid().safeParse(id).success)
     return { error: "Documento inválido." };
   const record = await db.rpc("ops_download", { fid: id });
   if (record.error)

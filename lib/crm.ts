@@ -17,7 +17,7 @@ const optionalDate = z
   .union([z.literal(""), z.string().datetime({ offset: true })])
   .optional();
 export const leadSchema = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().guid().optional(),
   version: z.coerce.number().int().positive().optional(),
   company: z.string().trim().min(2).max(150),
   contact: z.string().trim().min(2).max(120),
@@ -36,8 +36,8 @@ export const leadSchema = z.object({
     .toUpperCase()
     .regex(/^[A-Z]{2}$/),
   source: z.string().trim().min(2).max(100),
-  sdr_id: z.string().uuid().optional(),
-  closer_id: z.union([z.string().uuid(), z.literal("")]).optional(),
+  sdr_id: z.string().guid().optional(),
+  closer_id: z.union([z.string().guid(), z.literal("")]).optional(),
   notes: z.string().max(10000).default(""),
   follow_up_at: optionalDate,
 });
@@ -95,13 +95,13 @@ export type Person = {
   is_closer: boolean;
 };
 export const meetingInput = z.object({
-  lead_id: z.string().uuid(),
-  closer_id: z.string().uuid(),
+  lead_id: z.string().guid(),
+  closer_id: z.string().guid(),
   scheduled_at: z.string().datetime({ offset: true }),
   notes: z.string().max(2000).default(""),
 });
 export const dealInput = z.object({
-  lead_id: z.string().uuid(),
+  lead_id: z.string().guid(),
   amount: z.coerce.number().positive().max(999999999999.99),
   services: z.string().trim().min(2).max(2000),
   term_months: z.coerce.number().int().min(1).max(120),

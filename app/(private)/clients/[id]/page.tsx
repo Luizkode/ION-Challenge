@@ -42,7 +42,7 @@ export default async function ClientDetails({
 }) {
   const { db, profile } = await operationsContext();
   const { id } = await params;
-  if (!z.string().uuid().safeParse(id).success) notFound();
+  if (!z.string().guid().safeParse(id).success) notFound();
   const admin = profile.category === "admin";
   const [
     client,
