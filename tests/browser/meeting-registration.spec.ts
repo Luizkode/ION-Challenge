@@ -126,3 +126,14 @@ test("closer não acessa cadastro de SDR", async ({ page }) => {
     page.getByRole("button", { name: "Cadastrar reunião" }),
   ).toHaveCount(0);
 });
+
+test("campanha inativa mantém bloqueio do Challenger e oferece CRM independente", async ({ page, request }) => {
+  await request.post("http://127.0.0.1:3101/__test/state", { data: { mode: "draft" } });
+  await login(page);
+  await page.goto("/meetings/new");
+  await expect(page.getByRole("button", { name: "Cadastrar reunião" })).toBeDisabled();
+  await page.getByRole("link", { name: "Agendar pelo CRM Comercial" }).click();
+  await expect(page).toHaveURL("/crm");
+  await expect(page.getByRole("heading", { name: "CRM Comercial", exact: true })).toBeVisible();
+  expect((await (await request.get("http://127.0.0.1:3101/__test/state")).json()).requests).toHaveLength(0);
+});

@@ -98,6 +98,18 @@ export default async function NewMeeting({
             </p>
           </div>
         ))}
+        {!queryFailed && !campaign && (
+          <div className="padded">
+            <p className="muted">
+              Este cadastro pertence ao Challenger e depende da campanha ativa.
+              No CRM Comercial, você pode agendar reuniões independentemente da
+              campanha, sem pontuação no Challenger.
+            </p>
+            <Link href="/crm" className="button">
+              Agendar pelo CRM Comercial
+            </Link>
+          </div>
+        )}
         <ActionForm action={createMeeting}>
           <input type="hidden" name="campaign_id" value={campaign?.id ?? ""} />
           <fieldset
