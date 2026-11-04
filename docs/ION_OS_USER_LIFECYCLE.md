@@ -1,4 +1,4 @@
-# Ciclo de vida dos usuários — migration 013
+# Ciclo de vida dos usuários — migrations 013 e 014
 
 ## Incidente e diagnóstico real
 
@@ -62,6 +62,8 @@ A participação e os resultados do Challenger não são removidos automaticamen
   reverte ambas. Falha de rede não é anunciada como sucesso e não restaura acesso.
 - Exclusão direta/soft-delete no painel do Auth é bloqueada deliberadamente.
   Use o ION OS; não desabilite triggers ou RLS para contornar o procedimento.
+- Enquanto houver solicitação de remoção pendente, o perfil não pode ser reativado,
+  mesmo pelo fluxo legado de permissões. Pendências têm prioridade no histórico.
 - Uma solicitação pendente pode ser encerrada em Equipe → Histórico de ciclo de
   vida. Isso mantém o perfil inativo. Confira o estado antes de uma nova solicitação.
 
@@ -87,9 +89,9 @@ entrega; somente novas contas técnicas foram utilizadas na validação.
 
 ## Implantação e recuperação
 
-A migration `013_user_lifecycle.sql` é incremental e foi validada sobre uma
-restauração do estado atual antes da aplicação. Não recria o banco nem troca o
-projeto. Mantém compatibilidade com UUIDs, autenticação e RPCs existentes.
+As migrations `013_user_lifecycle.sql` e `014_user_lifecycle_pending_guard.sql` são incrementais e foram validadas sobre uma
+restauração do estado atual antes da aplicação. Não recriam o banco nem trocam o
+projeto. Mantêm compatibilidade com UUIDs, autenticação e RPCs existentes.
 
 Antes da aplicação, foi capturada uma cópia coerente de 64 tabelas public/Auth,
 criptografada e armazenada no bucket privado de recuperação existente. A chave
