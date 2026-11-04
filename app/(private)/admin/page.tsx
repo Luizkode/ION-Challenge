@@ -44,7 +44,9 @@ export default async function Admin({
       .select("*", { count: "exact" })
       .order("id", { ascending: false })
       .range((auditPage - 1) * pageSize, auditPage * pageSize - 1),
-    db.from("campaign_participants").select("*,profiles(name),teams(name)"),
+    db
+      .from("campaign_participants")
+      .select("*,profiles!campaign_participants_profile_id_fkey(name),teams(name)"),
   ]);
   results.forEach((r) => check(r.error));
   const [pr, tr, cr, mr, contracts, audit, participants] = results;

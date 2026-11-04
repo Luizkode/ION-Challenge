@@ -410,6 +410,16 @@ createServer(async (req, res) => {
   if (table === "campaigns")
     return rows(state.mode === "draft" ? [] : [campaign]);
   if (table === "teams") return rows([{ id: teamId, name: "Time original" }]);
+  // Model the real schema: both profile_id and removed_by reference profiles.
+  // An unqualified embed must fail, even if the current participant list is empty.
+  if (
+    table === "campaign_participants" &&
+    /(?:^|,)profiles\(/.test(url.searchParams.get("select") ?? "")
+  )
+    return send(
+      { code: "PGRST201", message: "Ambiguous profiles relationship: profile_id and removed_by" },
+      300,
+    );
   if (table === "campaign_participants")
     return rows(
       state.mode === "no_team"
