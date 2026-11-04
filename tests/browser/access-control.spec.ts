@@ -129,8 +129,10 @@ test("admin altera funções, atribui cliente e desativa usuário por Equipe", a
   const detail = page.locator("main details").filter({
     has: page.locator("summary").filter({ hasText: "SDR de teste" }),
   });
-  await detail.locator("summary").click();
-  const form = detail.locator("form");
+  await detail.locator(":scope > summary").click();
+  const form = detail
+    .locator("form")
+    .filter({ has: page.locator('[name="category"]') });
   await form.getByLabel("SDR", { exact: true }).uncheck();
   await form.getByLabel("Gestor de Tráfego", { exact: true }).check();
   await form.getByLabel("Empresa A", { exact: true }).check();
