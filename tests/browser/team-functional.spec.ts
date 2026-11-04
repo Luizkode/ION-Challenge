@@ -49,13 +49,11 @@ test("Promote an existing SDR to admin, persist the RPC payload and show the cat
   request,
 }) => {
   await login(page);
-  let d = page
-    .locator("main details")
-    .filter({
-      has: page.locator("summary").filter({ hasText: "SDR de teste" }),
-    });
-  await d.locator("summary").click();
-  let f = d.locator("form");
+  let d = page.locator("main details").filter({
+    has: page.locator("summary").filter({ hasText: "SDR de teste" }),
+  });
+  await d.locator(":scope > summary").click();
+  let f = d.locator("form").filter({ has: page.locator('[name="category"]') });
   await f.getByLabel("Categoria de acesso").selectOption("admin");
   await expect(
     f.getByText(
@@ -77,25 +75,23 @@ test("Promote an existing SDR to admin, persist the RPC payload and show the cat
   expect(s.requests.at(-1).data.functions).toEqual([]);
   expect(s.requests.at(-1).data.remove_from_campaign).toBe("true");
   await page.reload();
-  d = page
-    .locator("main details")
-    .filter({
-      has: page.locator("summary").filter({ hasText: "SDR de teste" }),
-    });
-  await expect(d.locator("summary")).toContainText("Administrador");
+  d = page.locator("main details").filter({
+    has: page.locator("summary").filter({ hasText: "SDR de teste" }),
+  });
+  await expect(d.locator(":scope > summary")).toContainText("Administrador");
 });
 test("Cancel security confirmation performs no write", async ({
   page,
   request,
 }) => {
   await login(page);
-  const d = page
-    .locator("main details")
-    .filter({
-      has: page.locator("summary").filter({ hasText: "SDR de teste" }),
-    });
-  await d.locator("summary").click();
-  const f = d.locator("form");
+  const d = page.locator("main details").filter({
+    has: page.locator("summary").filter({ hasText: "SDR de teste" }),
+  });
+  await d.locator(":scope > summary").click();
+  const f = d
+    .locator("form")
+    .filter({ has: page.locator('[name="category"]') });
   await f
     .getByLabel("Justificativa (mínimo 8 caracteres)")
     .fill("Cancelamento de teste");

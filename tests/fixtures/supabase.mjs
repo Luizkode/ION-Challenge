@@ -25,6 +25,7 @@ function initialState(mode = "active") {
     crm_activities: [],
     crm_deals: [],
     requests: [],
+    lifecycle: [],
     reads: [],
     invitations: [],
     recovery_requests: [],
@@ -165,10 +166,40 @@ createServer(async (req, res) => {
       email: body.email,
     });
   }
+  if (url.pathname.startsWith("/auth/v1/admin/users/") && req.method === "DELETE") {
+    if (req.headers.authorization !== "Bearer test-only-service-role") return send({ message: "Unauthorized" }, 401);
+    const uid = url.pathname.split("/").at(-1);
+    const op = state.lifecycle.find(o => o.target_id === uid && o.status === "pending");
+    if (!op) return send({ message: "Removal not prepared" }, 500);
+    if (state.mode === "lifecycle_auth_error") return send({message: "Technical provider failure"}, 500);
+    const response = user(uid);
+    if (op.mode === "delete_test") delete profiles[uid];
+    else Object.assign(profiles[uid], { name: "Usuário anonimizado", active: false, auth_user_id: null });
+    op.status = "completed";
+    return send(response);
+  }
   const id = actor(req);
   if (!id) return send({ message: "Unauthorized" }, 401);
   if (url.pathname === "/auth/v1/user") return send(user(id));
   const table = url.pathname.split("/").at(-1);
+  if (table === "user_lifecycle_operations") return send(profiles[id].category === "admin" ? state.lifecycle : []);
+  if (["inspect_user_lifecycle", "prepare_user_lifecycle", "cancel_user_lifecycle"].includes(table)) {
+    if (profiles[id].category !== "admin") return send({ code: "P0001", message: "Acesso restrito ao administrador" }, 403);
+    if (table === "inspect_user_lifecycle") {
+      const n = state.participants.filter(p => p.profile_id === body.uid).length;
+      return send({ dependencies: n ? [{ relationship: "campaign_participants_profile_id_fkey", records: n }] : [], owned_files: 0, can_delete_test: n === 0, auth_exists: true, profile_retained: false });
+    }
+    if (table === "cancel_user_lifecycle") {
+      const op = state.lifecycle.find(o => o.id === body.request_id); if (op) op.status = "failed"; return send(null);
+    }
+    const d = body.data;
+    const old = state.lifecycle.find(o => o.id === d.request_id); if (old) return send(old);
+    if (d.target_id === id) return send({ code: "P0001", message: "Você não pode remover seu próprio acesso administrativo" }, 400);
+    if (d.mode === "delete_test" && state.participants.some(p => p.profile_id === d.target_id)) return send({ code: "P0001", message: "Exclusão definitiva bloqueada: há histórico ou atribuições" }, 400);
+    state.requests.push(body);
+    const op = { id: d.request_id, actor_id: id, ...d, status: d.mode === "deactivate" ? "completed" : "pending", created_at: new Date().toISOString() };
+    profiles[d.target_id].active = false; state.lifecycle.push(op); return send(op);
+  }
   if (table === "current_access")
     return send(
       profiles[id].active

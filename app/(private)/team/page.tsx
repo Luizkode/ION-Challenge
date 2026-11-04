@@ -6,6 +6,8 @@ import { session, check } from "@/lib/session";
 import { createAccessCompany } from "@/app/team-actions";
 import { Field, Notice, Empty } from "@/components/ui";
 import { Submit } from "@/components/submit";
+import { UserLifecycleHistory } from "@/components/user-lifecycle-history";
+import { UserLifecycleControls } from "@/components/user-lifecycle-controls";
 import { AccessForm } from "@/components/access-form";
 import { functionLabels, type FunctionCode } from "@/lib/access";
 export default async function Team({
@@ -50,6 +52,12 @@ export default async function Team({
   ]);
   result.forEach((r) => check(r.error));
   const [users, roles, companies, clients, partners, invitations] = result;
+  const lifecycle = await db
+    .from("user_lifecycle_operations")
+    .select("id,actor_id,target_id,mode,status,reason,created_at")
+    .order("created_at", { ascending: false })
+    .limit(50);
+  check(lifecycle.error);
   const membership = await db
     .from("campaign_participants")
     .select("profile_id,campaigns!inner(state)")
@@ -110,20 +118,26 @@ export default async function Team({
                 .join(" · ") || "Sem funções de colaborador"}{" "}
               · UUID: {u.id}
             </p>
-            <AccessForm
-              mode="edit"
-              profile={u}
-              functions={(roles.data ?? [])
-                .filter((r) => r.profile_id === u.id)
-                .map((r) => r.function_code)}
-              bindings={bindings
-                .filter((b) => b.profile_id === u.id)
-                .map((b) => b.company_id)}
-              companies={companies.data ?? []}
-              participates={activeParticipants.some(
-                (p) => p.profile_id === u.id,
-              )}
+            <UserLifecycleControls
+              id={u.id}
+              removed={u.auth_user_id === null}
             />
+            {u.auth_user_id !== null && (
+              <AccessForm
+                mode="edit"
+                profile={u}
+                functions={(roles.data ?? [])
+                  .filter((r) => r.profile_id === u.id)
+                  .map((r) => r.function_code)}
+                bindings={bindings
+                  .filter((b) => b.profile_id === u.id)
+                  .map((b) => b.company_id)}
+                companies={companies.data ?? []}
+                participates={activeParticipants.some(
+                  (p) => p.profile_id === u.id,
+                )}
+              />
+            )}
           </details>
         ))}
         <Pagination
@@ -134,6 +148,7 @@ export default async function Team({
           label="Paginação da equipe"
         />
       </section>
+      <UserLifecycleHistory rows={lifecycle.data ?? []} />
       <section className="panel padded">
         <h2>Vincular conta Auth já existente / concluir convite</h2>
         <p className="small muted">
