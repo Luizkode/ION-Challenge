@@ -193,7 +193,12 @@ export function UserLifecycleControls({
           </label>
         )}
         <label>
-          <input type="checkbox" name="confirm" value="true" disabled={busy} />
+          <input
+            type="checkbox"
+            name="confirm"
+            value="true"
+            disabled={busy || pending}
+          />
           Conferi o usuário, as dependências e o impacto da operação.
           {errors.confirm?.join(" ")}
         </label>

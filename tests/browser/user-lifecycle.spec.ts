@@ -114,3 +114,46 @@ test("participante com histórico recebe bloqueio antes da remoção", async ({
       .lifecycle,
   ).toHaveLength(0);
 });
+
+test("falha do Auth preserva solicitação, congela confirmação e permite encerrar após recarregar", async ({
+  page,
+  request,
+}) => {
+  await request.post("http://127.0.0.1:3101/__test/state", {
+    data: { mode: "lifecycle_auth_error" },
+  });
+  const d = await open(page);
+  const f = await fill(page, d, "delete_test");
+  page.once("dialog", (x) => x.accept());
+  await f.getByRole("button", { name: "Confirmar operação na conta" }).click();
+  await expect(d.getByText(/O Auth não confirmou a remoção/)).toBeVisible();
+  await expect(
+    f.getByRole("checkbox", { name: /Conferi o usuário/ }),
+  ).toBeDisabled();
+  const before = (
+    await (await request.get("http://127.0.0.1:3101/__test/state")).json()
+  ).lifecycle;
+  expect(before).toHaveLength(1);
+  expect(before[0].status).toBe("pending");
+  await page.reload();
+  const history = page
+    .locator("section")
+    .filter({
+      has: page.getByRole("heading", { name: "Histórico de ciclo de vida" }),
+    });
+  await history.locator("summary").click();
+  page.once("dialog", (x) => x.accept());
+  await history
+    .getByRole("button", { name: "Encerrar solicitação pendente" })
+    .click();
+  await expect(history.getByRole("status")).toContainText(
+    "permanece desativado",
+  );
+  const after = (
+    await (await request.get("http://127.0.0.1:3101/__test/state")).json()
+  ).lifecycle;
+  expect(after[0].status).toBe("failed");
+  await expect(page.getByText("UUID: " + target, { exact: false })).toHaveCount(
+    1,
+  );
+});

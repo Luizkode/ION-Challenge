@@ -171,6 +171,7 @@ createServer(async (req, res) => {
     const uid = url.pathname.split("/").at(-1);
     const op = state.lifecycle.find(o => o.target_id === uid && o.status === "pending");
     if (!op) return send({ message: "Removal not prepared" }, 500);
+    if (state.mode === "lifecycle_auth_error") return send({message: "Technical provider failure"}, 500);
     const response = user(uid);
     if (op.mode === "delete_test") delete profiles[uid];
     else Object.assign(profiles[uid], { name: "Usuário anonimizado", active: false, auth_user_id: null });
