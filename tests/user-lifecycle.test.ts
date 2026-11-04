@@ -209,6 +209,22 @@ test("Ciclo de vida PostgreSQL: preservação, permissões, falhas e idempotênc
       await create(4);
       await actor(1);
       await prepare(data(4, 16));
+      await assert.rejects(
+        scalar("select manage_access($1::jsonb) r", [
+          JSON.stringify({
+            id: uid(4),
+            name: "Technical 4",
+            category: "employee",
+            functions: ["sdr"],
+            company_ids: [],
+            active: "true",
+            confirm: "true",
+            remove_from_campaign: "false",
+            reason: "Verify pending removal cannot be reactivated",
+          }),
+        ]),
+        /remoção pendente/,
+      );
       await owner();
       await db.exec(
         "create table public.future_business(id uuid references public.profiles(id))",

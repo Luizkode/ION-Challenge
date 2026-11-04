@@ -55,6 +55,7 @@ export default async function Team({
   const lifecycle = await db
     .from("user_lifecycle_operations")
     .select("id,actor_id,target_id,mode,status,reason,created_at")
+    .order("status", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(50);
   check(lifecycle.error);
