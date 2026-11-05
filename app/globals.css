@@ -1306,3 +1306,13 @@ td {
 .field-error { color:#f1b3bb; font-size:12px; line-height:1.6; }
 [aria-invalid="true"] { border-color:#c76a7d; }
 .required-mark { color:var(--accent); }
+
+/* Administrative actions reuse the existing palette and panel treatment. */
+.team-member { padding: 1rem 0; border-bottom: 1px solid var(--line, #273242); }
+.team-actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: flex-start; margin: .8rem 0; }
+.team-actions > details { min-width: 12rem; }
+.removal-dialog::backdrop { background: #000b; }
+.removal-dialog { margin: auto; width: min(calc(100vw - 2rem), 36rem); max-height: 90dvh; overflow: auto; }
+.removal-dialog button { margin: .5rem .5rem 0 0; }
+.team-member p { overflow-wrap: anywhere; }
+.removal-dialog { color: var(--text); background: var(--panel); }

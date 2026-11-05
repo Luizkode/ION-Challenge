@@ -27,16 +27,7 @@ export function ConfirmedAdminForm({
   return (
     <ActionForm action={action} className="form-grid" onSubmit={confirm}>
       {children}
-      <label className="small">
-        <input
-          type="checkbox"
-          name="confirm"
-          value="true"
-          required
-          style={{ width: "auto", minHeight: 0, marginRight: 8 }}
-        />
-        Confirmo a operação selecionada e a preservação do histórico.
-      </label>
+      <input type="hidden" name="confirm" value="true" />
       <Submit>{submitLabel}</Submit>
     </ActionForm>
   );

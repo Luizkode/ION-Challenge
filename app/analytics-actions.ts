@@ -145,6 +145,10 @@ const publication = {
   confirm: z.literal("true"),
 };
 export async function publishCampaign(f: FormData) {
+  f.set(
+    "reason",
+    "Publicação ou revogação confirmada pelo administrador no painel Analytics",
+  );
   await execute(
     "ana_publish_campaign",
     z.object({
@@ -167,6 +171,10 @@ export async function publishCampaign(f: FormData) {
   );
 }
 export async function publishMetrics(f: FormData) {
+  f.set(
+    "reason",
+    "Publicação ou revogação confirmada pelo administrador no painel Analytics",
+  );
   await execute(
     "ana_publish_metrics",
     z.object({
@@ -183,6 +191,10 @@ export async function publishMetrics(f: FormData) {
   notice("/analytics", "Visibilidade dos resultados atualizada e auditada.");
 }
 export async function publishReport(f: FormData) {
+  f.set(
+    "reason",
+    "Publicação ou revogação confirmada pelo administrador no painel Analytics",
+  );
   await execute("ana_publish_report", z.object(publication), f, true);
   notice("/analytics", "Publicação do relatório atualizada e auditada.");
 }

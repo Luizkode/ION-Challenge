@@ -25,7 +25,7 @@ export default async function Admin({
   const params = await searchParams,
     auditPage = pageNumber(params.audit_page);
   const results = await Promise.all([
-    db.from("profiles").select("*").order("name"),
+    db.from("profiles").select("*").eq("is_historical", false).order("name"),
     db.from("teams").select("*").order("name"),
     db
       .from("campaigns")
@@ -46,7 +46,9 @@ export default async function Admin({
       .range((auditPage - 1) * pageSize, auditPage * pageSize - 1),
     db
       .from("campaign_participants")
-      .select("*,profiles!campaign_participants_profile_id_fkey(name),teams(name)"),
+      .select(
+        "*,profiles!campaign_participants_profile_id_fkey(name),teams(name)",
+      ),
   ]);
   results.forEach((r) => check(r.error));
   const [pr, tr, cr, mr, contracts, audit, participants] = results;
@@ -371,7 +373,10 @@ export default async function Admin({
               </summary>
               <p className="small">
                 Autor:{" "}
-                {profiles.find((p) => p.id === a.actor_id)?.name ?? "Bootstrap"}{" "}
+                {profiles.find((p) => p.id === a.actor_id)?.name ??
+                  (a.actor_reference
+                    ? "Identificador histórico " + a.actor_reference.slice(0, 8)
+                    : "Bootstrap")}{" "}
                 · {a.reason ?? "Sem justificativa adicional"}
               </p>
               <pre>

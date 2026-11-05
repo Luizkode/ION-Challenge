@@ -35,7 +35,11 @@ export function CrmLeadForm({
       <Field label="Segmento" name="niche" value={lead?.niche} />
       <Field label="Cidade" name="city" value={lead?.city} />
       <Field label="Estado (UF)" name="state" value={lead?.state} />
-      <Field label="Origem" name="source" value={lead?.source} />
+      <Field
+        label="Origem"
+        name="source"
+        value={lead?.source ?? "Prospecção"}
+      />
       {admin ? (
         <Select
           label="SDR responsável"
@@ -57,7 +61,12 @@ export function CrmLeadForm({
       <Select
         label="Closer responsável"
         name="closer_id"
-        value={lead?.closer_id ?? ""}
+        value={
+          lead?.closer_id ??
+          (!lead && people.filter((p) => p.is_closer).length === 1
+            ? people.find((p) => p.is_closer)!.id
+            : "")
+        }
       >
         <option value="">Ainda não atribuído</option>
         {people

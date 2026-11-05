@@ -1,3 +1,5 @@
+> Fluxo atual: consulte [Administração simplificada](ION_OS_ADMIN_SIMPLIFICATION.md). A remoção agora exige apenas “Remover usuário” e “Remover definitivamente”; o procedimento abaixo registra a implementação anterior e sua compatibilidade.
+
 # Ciclo de vida dos usuários — migrations 013 e 014
 
 ## Incidente e diagnóstico real

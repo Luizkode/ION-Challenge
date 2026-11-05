@@ -634,9 +634,10 @@ export default async function Analytics({
                       </label>
                     ))}
                   </div>
-                  <Field
+                  <input
+                    type="hidden"
                     name="reason"
-                    label="Motivo da alteração de visibilidade"
+                    value="Publicação administrativa auditada"
                   />
                 </ConfirmedAdminForm>
                 <h3>Registros reais autorizados</h3>
@@ -662,9 +663,10 @@ export default async function Analytics({
                     <option value="true">Publicar dados conferidos</option>
                     <option value="false">Revogar dados</option>
                   </Select>
-                  <Field
+                  <input
+                    type="hidden"
                     name="reason"
-                    label="Motivo da conferência / revogação"
+                    value="Conferência administrativa auditada"
                   />
                 </ConfirmedAdminForm>
               </details>
@@ -691,9 +693,10 @@ export default async function Analytics({
                     <option value="true">Publicar relatório conferido</option>
                     <option value="false">Ocultar / revogar relatório</option>
                   </Select>
-                  <Field
+                  <input
+                    type="hidden"
                     name="reason"
-                    label="Motivo da publicação / revogação"
+                    value="Publicação administrativa auditada"
                   />
                 </ConfirmedAdminForm>
               </details>

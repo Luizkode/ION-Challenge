@@ -17,6 +17,15 @@ async function admin() {
 }
 export async function saveAccess(form: FormData): Promise<TeamResult> {
   const { db } = await admin();
+  form.set("reason", "Gestão de acesso pelo painel Equipe");
+  form.set("confirm", "true");
+  const category = String(form.get("category"));
+  form.set(
+    "remove_from_campaign",
+    category !== "employee" || !form.getAll("functions").includes("sdr")
+      ? "true"
+      : "false",
+  );
   const parsed = validateAccess(form, "edit");
   if (!parsed.input.success || Object.keys(parsed.fields).length)
     return {
@@ -25,7 +34,9 @@ export async function saveAccess(form: FormData): Promise<TeamResult> {
       message: "Corrija os campos indicados antes de salvar.",
       fields: parsed.fields,
     };
-  const { error } = await db.rpc("manage_access", { data: parsed.input.data });
+  const { error } = await db.rpc("team_save_access", {
+    data: parsed.input.data,
+  });
   if (error) return teamDatabaseError(error);
   revalidatePath("/", "layout");
   return {
@@ -53,6 +64,8 @@ export async function createAccessCompany(form: FormData) {
 }
 export async function inviteAccess(form: FormData): Promise<TeamResult> {
   const { db } = await admin();
+  form.set("reason", "Convite administrativo pelo painel Equipe");
+  form.set("confirm", "true");
   const parsed = validateAccess(form, "invite");
   if (
     !parsed.input.success ||

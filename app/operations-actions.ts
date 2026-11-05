@@ -103,6 +103,29 @@ export async function saveCatalog(form: FormData) {
   notice("/clients", "Catálogo atualizado.");
 }
 export async function progressService(form: FormData) {
+  if (!String(form.get("body") ?? "").trim()) {
+    const labels: Record<string, string> = {
+      pending: "Pendente",
+      running: "Em andamento",
+      completed: "Concluído",
+      paused: "Pausado",
+    };
+    form.set(
+      "body",
+      "Status atualizado para " +
+        (labels[String(form.get("status"))] ?? "status informado"),
+    );
+  }
+  if (form.get("status") === "completed" && !form.get("delivered_at"))
+    form.set(
+      "delivered_at",
+      new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Sao_Paulo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date()),
+    );
   const p = z
     .object({
       company_id: z.string().guid(),
