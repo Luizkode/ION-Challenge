@@ -380,8 +380,12 @@ export function ProgressForm({
         value={service.delivered_at ?? undefined}
       />
       <label className="field">
-        <span>Atualização interna</span>
-        <textarea name="body" maxLength={4000} required />
+        <span>Atualização interna (opcional)</span>
+        <textarea
+          name="body"
+          maxLength={4000}
+          placeholder="O status será registrado automaticamente."
+        />
       </label>
       <label className="field">
         <span>Resumo para parceiro (publicação depende do ADM)</span>

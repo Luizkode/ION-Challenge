@@ -183,7 +183,7 @@ test("accounts, campaigns and publication forms preserve mobile layout and deman
     });
   await expect(
     form.getByRole("checkbox", { name: /Confirmo a operação/ }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

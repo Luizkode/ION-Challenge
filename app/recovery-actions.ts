@@ -1,7 +1,8 @@
 "use server";
 
+import { recoveryClient } from "@/lib/recovery-client";
 import { redirect } from "next/navigation";
-import { configured, supabase } from "@/lib/supabase";
+import { configured } from "@/lib/supabase";
 import {
   recoveryCallback,
   recoveryEmail,
@@ -27,7 +28,7 @@ export async function requestPasswordRecovery(form: FormData) {
         ),
     );
   try {
-    const db = await supabase();
+    const db = recoveryClient();
     const { error } = await db.auth.resetPasswordForEmail(email.data, {
       redirectTo: callback,
     });

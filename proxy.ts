@@ -2,14 +2,23 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { verifySupabaseConfiguration } from "./lib/supabase-config";
 export async function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname === "/api/internal/user-removals") {
+    const internal = NextResponse.next({ request });
+    internal.headers.set("Cache-Control", "private, no-store");
+    return internal;
+  }
   verifySupabaseConfiguration(process.env);
   let response = NextResponse.next({ request });
-  const isPublic = ["/login", "/auth/callback", "/auth/complete"].includes(request.nextUrl.pathname);
+  const isPublic = ["/login", "/auth/callback", "/auth/complete"].includes(
+    request.nextUrl.pathname,
+  );
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   )
-    return isPublic ? response : NextResponse.redirect(new URL("/login", request.url));
+    return isPublic
+      ? response
+      : NextResponse.redirect(new URL("/login", request.url));
   const client = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -26,10 +35,12 @@ export async function proxy(request: NextRequest) {
       },
     },
   );
-  const {data:{user}} = await client.auth.getUser();
+  const {
+    data: { user },
+  } = await client.auth.getUser();
   if (!user && !isPublic) {
     const redirect = NextResponse.redirect(new URL("/login", request.url));
-    response.cookies.getAll().forEach(cookie => redirect.cookies.set(cookie));
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
     redirect.headers.set("Cache-Control", "private, no-store");
     return redirect;
   }

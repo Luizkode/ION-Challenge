@@ -1,0 +1,1 @@
+{"crons":[{"path":"/api/internal/user-removals","schedule":"0 8 * * *"}]}

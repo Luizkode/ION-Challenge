@@ -33,7 +33,7 @@ test("login oferece recuperação e solicita Auth sem criar sessão ou conceder 
     {
       email: "admin@ion.test",
       redirect_to: "http://localhost:3100/auth/callback",
-      pkce: true,
+      pkce: false,
     },
   ]);
   expect(state.invitations).toHaveLength(0);

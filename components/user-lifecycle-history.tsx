@@ -25,14 +25,30 @@ export function UserLifecycleHistory({
         rows.map((r) => (
           <details key={r.id}>
             <summary>
-              {r.mode} · {r.status} · {r.created_at}
+              {(
+                {
+                  remove: "Remoção de usuário",
+                  deactivate: "Desativação",
+                  anonymize: "Anonimização cadastral",
+                  delete_test: "Remoção de conta de teste",
+                } as Record<string, string>
+              )[r.mode] ?? r.mode}{" "}
+              ·{" "}
+              {(
+                {
+                  pending: "Em processamento",
+                  completed: "Concluído",
+                  failed: "Encerrado",
+                } as Record<string, string>
+              )[r.status] ?? r.status}{" "}
+              · {r.created_at}
             </summary>
             <p className="small">
               Usuário: {r.target_id} · Administrador: {r.actor_id} ·
               Solicitação: {r.id}
             </p>
             <p>{r.reason}</p>
-            {r.status === "pending" && (
+            {r.status === "pending" && r.mode !== "remove" && (
               <button
                 type="button"
                 disabled={busy}

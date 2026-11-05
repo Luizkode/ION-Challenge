@@ -203,7 +203,12 @@ export default async function LeadDetails({
             <Select
               name="closer_id"
               label="Closer"
-              value={lead.closer_id ?? ""}
+              value={
+                lead.closer_id ??
+                (people.filter((p) => p.is_closer).length === 1
+                  ? people.find((p) => p.is_closer)!.id
+                  : "")
+              }
               required
             >
               <option value="">Selecione</option>

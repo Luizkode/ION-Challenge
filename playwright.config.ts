@@ -38,6 +38,7 @@ export default defineConfig({
         NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:3101",
         NEXT_PUBLIC_SUPABASE_ANON_KEY: "test-only-public-key",
         SUPABASE_SERVICE_ROLE_KEY: "test-only-service-role",
+        CRON_SECRET: "test-only-cron-secret",
         ION_OS_APP_URL: "http://localhost:3100",
       },
     },

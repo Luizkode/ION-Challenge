@@ -20,9 +20,14 @@ export const session = cache(async function session() {
         encodeURIComponent("Conta sem perfil ativo. Contate o administrador."),
     );
   const { data: access, error: accessError } = await db.rpc("current_access");
+  if ((!access && !accessError) || accessError?.code === "42501")
+    redirect(
+      "/login?error=" +
+        encodeURIComponent("Sua sessão foi encerrada. Entre novamente."),
+    );
   if (accessError || !access || !Array.isArray(access.functions))
     throw new Error(
-      "Não foi possível carregar as permissões. Verifique a migration 003 e a conexão.",
+      "Não foi possível carregar as permissões. Tente novamente em instantes.",
     );
   return {
     db,

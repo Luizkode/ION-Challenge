@@ -126,10 +126,12 @@ test("admin altera funções, atribui cliente e desativa usuário por Equipe", a
   await login(page, "admin");
   await page.goto("/team");
   expect(await page.content()).not.toContain("test-only-service-role");
-  const detail = page.locator("main details").filter({
-    has: page.locator("summary").filter({ hasText: "SDR de teste" }),
-  });
-  await detail.locator(":scope > summary").click();
+  const detail = page
+    .locator("article.team-member")
+    .filter({ has: page.getByRole("heading", { name: /SDR de teste/ }) });
+  await detail
+    .getByText("Editar usuário · categoria e funções", { exact: true })
+    .click();
   const form = detail
     .locator("form")
     .filter({ has: page.locator('[name="category"]') });
@@ -137,11 +139,7 @@ test("admin altera funções, atribui cliente e desativa usuário por Equipe", a
   await form.getByLabel("Gestor de Tráfego", { exact: true }).check();
   await form.getByLabel("Empresa A", { exact: true }).check();
   await form.getByLabel("Situação do acesso").selectOption("false");
-  await form.getByLabel("Remover participação na campanha").check();
-  await form
-    .getByLabel("Justificativa (mínimo 8 caracteres)")
-    .fill("Alteração de função para testes");
-  await form.getByRole("checkbox", { name: /Confirmo/ }).check();
+
   page.once("dialog", (d) => d.accept());
   await form.getByRole("button", { name: "Salvar acesso" }).click();
   await expect(page.getByRole("status")).toContainText("Acesso atualizado");
@@ -165,10 +163,6 @@ for (const category of ["employee", "partner"])
     if (category === "employee")
       await form.getByLabel("Designer", { exact: true }).check();
     else await form.getByLabel("Empresa A", { exact: true }).check();
-    await form
-      .getByLabel("Justificativa (mínimo 8 caracteres)")
-      .fill("Convite de teste autorizado");
-    await form.getByRole("checkbox", { name: /Confirmo/ }).check();
     page.once("dialog", (d) => d.accept());
     await form.getByRole("button", { name: "Enviar convite" }).click();
     await expect(page.getByRole("status")).toContainText(
@@ -190,10 +184,6 @@ test("falha 5xx do Auth mantém convite pendente sem configurar acesso", async (
   await form.getByLabel("Email do convite").fill("falha@ion.test");
   await form.getByLabel("Nome", { exact: true }).fill("Convite com falha");
   await form.getByLabel("SDR", { exact: true }).check();
-  await form
-    .getByLabel("Justificativa (mínimo 8 caracteres)")
-    .fill("Convite de teste com falha");
-  await form.getByRole("checkbox", { name: /Confirmo/ }).check();
   page.once("dialog", (d) => d.accept());
   await form.getByRole("button", { name: "Enviar convite" }).click();
   await expect(form.getByRole("alert")).toContainText(

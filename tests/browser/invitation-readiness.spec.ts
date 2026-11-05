@@ -46,10 +46,6 @@ for (const role of cases)
       await form.getByLabel(label, { exact: true }).check();
     if (role.category === "partner")
       await form.getByLabel("Empresa A", { exact: true }).check();
-    await form
-      .getByLabel("Justificativa (mínimo 8 caracteres)")
-      .fill("Verificação automatizada sem envio externo");
-    await form.getByRole("checkbox", { name: /Confirmo/ }).check();
     page.once("dialog", (dialog) => dialog.accept());
     await form.getByRole("button", { name: "Enviar convite" }).click();
     await expect(form.getByRole("status")).toContainText(

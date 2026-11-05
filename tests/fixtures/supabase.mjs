@@ -47,6 +47,8 @@ const profiles = Object.fromEntries(
     id,
     {
       id,
+      auth_user_id: id,
+      is_historical: false,
       name:
         role === "sdr"
           ? "SDR de teste"
@@ -174,15 +176,31 @@ createServer(async (req, res) => {
     if (state.mode === "lifecycle_auth_error") return send({message: "Technical provider failure"}, 500);
     const response = user(uid);
     if (op.mode === "delete_test") delete profiles[uid];
-    else Object.assign(profiles[uid], { name: "Usuário anonimizado", active: false, auth_user_id: null });
+    else Object.assign(profiles[uid], { name: op.mode === "remove" ? "Colaborador removido" : "Usuário anonimizado", active: false, auth_user_id: null, is_historical: op.mode === "remove", functions: [] });
+    if(op.mode === "remove")state.participants.filter(p=>p.profile_id===uid).forEach(p=>p.active=false);
     op.status = "completed";
     return send(response);
   }
-  const id = actor(req);
+  const id = req.headers.authorization === "Bearer test-only-service-role" ? ids.admin : actor(req);
   if (!id) return send({ message: "Unauthorized" }, 401);
   if (url.pathname === "/auth/v1/user") return send(user(id));
   const table = url.pathname.split("/").at(-1);
-  if (table === "user_lifecycle_operations") return send(profiles[id].category === "admin" ? state.lifecycle : []);
+  if (table === "user_lifecycle_operations") {
+    let items=profiles[id].category === "admin" ? state.lifecycle : [];
+    for(const key of ["id","mode","status"])if(url.searchParams.has(key))items=items.filter(x=>x[key]===url.searchParams.get(key).replace("eq.",""));
+    return send(req.headers.accept?.includes("application/vnd.pgrst.object+json")?(items[0]??null):items);
+  }
+  if(table === "team_auth_directory")return send((body.ids??[]).filter(uid=>profiles[uid]&&!profiles[uid].is_historical).map(uid=>({id:uid,email:Object.entries(ids).find(([,v])=>v===uid)?.[0]+"@ion.test",last_access:null,confirmed:true,invitation_pending:false,blocked_until:null})));
+  if(table === "prepare_simple_removal"){
+    if(profiles[id].category!=="admin")return send({code:"P0001",message:"Acesso restrito ao administrador"},403);
+    const old=state.lifecycle.find(o=>o.id===body.request_id);if(old)return send(old);
+    if(body.uid===id)return send({code:"P0001",message:"Você não pode remover sua própria conta administrativa"},400);
+    const op={id:body.request_id,target_id:body.uid,actor_id:id,mode:"remove",status:"pending",reason:"Remoção definitiva confirmada pelo administrador",created_at:new Date().toISOString()};
+    state.requests.push({operation:"remove",target_id:body.uid});profiles[body.uid].active=false;state.lifecycle.push(op);return send(op);
+  }
+  if(table === "resume_simple_removal")return send(state.lifecycle.find(o=>o.id===body.operation_id&&o.mode==="remove"&&o.status==="pending")??null);
+  if(table === "begin_team_auth_action")return send({status:"completed"});
+
   if (["inspect_user_lifecycle", "prepare_user_lifecycle", "cancel_user_lifecycle"].includes(table)) {
     if (profiles[id].category !== "admin") return send({ code: "P0001", message: "Acesso restrito ao administrador" }, 403);
     if (table === "inspect_user_lifecycle") {
@@ -329,9 +347,10 @@ createServer(async (req, res) => {
       },
     ]);
   if (table === "access_invitations") return send(state.invitations);
-  if (table === "manage_access") {
+  if (table === "manage_access" || table === "team_save_access") {
     state.requests.push(body);
     const data = body.data;
+    if(table === "team_save_access" && (data.category!=="employee" || !data.functions.includes("sdr")))state.participants.filter(p=>p.profile_id===data.id).forEach(p=>p.active=false);
     if (profiles[id].category !== "admin")
       return send({ message: "Acesso restrito" }, 400);
     const target = profiles[data.id];
@@ -423,7 +442,7 @@ createServer(async (req, res) => {
           : [profiles[ids.closer]]
         : url.searchParams.has("id")
           ? [profiles[url.searchParams.get("id").replace("eq.", "")]]
-          : Object.values(profiles),
+          : Object.values(profiles).filter(p=>url.searchParams.get("is_historical")==="eq.false" ? !p.is_historical : true),
     );
   }
   const campaign = {

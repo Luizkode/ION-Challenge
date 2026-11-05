@@ -21,7 +21,6 @@ async function removal(page: Page) {
   await form
     .getByLabel("Justificativa da remoção")
     .fill("Remover colaborador de testes");
-  await form.getByRole("checkbox", { name: /Confirmo/ }).check();
   return form;
 }
 test.beforeEach(async ({ request }) => {
@@ -60,7 +59,6 @@ test("cancelar mantém vínculo; confirmar remove e permite reinclusão", async 
   await form
     .getByLabel("Justificativa da inclusão")
     .fill("Reincluir colaborador elegível");
-  await form.getByRole("checkbox", { name: /Confirmo/ }).check();
   page.once("dialog", (d) => d.accept());
   await form.getByRole("button", { name: "Adicionar à campanha" }).click();
   await expect(
@@ -84,7 +82,6 @@ test("troca de perfil pode remover participante na mesma operação", async ({
   await form
     .getByLabel("Justificativa", { exact: true })
     .fill("Promover o colaborador de testes");
-  await form.getByRole("checkbox", { name: /Confirmo/ }).check();
   page.once("dialog", async (d) => {
     expect(d.message()).toContain("participação na campanha");
     await d.accept();

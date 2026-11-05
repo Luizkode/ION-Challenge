@@ -18,6 +18,7 @@ export function AccessForm({
   bindings = [],
   companies,
   participates = false,
+  streamlined = false,
 }: {
   mode: AccessMode;
   profile?: Profile;
@@ -25,6 +26,7 @@ export function AccessForm({
   bindings?: string[];
   companies: { id: string; name: string }[];
   participates?: boolean;
+  streamlined?: boolean;
 }) {
   const initial = {
     id: profile?.id ?? "",
@@ -34,8 +36,8 @@ export function AccessForm({
     active: String(profile?.active ?? true),
     functions,
     company_ids: bindings,
-    reason: "",
-    confirm: false,
+    reason: streamlined ? "Gestão de acesso pelo painel Equipe" : "",
+    confirm: streamlined,
     remove_from_campaign: false,
   };
   const [values, setValues] = useState(initial),
@@ -63,7 +65,7 @@ export function AccessForm({
     setValues((v) => ({
       ...v,
       [key]: value,
-      ...(key === "confirm" ? {} : { confirm: false }),
+      ...(key === "confirm" || streamlined ? {} : { confirm: false }),
     }));
     setFields((f) => ({ ...f, [key]: [] }));
     setFeedback(null);
@@ -95,6 +97,7 @@ export function AccessForm({
     }
     const parsed = validateAccess(new FormData(event.currentTarget), mode);
     if (
+      !streamlined &&
       participates &&
       mode === "edit" &&
       !(values.category === "employee" && values.functions.includes("sdr")) &&
@@ -134,13 +137,25 @@ export function AccessForm({
                 .join(", "),
           ]
         : []),
-      ...(values.remove_from_campaign
+      ...(values.remove_from_campaign ||
+      (streamlined &&
+        participates &&
+        (values.category !== "employee" || !values.functions.includes("sdr")))
         ? [
             "Remover a participação na campanha em aberto, preservando o histórico.",
           ]
         : []),
     ];
-    if (!window.confirm(operations.join("\n"))) {
+    const highRisk =
+      !streamlined ||
+      mode !== "edit" ||
+      values.category !== initial.category ||
+      values.active !== initial.active ||
+      JSON.stringify([...values.functions].sort()) !==
+        JSON.stringify([...initial.functions].sort()) ||
+      JSON.stringify(values.company_ids) !==
+        JSON.stringify(initial.company_ids);
+    if (highRisk && !window.confirm(operations.join("\n"))) {
       event.preventDefault();
       return;
     }
@@ -155,7 +170,7 @@ export function AccessForm({
         : saveAccess(form));
       setFeedback(result);
       setFields(result.ok ? {} : result.fields);
-      setValues((v) => ({ ...v, confirm: false }));
+      setValues((v) => ({ ...v, confirm: streamlined }));
       if (result.ok) {
         if (mode === "invite" || mode === "link")
           setValues({ ...initial, functions: [], company_ids: [] });
@@ -166,8 +181,8 @@ export function AccessForm({
               ...v,
               functions: normalized.data.functions,
               company_ids: normalized.data.company_ids,
-              reason: "",
-              confirm: false,
+              reason: streamlined ? "Gestão de acesso pelo painel Equipe" : "",
+              confirm: streamlined,
               remove_from_campaign: false,
             }));
         }
@@ -175,7 +190,7 @@ export function AccessForm({
       } else focus(result.fields);
     } catch (e) {
       unstable_rethrow(e);
-      setValues((v) => ({ ...v, confirm: false }));
+      setValues((v) => ({ ...v, confirm: streamlined }));
       setFeedback({
         ok: false,
         kind: "uncertain",
@@ -198,8 +213,10 @@ export function AccessForm({
       aria-busy={busy}
     >
       <p className="small muted" style={{ gridColumn: "1/-1" }}>
-        Campos com <span aria-hidden="true">*</span> são obrigatórios. A
-        justificativa exige pelo menos 8 caracteres.
+        Campos com <span aria-hidden="true">*</span> são obrigatórios.{" "}
+        {streamlined
+          ? "As alterações são auditadas automaticamente."
+          : "A justificativa exige pelo menos 8 caracteres."}
       </p>
       {mode === "edit" ? (
         <input
@@ -378,7 +395,7 @@ export function AccessForm({
           {error("company_ids")}
         </fieldset>
       )}
-      {mode !== "invite" && (
+      {!streamlined && mode !== "invite" && (
         <div>
           {participates && (
             <p className="notice">
@@ -403,39 +420,71 @@ export function AccessForm({
           {error("remove_from_campaign")}
         </div>
       )}
-      <label className="field">
-        <span>
-          Justificativa (mínimo 8 caracteres) <span aria-hidden="true">*</span>
-        </span>
-        <input
-          name="reason"
-          aria-label="Justificativa (mínimo 8 caracteres)"
-          value={values.reason}
-          minLength={8}
-          maxLength={2000}
-          required
-          disabled={busy}
-          onChange={(e) => change("reason", e.target.value)}
-          {...props("reason")}
-        />
-        {error("reason")}
-      </label>
-      <div>
-        <label className="check">
+      {streamlined ? (
+        <>
           <input
-            name="confirm"
-            type="checkbox"
-            value="true"
-            checked={values.confirm}
-            required
-            disabled={busy}
-            onChange={(e) => change("confirm", e.target.checked)}
-            {...props("confirm")}
+            type="hidden"
+            name="reason"
+            value="Gestão de acesso pelo painel Equipe"
           />
-          Confirmo a operação selecionada e a preservação do histórico.
-        </label>
-        {error("confirm")}
-      </div>
+          <input type="hidden" name="confirm" value="true" />
+          <input
+            type="hidden"
+            name="remove_from_campaign"
+            value={
+              values.category !== "employee" ||
+              !values.functions.includes("sdr")
+                ? "true"
+                : "false"
+            }
+          />
+          {participates &&
+            (values.category !== "employee" ||
+              !values.functions.includes("sdr")) && (
+              <p className="notice">
+                A participação na campanha em aberto será encerrada
+                automaticamente, preservando o histórico.
+              </p>
+            )}
+        </>
+      ) : (
+        <>
+          <label className="field">
+            <span>
+              Justificativa (mínimo 8 caracteres){" "}
+              <span aria-hidden="true">*</span>
+            </span>
+            <input
+              name="reason"
+              aria-label="Justificativa (mínimo 8 caracteres)"
+              value={values.reason}
+              minLength={8}
+              maxLength={2000}
+              required
+              disabled={busy}
+              onChange={(e) => change("reason", e.target.value)}
+              {...props("reason")}
+            />
+            {error("reason")}
+          </label>
+          <div>
+            <label className="check">
+              <input
+                name="confirm"
+                type="checkbox"
+                value="true"
+                checked={values.confirm}
+                required
+                disabled={busy}
+                onChange={(e) => change("confirm", e.target.checked)}
+                {...props("confirm")}
+              />
+              Confirmo a operação selecionada e a preservação do histórico.
+            </label>
+            {error("confirm")}
+          </div>
+        </>
+      )}
       <Submit disabled={busy}>{label}</Submit>
       {feedback && (
         <p
