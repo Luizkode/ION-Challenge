@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { session } from "@/lib/session";
 import { canAccessModule } from "@/lib/os-modules";
-import { leadSchema, meetingInput, dealInput } from "@/lib/crm";
+import { leadSchema, dealInput } from "@/lib/crm";
 async function context() {
   const s = await session();
   if (!canAccessModule("crm", s.profile)) redirect("/?error=Sem+acesso+ao+CRM");
@@ -66,9 +66,10 @@ export async function addActivity(form: FormData) {
   done("/crm/" + parsed.data.lead_id, "Atividade registrada.");
 }
 export async function scheduleCrm(form: FormData) {
-  const parsed = meetingInput.safeParse(Object.fromEntries(form));
+  const { agendaMeetingInput } = await import("@/lib/crm-agenda");
+  const parsed = agendaMeetingInput.safeParse(Object.fromEntries(form));
   if (!parsed.success)
-    done(leadPath(form), "Informe data, horário e closer válidos.", true);
+    done(leadPath(form), commercialErrors(parsed.error), true);
   await execute(
     "crm_schedule_meeting",
     parsed.data,
@@ -194,4 +195,65 @@ export async function grantCrm(form: FormData) {
     done("/crm", "Confirme o acesso e informe justificativa.", true);
   await execute("crm_set_grant", p.data, "/crm");
   done("/crm", "Permissão de consulta e atividades atualizada e auditada.");
+}
+
+// Commercial workspace actions use the caller's session and guarded, atomic RPCs.
+export async function saveMeetingResult(form: FormData) {
+  const { resultInput } = await import("@/lib/crm-agenda");
+  const parsed = resultInput.safeParse(Object.fromEntries(form));
+  const path = agendaActionPath(form, "meetings");
+  if (!parsed.success) done(path, commercialErrors(parsed.error), true);
+  await execute("crm_record_meeting_result", parsed.data, path);
+  done(
+    path,
+    "Resultado registrado. Negociação e follow-up atualizados; regras do Challenger preservadas.",
+  );
+}
+export async function saveFollowup(form: FormData) {
+  const { followupInput } = await import("@/lib/crm-agenda");
+  const parsed = followupInput.safeParse(Object.fromEntries(form));
+  const path = agendaActionPath(form, "followups");
+  if (!parsed.success) done(path, commercialErrors(parsed.error), true);
+  const r = await execute("crm_followup_action", parsed.data, path);
+  done("/crm/followups/" + r.id, "Follow-up atualizado. Histórico preservado.");
+}
+export async function rescheduleMeeting(form: FormData) {
+  const { rescheduleInput } = await import("@/lib/crm-agenda");
+  const parsed = rescheduleInput.safeParse(Object.fromEntries(form));
+  const path = agendaActionPath(form, "meetings");
+  if (!parsed.success) done(path, commercialErrors(parsed.error), true);
+  const r = await execute("crm_reschedule_meeting", parsed.data, path);
+  done(
+    "/crm/meetings/" + r.id,
+    "Reunião reagendada. Agendamento anterior preservado no histórico.",
+  );
+}
+function agendaActionPath(form: FormData, kind: string) {
+  const id = z.string().guid().safeParse(form.get("id"));
+  return id.success ? "/crm/" + kind + "/" + id.data : "/crm";
+}
+function commercialErrors(error: z.ZodError) {
+  const fields: Record<string, string> = {
+    amount: "Valor da proposta",
+    services: "Serviços de interesse",
+    term_months: "Prazo em meses",
+    notes: "Observações comerciais",
+    follow_up_at: "Data do follow-up",
+    scheduled_at: "Data e horário",
+    closer_id: "Closer",
+    assigned_to: "Responsável",
+    due_at: "Data do retorno",
+    reason: "Motivo",
+    result: "Resultado do contato",
+    meeting_url: "Link da reunião",
+    lead_id: "Lead",
+  };
+  return error.issues
+    .map(
+      (i) =>
+        (fields[String(i.path[0])] ?? "Formulário") +
+        ": " +
+        (i.code === "custom" ? i.message : "revise este campo."),
+    )
+    .join(" ");
 }

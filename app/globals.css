@@ -1316,3 +1316,59 @@ td {
 .removal-dialog button { margin: .5rem .5rem 0 0; }
 .team-member p { overflow-wrap: anywhere; }
 .removal-dialog { color: var(--text); background: var(--panel); }
+
+
+/* Commercial workspace follows the existing panel, button and status palette. */
+.crm-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+.crm-tabs [aria-current="page"] {
+  border-color: var(--accent);
+}
+.commercial-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.commercial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: 16px;
+}
+.commercial-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.commercial-card .crm-actions {
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.commercial-overdue {
+  border-left: 3px solid #f59e7b;
+}
+.commercial-notes {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 900px) {
+  .commercial-columns {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .commercial-card {
+    padding: 14px;
+  }
+  .commercial-card .button {
+    flex: 1 1 140px;
+    text-align: center;
+  }
+}

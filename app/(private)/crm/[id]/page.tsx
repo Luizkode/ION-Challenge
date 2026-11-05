@@ -1,3 +1,4 @@
+import { ScheduleForm, NewFollowupForm } from "@/components/crm-agenda-forms";
 import { ActionForm } from "@/components/action-form";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -170,13 +171,6 @@ export default async function LeadDetails({
                   </option>
                 ))}
             </Select>
-            <Field
-              name="follow_up_at"
-              label="Próximo contato"
-              type="datetime-local"
-              required={false}
-              value={lead.follow_up_at ?? undefined}
-            />
             <label className="field">
               <span>Descrição / resposta</span>
               <textarea name="description" maxLength={4000} required />
@@ -193,46 +187,7 @@ export default async function LeadDetails({
             automaticamente. Fora de campanha, a reunião permanece no CRM sem
             pontuação.
           </p>
-          <ActionForm action={scheduleCrm} className="form-grid">
-            <input type="hidden" name="lead_id" value={id} />
-            <Field
-              name="scheduled_at"
-              label="Data e horário"
-              type="datetime-local"
-            />
-            <Select
-              name="closer_id"
-              label="Closer"
-              value={
-                lead.closer_id ??
-                (people.filter((p) => p.is_closer).length === 1
-                  ? people.find((p) => p.is_closer)!.id
-                  : "")
-              }
-              required
-            >
-              <option value="">Selecione</option>
-              {people
-                .filter((p) => p.is_closer)
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-            </Select>
-            <Field
-              name="notes"
-              label="Observações da reunião"
-              required={false}
-            />
-            <Submit>Agendar reunião</Submit>
-          </ActionForm>
-          {!people.some((p) => p.is_closer) && (
-            <p className="notice error">
-              Não há closer ativo. Solicite ao administrador a configuração de
-              um responsável.
-            </p>
-          )}
+          <ScheduleForm lead={lead} people={people} />
         </section>
       )}
       <section className="panel">
@@ -251,6 +206,11 @@ export default async function LeadDetails({
                     (Brasília)
                   </h3>
                   <span className="badge">{labels[m.status]}</span>
+                </div>
+                <div className="crm-actions">
+                  <Link className="button" href={"/crm/meetings/" + m.id}>
+                    Abrir detalhes / registrar resultado
+                  </Link>
                 </div>
                 <p>
                   {people.find((p) => p.id === m.closer_id)?.name ?? "Closer"} ·{" "}
@@ -407,6 +367,17 @@ export default async function LeadDetails({
           <Empty>Nenhuma proposta registrada.</Empty>
         )}
       </section>
+      {canManage && !lead.archived && (
+        <section className="panel padded">
+          <h2>Programar novo retorno</h2>
+          <NewFollowupForm
+            leadId={id}
+            people={people}
+            owner={lead.closer_id ?? lead.sdr_id}
+          />
+          <Link href="/crm/followups">Central de follow-ups</Link>
+        </section>
+      )}
       <section className="panel">
         <div className="panel-title">
           <h2>Histórico de atividades</h2>
