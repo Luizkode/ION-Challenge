@@ -1372,3 +1372,6 @@ td {
     text-align: center;
   }
 }
+.crm-tabs { flex-direction:row; }
+.crm-tabs .button { background:transparent; color:var(--muted); border-color:var(--line); flex:0 1 auto; }
+.crm-tabs .button:hover, .crm-tabs .button[aria-current="page"] { color:var(--text); background:#21182e; border-color:var(--accent); }
