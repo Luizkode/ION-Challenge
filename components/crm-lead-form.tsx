@@ -79,13 +79,6 @@ export function CrmLeadForm({
             </option>
           ))}
       </Select>
-      <Field
-        label="Próximo follow-up"
-        name="follow_up_at"
-        type="datetime-local"
-        required={false}
-        value={lead?.follow_up_at ?? undefined}
-      />
       <label className="field">
         <span>Observações</span>
         <textarea name="notes" defaultValue={lead?.notes} maxLength={10000} />

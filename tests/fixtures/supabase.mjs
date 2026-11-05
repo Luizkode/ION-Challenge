@@ -23,7 +23,7 @@ function initialState(mode = "active") {
     ops_contracts: [],ops_services: [],ops_updates: [],ops_files: [],ops_service_assignments: [],
     crm_leads: [],
     crm_activities: [],
-    crm_deals: [],
+    crm_deals: [],crm_followups:[],crm_meeting_results:[],crm_commands:[],
     requests: [],
     lifecycle: [],
     reads: [],
@@ -136,6 +136,7 @@ createServer(async (req, res) => {
   if (url.pathname === "/__test/state") {
     if (req.method === "POST") {
       state = initialState(body.mode ?? "active");
+      if(body.seed)Object.assign(state,body.seed);
       for (const key of Object.keys(profiles)) delete profiles[key];
       Object.assign(profiles, structuredClone(initialProfiles));
     }
@@ -285,6 +286,7 @@ createServer(async (req, res) => {
   if(table==='ops_begin_file'){const d=body.data;const fid=crypto.randomUUID();const path=d.company_id+'/'+fid;state.ops_files.push({...d,id:fid,state:'pending',object_path:path,uploaded_by:id,created_at:new Date().toISOString(),partner_visible:false});return send({id:fid,path,bucket:'ion-os-documents'});}
   if(table==='ops_finish_file'){const f=state.ops_files.find(f=>f.id===body.data.id);f.state='ready';return send(null);}
   if(table==='ops_download'){const f=state.ops_files.find(f=>f.id===body.fid);return send({path:f.object_path,name:f.name});}
+  if (table === "crm_agenda_report") return send({performance:[]});
   if (table === "crm_directory") return send(Object.values(profiles).filter(p=>p.active && p.functions.some(f=>['sdr','closer'].includes(f))).map(p=>({...p,is_sdr:p.functions.includes('sdr'),is_closer:p.functions.includes('closer')})));
   if (table === "crm_report") return send({leads:state.crm_leads.length,contacts:state.crm_activities.filter(a=>a.kind==='contact').length,scheduled:state.meetings.length,held:0,won:state.crm_deals.filter(d=>d.result==='won').length,proposals:state.crm_deals.filter(d=>d.result==='proposal').length,response:0,attendance:0,conversion:0,performance:[]});
   if (table === "crm_save_lead") {
@@ -295,7 +297,15 @@ createServer(async (req, res) => {
   }
   if (table === "crm_activity") {const data=body.data;const l=state.crm_leads.find(l=>l.id===data.lead_id);state.crm_activities.push({...data,id:crypto.randomUUID(),actor_id:id,created_at:new Date().toISOString()});if(l && data.stage)l.stage=data.stage;return send(null);}
   if (table === "crm_record_deal") {const data=body.data;state.crm_deals.push({...data,id:crypto.randomUUID(),created_at:new Date().toISOString(),contract_id:null});const l=state.crm_leads.find(l=>l.id===data.lead_id);if(l)l.stage=data.result==='proposal'?'proposed':data.result;return send(state.crm_deals.at(-1).id);}
-  if (table === "crm_schedule_meeting") {const data=body.data;const l=state.crm_leads.find(l=>l.id===data.lead_id);state.meetings.push({...data,id:crypto.randomUUID(),opportunity_id:crypto.randomUUID(),closer_id:data.closer_id,status:'scheduled',opportunities:{company:l.company,crm_lead_id:l.id,sdr_id:l.sdr_id,campaign_id:campaignId}});l.stage='scheduled';return send(state.meetings.at(-1).id);}
+  if (['crm_schedule_meeting','crm_record_meeting_result','crm_followup_action','crm_reschedule_meeting'].includes(table)) {
+    const d=body.data;const previous=state.crm_commands.find(c=>c.id===d.request_id);if(previous)return send(previous.result);
+    let result;
+    if(table==='crm_schedule_meeting') { const l=state.crm_leads.find(l=>l.id===d.lead_id);const m={...d,id:crypto.randomUUID(),version:1,opportunity_id:crypto.randomUUID(),status:'scheduled',rescheduled_from_id:null,opportunities:{company:l.company,contact:l.contact,phone:l.phone,crm_lead_id:l.id,sdr_id:l.sdr_id,campaign_id:campaignId}};state.meetings.push(m);l.stage='scheduled';l.closer_id=d.closer_id;result=m.id; }
+    if(table==='crm_record_meeting_result'){const m=state.meetings.find(m=>m.id===d.id);const l=state.crm_leads.find(l=>l.id===m.opportunities.crm_lead_id);m.status=d.outcome==='no_show'?'no_show':'held';m.version++;l.stage=d.outcome==='proposal'?'proposed':d.outcome;state.crm_meeting_results.push({id:crypto.randomUUID(),meeting_id:m.id,lead_id:l.id,actor_id:id,outcome:d.outcome,details:d,created_at:new Date().toISOString()});let f;if(d.follow_up_at){f={id:crypto.randomUUID(),lead_id:l.id,meeting_id:m.id,assigned_to:d.assigned_to,due_at:d.follow_up_at,reason:d.next_action||'Acompanhar negociação',status:'pending',result:'',version:1,updated_at:new Date().toISOString()};state.crm_followups.push(f);}result={id:m.id,followup:f};}
+    if(table==='crm_followup_action'){let f=state.crm_followups.find(f=>f.id===d.id);if(d.operation==='create'){f={...d,id:crypto.randomUUID(),status:'pending',result:'',version:1,updated_at:new Date().toISOString()};state.crm_followups.push(f);}else{f.version++;f.updated_at=new Date().toISOString();f.result=d.result||f.result;if(d.operation==='complete')f.status='completed';if(d.operation==='cancel')f.status='cancelled';if(d.operation==='reschedule'){f.due_at=d.due_at;f.assigned_to=d.assigned_to;}if(d.next_due_at){state.crm_followups.push({...f,id:crypto.randomUUID(),previous_id:f.id,due_at:d.next_due_at,status:'pending',result:'',version:1});}}state.crm_activities.push({id:crypto.randomUUID(),lead_id:f.lead_id,actor_id:id,followup_id:f.id,description:d.result||d.reason||'Follow-up reagendado',created_at:new Date().toISOString()});result={id:f.id};}
+    if(table==='crm_reschedule_meeting'){const m=state.meetings.find(m=>m.id===d.id);m.status='cancelled';const next={...m,id:crypto.randomUUID(),status:'scheduled',scheduled_at:d.scheduled_at,rescheduled_from_id:m.id,version:1};state.meetings.push(next);result={id:next.id};}
+    state.crm_commands.push({id:d.request_id,result});return send(result);
+  }
   if (table === "crm_import_leads") {state.requests.push(body);if(body.rows.some(r=>state.crm_leads.some(l=>l.phone===r.phone)))return send({code:'P0001',message:'Possível duplicidade de WhatsApp ou email'},400);for(const row of body.rows)state.crm_leads.push({...row,id:crypto.randomUUID(),sdr_id:profiles[id].role==='admin'?row.sdr_id:id,version:1,stage:'new',created_at:new Date().toISOString(),updated_at:new Date().toISOString(),archived:false});return send(body.rows.length);}
   if (table === "available_closers")
     return state.mode === "query_error"
@@ -417,11 +427,24 @@ createServer(async (req, res) => {
     "application/vnd.pgrst.object+json",
   );
   const rows = (data) => {
+    if(table.startsWith('crm_') || table==='meetings') {
+      if(table==='crm_followups')data=data.map(f=>({...f,crm_leads:state.crm_leads.find(l=>l.id===f.lead_id)}));
+      for(const [key,filter] of url.searchParams){if(['select','order','offset','limit'].includes(key))continue;
+        const get=o=>key.split('.').reduce((a,k)=>a?.[k],o);
+        if(key==='crm_meeting_results'){if(filter==='is.null')data=data.filter(m=>!state.crm_meeting_results.some(r=>r.meeting_id===m.id));continue;}
+        if(filter.startsWith('eq.'))data=data.filter(o=>String(get(o))===filter.slice(3));
+        else if(filter.startsWith('not.eq.'))data=data.filter(o=>String(get(o))!==filter.slice(7));
+        else if(filter.startsWith('gte.'))data=data.filter(o=>get(o)>=filter.slice(4));
+        else if(filter.startsWith('lt.'))data=data.filter(o=>get(o)<filter.slice(3));
+        else if(filter.startsWith('in.('))data=data.filter(o=>filter.slice(4,-1).split(',').includes(String(get(o))));
+      }
+      if(url.searchParams.has('order')){const key=url.searchParams.get('order').split('.')[0];data=[...data].sort((a,b)=>String(a[key]).localeCompare(String(b[key]))*(url.searchParams.get('order').includes('.desc')?-1:1));}
+    }
     const total=data.length, offset=Number(url.searchParams.get('offset')??0),limit=Number(url.searchParams.get('limit')??total);
     res.setHeader('Content-Range',`${offset}-${Math.max(offset,offset+Math.min(limit,total-offset)-1)}/${total}`);
     const page=data.slice(offset,offset+limit);return send(singular ? (page[0] ?? null) : page);
   };
-  if (['crm_leads','crm_activities','crm_deals','crm_grants','ops_clients','ops_contracts','ops_services','ops_updates','ops_files','ops_admin_notes','ops_service_assignments'].includes(table)) {
+  if (['crm_leads','crm_activities','crm_deals','crm_grants','crm_followups','crm_meeting_results','crm_commands','ops_clients','ops_contracts','ops_services','ops_updates','ops_files','ops_admin_notes','ops_service_assignments'].includes(table)) {
     let items=state[table]??[];
     if(url.searchParams.has('id'))items=items.filter(l=>l.id===url.searchParams.get('id').replace('eq.',''));
     if(url.searchParams.has('company_id'))items=items.filter(l=>l.company_id===url.searchParams.get('company_id').replace('eq.',''));

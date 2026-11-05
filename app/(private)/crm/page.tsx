@@ -1,3 +1,4 @@
+import { CrmWorkspace } from "@/components/crm-workspace";
 import { ActionForm } from "@/components/action-form";
 import Link from "next/link";
 import { crmContext, crmDirectory } from "@/lib/crm-server";
@@ -28,7 +29,8 @@ export default async function Crm({
 }: {
   searchParams: Promise<Params>;
 }) {
-  const { db, profile } = await crmContext();
+  const context = await crmContext();
+  const { db, profile } = context;
   const p = await searchParams;
   const people = await crmDirectory(db);
   const admin = profile.category === "admin";
@@ -57,38 +59,43 @@ export default async function Crm({
     query = query.eq("stage", p.stage);
   const owner = people.some((x) => x.id === p.owner) ? p.owner : "";
   if (owner) query = query.or("sdr_id.eq." + owner + ",closer_id.eq." + owner);
-  const [result, report, agenda, grants, employees] = await Promise.all([
-    query,
-    db.rpc("crm_report", {
-      filters: {
-        from: period.start,
-        to: period.end,
-        owner,
-        stage: stageCodes.includes(p.stage as keyof typeof stages)
-          ? p.stage
-          : "",
-      },
-    }),
-    db
-      .from("meetings")
-      .select("*,opportunities!inner(crm_lead_id,company,campaign_id,sdr_id)")
-      .not("opportunities.crm_lead_id", "is", null)
-      .gte("scheduled_at", period.start)
-      .lt("scheduled_at", period.end)
-      .order("scheduled_at")
-      .limit(200),
-    admin
-      ? db.from("crm_grants").select("profile_id")
-      : Promise.resolve({ data: [], error: null }),
-    admin
-      ? db
-          .from("profiles")
-          .select("id,name")
-          .eq("category", "employee")
-          .eq("active", true)
-      : Promise.resolve({ data: [], error: null }),
-  ]);
-  for (const r of [result, report, agenda, grants, employees]) check(r.error);
+  const [result, report, agenda, grants, employees, agendaReport] =
+    await Promise.all([
+      query,
+      db.rpc("crm_report", {
+        filters: {
+          from: period.start,
+          to: period.end,
+          owner,
+          stage: stageCodes.includes(p.stage as keyof typeof stages)
+            ? p.stage
+            : "",
+        },
+      }),
+      db
+        .from("meetings")
+        .select("*,opportunities!inner(crm_lead_id,company,campaign_id,sdr_id)")
+        .not("opportunities.crm_lead_id", "is", null)
+        .gte("scheduled_at", period.start)
+        .lt("scheduled_at", period.end)
+        .order("scheduled_at")
+        .limit(200),
+      admin
+        ? db.from("crm_grants").select("profile_id")
+        : Promise.resolve({ data: [], error: null }),
+      admin
+        ? db
+            .from("profiles")
+            .select("id,name")
+            .eq("category", "employee")
+            .eq("active", true)
+        : Promise.resolve({ data: [], error: null }),
+      db.rpc("crm_agenda_report", {
+        filters: { from: period.start, to: period.end, owner },
+      }),
+    ]);
+  for (const r of [result, report, agenda, grants, employees, agendaReport])
+    check(r.error);
   const leads = (result.data ?? []) as Lead[];
   const summary = report.data ?? {};
   const pageLink = (n: number) => {
@@ -116,12 +123,18 @@ export default async function Crm({
           </p>
         </div>
         {canCreate && (
-          <Link href="/crm/new" className="button">
-            Novo lead
-          </Link>
+          <div className="crm-actions">
+            <Link href="/crm/schedule" className="button">
+              Agendar reunião
+            </Link>
+            <Link href="/crm/new" className="button">
+              Novo lead
+            </Link>
+          </div>
         )}
       </div>
       <Notice params={{ ...p, error: period.error ?? p.error }} />
+      <CrmWorkspace context={context} people={people} />
       <section className="panel">
         <form className="filters" method="get">
           <Field
@@ -205,6 +218,35 @@ export default async function Crm({
         criados no período com fechamento registrado no período / leads criados.
         Fechamento comercial não concede pontos sem confirmação administrativa.
       </p>
+      {admin && (
+        <section className="panel padded">
+          <h2>Reuniões por SDR e closer</h2>
+          <p className="muted small">
+            Período e responsável dos filtros abaixo; somente reuniões
+            acessíveis, sem duplicação entre CRM e Challenger.
+          </p>
+          <div className="commercial-grid">
+            {(agendaReport.data?.performance ?? []).map(
+              (x: {
+                id: string;
+                name: string;
+                function: string;
+                meetings: number;
+                held: number;
+              }) => (
+                <article className="commercial-card" key={x.id + x.function}>
+                  <strong>
+                    {x.name} · {x.function === "sdr" ? "SDR" : "Closer"}
+                  </strong>
+                  <p>
+                    {x.meetings} reuniões · {x.held} realizadas
+                  </p>
+                </article>
+              ),
+            )}
+          </div>
+        </section>
+      )}
       <section className="panel">
         <div className="panel-title">
           <h2>
