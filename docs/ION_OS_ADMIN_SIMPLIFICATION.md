@@ -103,7 +103,8 @@ registrados separadamente. Nenhum link, token ou senha integra o relatório.
 ## Banco, implantação e testes
 
 Migrations incrementais: `015_admin_simplification.sql`,
-`016_retirement_minimal_retention.sql` e `017_removal_queue_authority.sql`.
+`016_retirement_minimal_retention.sql`, `017_removal_queue_authority.sql` e
+`018_retirement_storage_owner.sql`.
 Foram verificadas sobre restauração do estado atual antes da aplicação, com cópia
 coerente e criptografada de public/Auth, download e descriptografia do objeto
 remoto, conferência de hashes e validação de FKs em PostgreSQL 17 isolado.
@@ -125,3 +126,8 @@ convite e da redefinição. O Auth confirmou a ativação, definição da senha 
 primeiro acesso da conta de convite; a redefinição da outra conta foi concluída
 pelo destinatário. Os testes não alteraram a conta principal. Links e credenciais
 não são incluídos neste documento.
+
+A propriedade atual do Storage (`owner_id`) prevalece sobre o campo legado
+`owner`: uma referência antiga do usuário removido é limpa sem retirar a
+propriedade atual de outro colaborador. A regra foi validada com a API real,
+conteúdo binário preservado e contas técnicas novas.
