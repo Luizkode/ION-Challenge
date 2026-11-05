@@ -68,6 +68,10 @@ test("Admin simplificado: histórico, sessões, acesso e auditoria", async (t) =
     "insert into storage.objects(bucket_id,name,owner_id) values('ion-os-documents','retained-fixture',$1)",
     [uid(2)],
   );
+  await q(
+    "insert into storage.objects(bucket_id,name,owner,owner_id) values('ion-os-documents','different-current-owner',$1,$2)",
+    [uid(2), uid(3)],
+  );
   let lead = "";
   await t.test(
     "diretório Auth retorna somente campos seguros e é exclusivo do ADM",
@@ -197,7 +201,13 @@ test("Admin simplificado: histórico, sessões, acesso e auditoria", async (t) =
       );
       assert.equal(
         await scalar("select count(*)::int r from storage.objects"),
-        1,
+        2,
+      );
+      assert.equal(
+        await scalar(
+          "select owner_id r from storage.objects where name='different-current-owner'",
+        ),
+        uid(3),
       );
       await actor(1, 21);
       assert.equal(
