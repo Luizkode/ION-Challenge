@@ -409,7 +409,7 @@ createServer(async (req, res) => {
         .map((p) => ({
           id: p.profile_id,
           name: profiles[p.profile_id].name,
-          team: "Time original",
+          team: p.team_id ? "Time original":"Sem equipe definida",
           points: state.mode.startsWith("admin") ? 7 : 0,
           held: 1,
           qualified: 1,
@@ -471,6 +471,8 @@ createServer(async (req, res) => {
   const campaign = {
     id: "30000000-0000-0000-0000-000000000001",
     state: "active",
+    audience:["admin_history","admin_management","admin_error"].includes(state.mode) ? "other":"sdr",
+    name:"Campanha de teste",
     goal: 700,
     prize: "iPhone 13",
     starts_at: new Date(
@@ -481,7 +483,7 @@ createServer(async (req, res) => {
     ).toISOString(),
   };
   if (table === "campaigns")
-    return rows(state.mode === "draft" ? [] : [campaign]);
+    return rows(state.campaigns ?? (state.mode === "draft" ? [] : [campaign]));
   if (table === "teams") return rows([{ id: teamId, name: "Time original" }]);
   // Model the real schema: both profile_id and removed_by reference profiles.
   // An unqualified embed must fail, even if the current participant list is empty.

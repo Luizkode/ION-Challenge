@@ -1,3 +1,5 @@
+import { chooseCampaign } from "@/lib/campaign-selection";
+import { CampaignPicker } from "@/components/campaign-picker";
 import { canAccessModule } from "@/lib/os-modules";
 import { redirect } from "next/navigation";
 import { ChallengerNavigation } from "@/components/challenger-navigation";
@@ -11,7 +13,11 @@ import {
   CalendarDays,
 } from "lucide-react";
 import type { Board } from "@/lib/types";
-export default async function Dashboard() {
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ campaign?: string }>;
+}) {
   const { db, profile } = await session();
   if (!canAccessModule("challenger", profile))
     redirect(
@@ -27,7 +33,7 @@ export default async function Dashboard() {
     .select("*")
     .order("starts_at", { ascending: false, nullsFirst: true });
   check(error);
-  const ca = campaigns?.find((c) => c.state !== "finalized") ?? campaigns?.[0];
+  const ca = chooseCampaign(campaigns ?? [], (await searchParams).campaign);
   if (!ca)
     return (
       <>
@@ -52,6 +58,7 @@ export default async function Dashboard() {
   return (
     <>
       <ChallengerNavigation profile={profile} />
+      <CampaignPicker campaigns={campaigns ?? []} selected={ca.id} />
       <div className="page-title">
         <div>
           <p className="eyebrow">ION CHALLENGER · {ca.name}</p>

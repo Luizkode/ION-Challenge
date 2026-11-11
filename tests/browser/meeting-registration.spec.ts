@@ -76,7 +76,7 @@ test("botão abre formulário próprio e cadastra via create_meeting", async ({
 });
 for (const [mode, message] of [
   ["draft", "A campanha ainda não está ativa"],
-  ["no_team", "Você não está vinculado a um time"],
+  ["no_team", "Sua participação automática ainda não foi sincronizada"],
   ["no_closer", "Não há closer ativo disponível"],
   ["future", "A campanha ainda não começou"],
   ["ended", "O período da campanha foi encerrado"],
@@ -111,7 +111,13 @@ test("erro de RPC retorna ao cadastro com mensagem", async ({
   await page.goto("/meetings/new");
   await fill(page);
   await page.getByRole("button", { name: "Cadastrar reunião" }).click();
-  await expect(page).toHaveURL(/\/meetings\/new\?error=/);
+  await expect(page).toHaveURL(
+    (url) =>
+      url.pathname === "/meetings/new" &&
+      url.searchParams.has("error") &&
+      url.searchParams.get("campaign") ===
+        "30000000-0000-0000-0000-000000000001",
+  );
   await expect(
     page.getByRole("alert").filter({ hasText: "duplicidade" }),
   ).toBeVisible();
@@ -127,13 +133,25 @@ test("closer não acessa cadastro de SDR", async ({ page }) => {
   ).toHaveCount(0);
 });
 
-test("campanha inativa mantém bloqueio do Challenger e oferece CRM independente", async ({ page, request }) => {
-  await request.post("http://127.0.0.1:3101/__test/state", { data: { mode: "draft" } });
+test("campanha inativa mantém bloqueio do Challenger e oferece CRM independente", async ({
+  page,
+  request,
+}) => {
+  await request.post("http://127.0.0.1:3101/__test/state", {
+    data: { mode: "draft" },
+  });
   await login(page);
   await page.goto("/meetings/new");
-  await expect(page.getByRole("button", { name: "Cadastrar reunião" })).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Cadastrar reunião" }),
+  ).toBeDisabled();
   await page.getByRole("link", { name: "Agendar pelo CRM Comercial" }).click();
   await expect(page).toHaveURL("/crm");
-  await expect(page.getByRole("heading", { name: "CRM Comercial", exact: true })).toBeVisible();
-  expect((await (await request.get("http://127.0.0.1:3101/__test/state")).json()).requests).toHaveLength(0);
+  await expect(
+    page.getByRole("heading", { name: "CRM Comercial", exact: true }),
+  ).toBeVisible();
+  expect(
+    (await (await request.get("http://127.0.0.1:3101/__test/state")).json())
+      .requests,
+  ).toHaveLength(0);
 });

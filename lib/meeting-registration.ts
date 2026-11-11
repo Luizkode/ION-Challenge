@@ -7,7 +7,7 @@ export type RegistrationCampaign = {
 };
 export function registrationBlockers(
   campaign: RegistrationCampaign | null,
-  hasTeam: boolean,
+  participates: boolean,
   closerCount: number,
   now = Date.now(),
 ) {
@@ -28,9 +28,9 @@ export function registrationBlockers(
     reasons.push(
       "O período da campanha foi encerrado. Não é possível agendar novas reuniões.",
     );
-  if (campaign && !hasTeam)
+  if (campaign && !participates)
     reasons.push(
-      "Você não está vinculado a um time nesta campanha. Peça ao administrador para cadastrar seu vínculo.",
+      "Sua participação automática ainda não foi sincronizada. Recarregue a página ou contate o administrador.",
     );
   if (!closerCount)
     reasons.push(

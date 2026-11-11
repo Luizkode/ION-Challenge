@@ -77,6 +77,9 @@ test("CRM agenda PostgreSQL: fluxo conectado, RLS, histórico e idempotência", 
         "utf8",
       ),
     );
+  // These legacy lifecycle/CRM scenarios deliberately exercise a non-SDR campaign.
+  // Automatic SDR enrollment is covered by automatic-participation.test.ts.
+  await db.exec("alter table campaigns alter column audience set default 'other';update campaigns set audience='other'");
   const q = async (s: string, p: unknown[] = []) =>
     (await db.query<any>(s, p)).rows;
   const scalar = async (s: string, p: unknown[] = []) => (await q(s, p))[0]?.r;

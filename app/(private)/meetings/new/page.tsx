@@ -1,3 +1,5 @@
+import { chooseCampaign } from "@/lib/campaign-selection";
+import { CampaignPicker } from "@/components/campaign-picker";
 import { ActionForm } from "@/components/action-form";
 import { hasFunction } from "@/lib/access";
 import Link from "next/link";
@@ -10,7 +12,11 @@ import { registrationBlockers } from "@/lib/meeting-registration";
 export default async function NewMeeting({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; success?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    success?: string;
+    campaign?: string;
+  }>;
 }) {
   const { db, profile } = await session();
   if (!hasFunction(profile, "sdr"))
@@ -29,12 +35,13 @@ export default async function NewMeeting({
   const [campaignResult, closerResult] = await Promise.all([
     db
       .from("campaigns")
-      .select("id,state,starts_at,ends_at")
-      .eq("state", "active")
-      .maybeSingle(),
+      .select("id,name,state,starts_at,ends_at")
+      .order("starts_at")
+      .order("id"),
     db.rpc("available_closers"),
   ]);
-  const campaign = campaignResult.data;
+  const campaign =
+    chooseCampaign(campaignResult.data ?? [], params.campaign) ?? null;
   const [participantResult, opportunityResult] = campaign
     ? await Promise.all([
         db
@@ -67,12 +74,16 @@ export default async function NewMeeting({
       ]
     : registrationBlockers(
         campaign,
-        Boolean(participantResult.data?.team_id),
+        Boolean(participantResult.data),
         closerResult.data?.length ?? 0,
       );
   const disabled = blockers.length > 0;
   return (
     <>
+      <CampaignPicker
+        campaigns={campaignResult.data ?? []}
+        selected={campaign?.id}
+      />
       <div className="page-title">
         <div>
           <p className="eyebrow">OPERAÇÃO</p>

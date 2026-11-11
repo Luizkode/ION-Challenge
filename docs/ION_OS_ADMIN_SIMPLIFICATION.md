@@ -1,3 +1,5 @@
+> Atualização 020: campanhas SDR usam participação automática por função e ativação, com histórico encerrado/finalizado preservado. Veja [a política atual](ION_CHALLENGER_AUTOMATIC_PARTICIPATION.md).
+
 # Administração simplificada do ION OS
 
 ## Uso diário

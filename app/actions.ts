@@ -8,7 +8,13 @@ import { configured, supabase } from "@/lib/supabase";
 import { session } from "@/lib/session";
 import { meetingSchema } from "@/lib/meeting-registration";
 function jump(path: string, message: string, kind = "error"): never {
-  redirect(path + "?" + kind + "=" + encodeURIComponent(message));
+  redirect(
+    path +
+      (path.includes("?") ? "&" : "?") +
+      kind +
+      "=" +
+      encodeURIComponent(message),
+  );
 }
 export async function login(form: FormData) {
   if (!configured())
@@ -60,7 +66,8 @@ export async function createMeeting(form: FormData) {
       "Revise os campos: informe os dados da empresa, data e horário válidos e selecione um closer.",
     );
   const { error } = await db.rpc("create_meeting", { data: result.data });
-  if (error) jump("/meetings/new", error.message);
+  if (error)
+    jump("/meetings/new?campaign=" + result.data.campaign_id, error.message);
   revalidatePath("/", "layout");
   jump(
     "/meetings",
@@ -87,16 +94,26 @@ export async function adminOperation(form: FormData) {
   const operation = String(data.operation);
   delete data.operation;
   const { error } = await db.rpc("admin_operation", { operation, data });
+  const campaignId = z
+    .string()
+    .guid()
+    .safeParse(
+      operation === "participant"
+        ? data.campaign_id
+        : ["campaign", "finalize"].includes(operation)
+          ? data.id
+          : undefined,
+    );
   const path = ["correct_meeting", "duplicate_exception"].includes(operation)
     ? "/meetings"
-    : "/admin";
+    : "/admin" + (campaignId.success ? "?campaign=" + campaignId.data : "");
   if (error) jump(path, error.message);
   revalidatePath("/", "layout");
   const message =
     operation === "participant"
       ? data.remove === "true"
         ? "Participante removido da campanha e dos rankings. Histórico preservado."
-        : "Participante adicionado à campanha. Rankings atualizados."
+        : "Equipe e participação atualizadas. Rankings atualizados."
       : operation === "profile"
         ? data.remove_from_campaign === "true"
           ? "Perfil atualizado e participação removida na mesma operação. Histórico preservado."
