@@ -182,11 +182,11 @@ export default async function Admin({
                 <input type="hidden" name="id" value={ca.id} />
                 <Select label="Vencedor conferido" name="winner_id">
                   <option value="">Sem vencedor (meta não atingida)</option>
-                  {profiles
-                    .filter((p) => p.role === "sdr")
+                  {participants.data
+                    ?.filter((p) => p.campaign_id === ca.id && p.active)
                     .map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
+                      <option key={p.profile_id} value={p.profile_id}>
+                        {p.profiles?.name ?? "Participante histórico"}
                       </option>
                     ))}
                 </Select>
