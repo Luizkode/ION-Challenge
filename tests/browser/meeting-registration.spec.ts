@@ -76,7 +76,7 @@ test("botão abre formulário próprio e cadastra via create_meeting", async ({
 });
 for (const [mode, message] of [
   ["draft", "A campanha ainda não está ativa"],
-  ["no_team", "Você não está vinculado a um time"],
+  ["no_team", "Sua participação automática ainda não foi sincronizada"],
   ["no_closer", "Não há closer ativo disponível"],
   ["future", "A campanha ainda não começou"],
   ["ended", "O período da campanha foi encerrado"],

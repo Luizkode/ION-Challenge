@@ -1,3 +1,5 @@
+import { chooseCampaign } from "@/lib/campaign-selection";
+import { CampaignPicker } from "@/components/campaign-picker";
 import { pageNumber, pageSize } from "@/lib/pagination";
 import { Pagination } from "@/components/pagination";
 import { ActionForm } from "@/components/action-form";
@@ -18,6 +20,7 @@ export default async function Admin({
     error?: string;
     success?: string;
     audit_page?: string;
+    campaign?: string;
   }>;
 }) {
   const { db, profile } = await session();
@@ -25,7 +28,11 @@ export default async function Admin({
   const params = await searchParams,
     auditPage = pageNumber(params.audit_page);
   const results = await Promise.all([
-    db.from("profiles").select("*").eq("is_historical", false).order("name"),
+    db
+      .from("profiles")
+      .select("*,user_functions(function_code)")
+      .eq("is_historical", false)
+      .order("name"),
     db.from("teams").select("*").order("name"),
     db
       .from("campaigns")
@@ -56,7 +63,8 @@ export default async function Admin({
     teams = tr.data ?? [],
     campaigns = cr.data ?? [],
     meetings = mr.data ?? [];
-  const ca = campaigns.find((c) => c.state !== "finalized");
+  const editableCampaigns = campaigns.filter((c) => c.state !== "finalized");
+  const ca = chooseCampaign(editableCampaigns, params.campaign);
   return (
     <>
       <div className="page-title">
@@ -69,6 +77,7 @@ export default async function Admin({
         </div>
       </div>
       <Notice params={params} />
+      <CampaignPicker campaigns={editableCampaigns} selected={ca?.id} />
       <div className="stats">
         {[
           ["Colaboradores", profiles.length],
@@ -190,13 +199,17 @@ export default async function Admin({
             </details>
           </>
         ) : (
+          <Empty>Nenhuma campanha em configuração.</Empty>
+        )}
+        <details>
+          <summary>Nova campanha para todos os SDRs ativos</summary>
           <ActionForm action={adminOperation} className="form-grid">
             {hidden("new_campaign")}
             <Field name="name" label="Nome da próxima campanha" />
             <Field name="prize" label="Prêmio" />
             <Submit>Criar campanha em configuração</Submit>
           </ActionForm>
-        )}
+        </details>
       </section>
       <section className="panel padded">
         <h2>Colaboradores</h2>
@@ -261,12 +274,20 @@ export default async function Admin({
                         (cp) =>
                           cp.campaign_id === ca?.id && cp.profile_id === p.id,
                       )?.active
-                        ? "Na campanha"
+                        ? ca?.audience === "other"
+                          ? "Na campanha"
+                          : "Na campanha · " +
+                            (participants.data?.find(
+                              (cp) =>
+                                cp.campaign_id === ca?.id &&
+                                cp.profile_id === p.id,
+                            )?.teams?.name ?? "Sem equipe definida")
                         : "Fora da campanha"}
                     </p>
                     <ParticipantControls
                       profile={p}
-                      campaignId={ca?.id}
+                      campaignId={ca?.state === "ended" ? undefined : ca?.id}
+                      automatic={ca?.audience !== "other"}
                       membership={participants.data?.find(
                         (cp) =>
                           cp.campaign_id === ca?.id && cp.profile_id === p.id,
@@ -296,15 +317,15 @@ export default async function Admin({
           <Submit>Criar / renomear time</Submit>
         </ActionForm>
         <p className="muted small">
-          Use as ações por colaborador para adicionar ou remover participantes.
-          A remoção preserva o histórico; a reinclusão deve manter o time
-          original quando houver oportunidades.
+          {ca?.audience !== "other"
+            ? "Todos os SDRs ativos são incluídos automaticamente. Função e ativação controlam a participação. Equipes são definidas pelo ADM; sem vínculo comprovado, o SDR permanece sem equipe. Reativação preserva a equipe anterior, mesmo se exigir revisão de capacidade pelo ADM."
+            : "Use as ações por colaborador para gerenciar participantes desta campanha."}
         </p>
         {participants.data
           ?.filter((p) => p.campaign_id === ca?.id && p.active)
           .map((p) => (
             <p className="small" key={p.profile_id}>
-              {p.profiles?.name} · {p.teams?.name}
+              {p.profiles?.name} · {p.teams?.name ?? "Sem equipe definida"}
             </p>
           ))}
       </section>

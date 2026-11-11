@@ -1,19 +1,30 @@
 import Link from "next/link";
 import { Field, Select } from "@/components/ui";
 import { ConfirmedAdminForm } from "@/components/confirmed-admin-form";
-type Profile = { id: string; name: string; role: string; active: boolean };
-type Membership = { team_id: string; active: boolean };
+type Profile = {
+  id: string;
+  name: string;
+  role: string;
+  active: boolean;
+  user_functions?: { function_code: string }[];
+};
+type Membership = { team_id: string | null; active: boolean };
 export function ParticipantControls({
   profile,
   campaignId,
   membership,
   teams,
+  automatic = false,
 }: {
   profile: Profile;
+  automatic?: boolean;
   campaignId?: string;
   membership?: Membership;
   teams: { id: string; name: string }[];
 }) {
+  const isSdr = profile.user_functions
+    ? profile.user_functions.some((f) => f.function_code === "sdr")
+    : profile.role === "sdr";
   return (
     <>
       {["member", "partner"].includes(profile.role) ? (
@@ -38,7 +49,7 @@ export function ParticipantControls({
               <option value="closer">Closer</option>
               <option value="admin">Administrador</option>
             </Select>
-            {membership?.active && (
+            {membership?.active && !automatic && (
               <label className="small">
                 <input
                   type="checkbox"
@@ -53,35 +64,44 @@ export function ParticipantControls({
           </ConfirmedAdminForm>
         </details>
       )}
-      {campaignId &&
-        membership?.active &&
-        profile.role === "sdr" &&
-        profile.active && (
-          <details>
-            <summary>Alterar time</summary>
-            <ConfirmedAdminForm
-              confirmation={`Confirma alterar o time de ${profile.name}? Com histórico, o time original será preservado.`}
-              submitLabel="Salvar time"
+      {campaignId && membership?.active && isSdr && profile.active && (
+        <details>
+          <summary>
+            {membership.team_id ? "Alterar time" : "Definir time"}
+          </summary>
+          <ConfirmedAdminForm
+            confirmation={`Confirma alterar o time de ${profile.name}? Com histórico, o time original será preservado.`}
+            submitLabel="Salvar time"
+          >
+            <input type="hidden" name="operation" value="participant" />
+            <input type="hidden" name="campaign_id" value={campaignId} />
+            <input type="hidden" name="profile_id" value={profile.id} />
+            <Select
+              label={`Time de ${profile.name}`}
+              name="team_id"
+              value={membership.team_id ?? ""}
+              required
             >
-              <input type="hidden" name="operation" value="participant" />
-              <input type="hidden" name="campaign_id" value={campaignId} />
-              <input type="hidden" name="profile_id" value={profile.id} />
-              <Select
-                label={`Time de ${profile.name}`}
-                name="team_id"
-                value={membership.team_id}
-              >
-                {teams.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-              </Select>
-              <Field label="Justificativa da alteração de time" name="reason" />
-            </ConfirmedAdminForm>
-          </details>
-        )}
-      {campaignId && membership?.active ? (
+              <option value="">Selecione uma equipe</option>
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </Select>
+            <Field label="Justificativa da alteração de time" name="reason" />
+          </ConfirmedAdminForm>
+        </details>
+      )}
+      {automatic ? (
+        <p className="small muted">
+          Participação automática para SDRs ativos. A função e o acesso são
+          gerenciados na <Link href="/team">Equipe</Link>.{" "}
+          {membership?.active &&
+            !membership.team_id &&
+            "Sem equipe definida; nenhuma alocação automática."}
+        </p>
+      ) : campaignId && membership?.active ? (
         <details>
           <summary>Remover da campanha</summary>
           <ConfirmedAdminForm
@@ -95,7 +115,7 @@ export function ParticipantControls({
             <Field label="Justificativa da remoção" name="reason" />
           </ConfirmedAdminForm>
         </details>
-      ) : campaignId && profile.role === "sdr" && profile.active ? (
+      ) : campaignId && isSdr && profile.active ? (
         <details>
           <summary>Adicionar à campanha</summary>
           <ConfirmedAdminForm
@@ -108,7 +128,7 @@ export function ParticipantControls({
             <Select
               label={`Time de ${profile.name}`}
               name="team_id"
-              value={membership?.team_id}
+              value={membership?.team_id ?? ""}
             >
               <option value="">Selecione</option>
               {teams.map((t) => (

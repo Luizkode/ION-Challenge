@@ -99,7 +99,7 @@ export default async function Team({
     .from("campaign_participants")
     .select("profile_id,campaigns!inner(state)")
     .eq("active", true)
-    .neq("campaigns.state", "finalized");
+    .in("campaigns.state", ["draft", "active"]);
   check(membership.error);
   const activeParticipants = membership.data ?? [];
   const bindings = [...(clients.data ?? []), ...(partners.data ?? [])];
